@@ -1,0 +1,103 @@
+name: journal
+description: "A new Flutter project."
+publish_to: "none"
+version: 1.2.3+1
+fluwx:
+  app_id: "wx30e85737940da4af"
+  debug_logging: true # Logging in debug mode.
+  ios:
+    universal_link: https://journal.uuorb.com/app/
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  url_launcher: ^6.3.1
+
+  # 网络检测 https://pub.flutter-io.cn/packages/connectivity
+  connectivity: 3.0.6
+  cupertino_icons: ^1.0.6
+  flutter_chat_ui: ^1.6.15
+  get: ^4.6.6
+  get_storage: ^2.1.1
+  dio: ^4.0.6
+  shared_preferences: ^2.3.2
+  # 日志
+  logger: 2.1.0
+  # 线程锁  
+  synchronized: ^3.0.0+3
+  device_info_plus: ^10.1.2
+  package_info_plus: ^8.0.2
+  built_collection: ^5.1.1
+  flutter_screenutil: ^5.9.3
+  get_time_ago: ^2.0.0
+  contained_tab_bar_view: ^0.8.0
+  fluwx: ^4.5.5
+  # - bruno所需的 - #
+  bindings_compatible: ^1.0.1
+  path_drawing: ^1.0.1
+  xml: ^6.5.0
+  flutter_chat_types: ^3.6.2
+  uuid: ^4.5.1
+  intl: ^0.19.0
+  tdesign_flutter: ^0.1.6
+  easy_refresh: ^3.4.0
+  lottie: ^3.1.2
+  permission_handler: ^11.3.1
+  json_annotation: ^4.8.1
+  bubble: ^1.2.1
+  voice_to_text: ^1.0.3
+  speech_to_text: ^6.6.2
+  photo_view: ^0.15.0
+  tencentcloud_cos_sdk_plugin: ^1.1.7
+  image_picker: ^1.1.1
+
+  # 图片压缩
+  flutter_image_compress: ^2.3.0
+  slider_captcha: ^1.0.0
+  webview_flutter: ^4.8.0
+  just_audio: ^0.9.41
+  sign_in_with_apple: ^6.1.3
+  auth_buttons: ^3.0.3
+  video_player: ^2.9.2
+  image_gallery_saver: ^2.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  json_serializable: ^6.8.0
+  build_runner: ^2.0.5
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/playstore-icon.png
+    - assets/fonts/
+    - assets/json/
+    - assets/icons/
+    - assets/icons/bill_column/
+    - assets/chat_bg/
+
+  fonts:
+    - family: SmileySans
+      fonts:
+        - asset: assets/fonts/SmileySans-Oblique.ttf
+
+    - family: SourceCodePro
+      fonts:
+        - asset: assets/fonts/SourceCodePro-Light.ttf
+          weight: 300
+        - asset: assets/fonts/SourceCodePro-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SourceCodePro-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SourceCodePro-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/SourceCodePro-Black.ttf
+          weight: 900
