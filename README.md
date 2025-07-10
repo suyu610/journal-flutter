@@ -1,7 +1,7 @@
-# 好享记账需求文档
+## 好享记账后端
+### 视频介绍 
+https://www.bilibili.com/video/BV1WbGBzcEec
+### 如有疑问，可与我联系
+uuorb@foxmail.com
 
-## 首页（current_activity）
-
-## 聊天记账页（chat）
-
-## 账本页（activity_list）
+![img.png](img.png)
