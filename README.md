@@ -1,4 +1,4 @@
-## 好享记账后端
+## 好享记账前端
 ### 视频介绍 
 https://www.bilibili.com/video/BV1WbGBzcEec
 ### 如有疑问，可与我联系
