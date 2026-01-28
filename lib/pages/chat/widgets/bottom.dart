@@ -48,12 +48,14 @@ Widget buildBottomWidget(ChatController controller, BuildContext context) {
                       ),
                     ),
                     child: TDInput(
+                      hintText: "请输入",
                       controller: controller.textEditingController,
                       focusNode: controller.focusNode,
                       inputAction: TextInputAction.send,
                       maxLines: 1,
                       width: 385.w,
                       cursorColor: const Color(0xFF0064FF),
+                      backgroundColor: Colors.transparent,
                       contentPadding: const EdgeInsets.only(
                           left: 16, bottom: 8, top: 8, right: 8),
                       textStyle: TextStyle(

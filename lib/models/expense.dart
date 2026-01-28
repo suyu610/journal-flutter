@@ -12,10 +12,11 @@ class Expense {
   String expenseTime;
   String createTime;
   String? updateTime;
-  String userNickname;
-  String userAvatar;
+  String? userNickname;
+  String? userAvatar;
   String activityId;
   int positive;
+
   @override
   toString() {
     return 'Expense{expenseId: $expenseId, type: $type, price: $price, label: $label, userId: $userId, createTime: $createTime, updateTime: $updateTime, userNickname: $userNickname, userAvatar: $userAvatar, activityId: $activityId},positive: $positive';
@@ -29,8 +30,8 @@ class Expense {
     required this.label,
     required this.userId,
     required this.createTime,
-    required this.userNickname,
-    required this.userAvatar,
+    this.userNickname,
+    this.userAvatar,
     required this.activityId,
     required this.positive,
     this.updateTime,

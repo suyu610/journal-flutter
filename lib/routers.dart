@@ -17,6 +17,8 @@ import 'package:journal/pages/login/sms_code/view.dart';
 import 'package:journal/pages/tabbar_layout/binding.dart';
 import 'package:journal/pages/tabbar_layout/view.dart';
 import 'package:journal/pages/webview/webview.dart';
+import 'package:journal/pages/reminder_settings/view.dart';
+import 'package:journal/pages/reminder_settings/index.dart';
 
 abstract class Routers {
   static const String JoinActivityPageUrl = "/join_activity";
@@ -53,6 +55,9 @@ abstract class Routers {
   // 创建活动
   static const String CreateActivityUrl = "/create_activity";
 
+  // 提醒设置
+  static const String ReminderSettingsPageUrl = "/reminder_settings";
+
   static final List<GetPage> routePages = [
     GetPage(name: AIConfigPageV2Url, page: () => const AiConfigV2Page()),
     GetPage(
@@ -84,6 +89,10 @@ abstract class Routers {
       page: () => const ExpenseItemPage(),
     ),
     GetPage(name: CreateActivityUrl, page: () => const CreateActivityPage()),
+    GetPage(
+        name: ReminderSettingsPageUrl,
+        page: () => ReminderSettingsPage(),
+        binding: ReminderSettingsBinding()),
     GetPage(
         name: LayoutPageUrl,
         page: () => const LayoutPage(),

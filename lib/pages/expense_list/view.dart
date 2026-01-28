@@ -218,7 +218,7 @@ class ExpenseListPage extends GetView<ExpenseListController> {
                 // 圆形裁切
                 ClipOval(
                   child: Image.network(
-                    e.userAvatar,
+                    e.userAvatar ?? "",
                     width: 20.r,
                     height: 20.r,
                     fit: BoxFit.fill,
@@ -228,7 +228,7 @@ class ExpenseListPage extends GetView<ExpenseListController> {
                   width: 10,
                 ),
                 Text(
-                  e.userNickname,
+                  e.userNickname ?? "",
                   style: TextStyle(
                       color: const Color(0xff666666), fontSize: 14.sp),
                 ),

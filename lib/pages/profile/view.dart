@@ -73,6 +73,18 @@ class ProfilePage extends GetView<ProfileController> {
               Get.toNamed(Routers.AIConfigPageUrl);
             },
           ),
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
+              Icons.notifications_outlined,
+              size: 24,
+              color: Color(0xff0053d9),
+            ),
+            title: "记账提醒",
+            onClick: (v) {
+              Get.toNamed(Routers.ReminderSettingsPageUrl);
+            },
+          ),
           // TDCell(
           //   arrow: true,
           //   leftIconWidget: Image.asset("assets/icons/fact_check.png",

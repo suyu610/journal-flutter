@@ -91,10 +91,10 @@ class ChatController extends GetxController {
       },
       success: (data) {
         praise(text);
-
         try {
+          Log().d(data.toString());
           Expense expense = Expense.fromJson(data as Map<String, dynamic>);
-          Log().d("expense.expenseId${expense.expenseId}");
+          // Log().d("expense.expenseId： ${expense.expenseId}");
           var reMessage = types.CustomMessage(
               author: aiUser,
               metadata: {"msgType": "expense", ...expense.toJson()},
@@ -190,7 +190,6 @@ class ChatController extends GetxController {
     } else {
       bgImage.value = "";
     }
-
     setKeyboardModeAndRequestFocus();
 
     var greetingMessage = types.TextMessage(

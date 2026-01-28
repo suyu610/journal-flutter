@@ -9,6 +9,7 @@ import 'package:journal/core/log.dart';
 import 'package:journal/i10n/translations.dart';
 import 'package:journal/pages/login/logic.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/services/notification_service.dart';
 import 'package:journal/util/keyboard_util.dart';
 import 'package:journal/util/sp_util.dart';
 
@@ -73,9 +74,6 @@ Widget _myApp() {
       onDispose: () {
         Log().d("parent view onDispose");
       },
-      onInit: () {
-        SpUtil.setFirstOpenApp(true);
-      },
       translations: AppTranslations(),
       supportedLocales: AppTranslations.supportedLocales,
       locale: Get.deviceLocale,
@@ -100,6 +98,10 @@ Widget _myApp() {
           ? Routers.LoginPageUrl
           : Routers.LayoutPageUrl,
       initialBinding: InitialBinding(),
+      onInit: () {
+        SpUtil.setFirstOpenApp(true);
+        Get.put(NotificationService());
+      },
       builder: (context, child) {
         return Scaffold(
           body: GestureDetector(

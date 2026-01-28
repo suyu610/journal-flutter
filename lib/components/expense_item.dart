@@ -93,7 +93,7 @@ Widget ActivityExpenseItem(Expense e, context) {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      e.userNickname,
+                      e.userNickname ?? "",
                       style: TextStyle(
                         color: Colors.black.withOpacity(0.4),
                         fontSize: 12,

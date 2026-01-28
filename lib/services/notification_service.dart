@@ -42,6 +42,16 @@ class NotificationService extends GetxService {
       initializationSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
+
+    // 2. 修复：处理冷启动跳转
+    final NotificationAppLaunchDetails? launchDetails =
+        await _notifications.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      // 等待一小会儿确保 GetX 路由就绪
+      Future.delayed(const Duration(milliseconds: 100), () {
+        Get.toNamed('/expense');
+      });
+    }
   }
 
   void _onNotificationTap(NotificationResponse response) {
@@ -132,22 +142,49 @@ class NotificationService extends GetxService {
   }
 
   Future<void> requestPermissions() async {
-    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-        _notifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    bool granted = false;
 
-    final bool? granted = await androidImplementation?.requestNotificationsPermission();
-    isEnabled.value = granted ?? false;
+    if (GetPlatform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          _notifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final bool? result =
+          await androidImplementation?.requestNotificationsPermission();
+      granted = result ?? false;
+    } else if (GetPlatform.isIOS) {
+      final IOSFlutterLocalNotificationsPlugin? iosImplementation =
+          _notifications.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+      final bool? result = await iosImplementation?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      granted = result ?? false;
+    }
+
+    isEnabled.value = granted;
     await saveSettings();
   }
 
   Future<bool> checkPermissions() async {
-    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-        _notifications.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    bool granted = false;
 
-    final bool? granted = await androidImplementation?.areNotificationsEnabled();
-    return granted ?? false;
+    if (GetPlatform.isAndroid) {
+      final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+          _notifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final result = await androidImplementation?.areNotificationsEnabled();
+      granted = result == true;
+    } else if (GetPlatform.isIOS) {
+      final IOSFlutterLocalNotificationsPlugin? iosImplementation =
+          _notifications.resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>();
+      final result = await iosImplementation?.checkPermissions();
+      granted = result?.isEnabled == true;
+    }
+
+    return granted;
   }
 
   void addReminderTime(String time) {
