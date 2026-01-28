@@ -60,7 +60,6 @@ class LoginLogic extends GetxController {
           titleStyle: const TextStyle(
               fontSize: 12,
               decoration: TextDecoration.none,
-              
               color: Colors.white),
           imageToBarPadding: 10,
           controller: sliderController,
@@ -114,7 +113,7 @@ class LoginLogic extends GetxController {
               ),
               Text(
                 "请阅读并同意以下条款",
-                style: TextStyle( fontSize: 16.sp),
+                style: TextStyle(fontSize: 16.sp),
               ),
               SizedBox(
                 height: 20.h,
@@ -131,8 +130,7 @@ class LoginLogic extends GetxController {
                   children: [
                     Text(
                       "《隐私政策》",
-                      style: TextStyle(
-                           color: Color(0xff22384e)),
+                      style: TextStyle(color: Color(0xff22384e)),
                     )
                   ],
                 ),
@@ -197,7 +195,7 @@ class LoginLogic extends GetxController {
               ),
               Text(
                 "请阅读并同意以下条款",
-                style: TextStyle( fontSize: 16.sp),
+                style: TextStyle(fontSize: 16.sp),
               ),
               SizedBox(
                 height: 20.h,
@@ -214,8 +212,7 @@ class LoginLogic extends GetxController {
                   children: [
                     Text(
                       "《隐私政策》",
-                      style: TextStyle(
-                           color: Color(0xff22384e)),
+                      style: TextStyle(color: Color(0xff22384e)),
                     )
                   ],
                 ),
@@ -318,7 +315,7 @@ class LoginLogic extends GetxController {
       TDToast.dismissLoading();
     }
   }
-  
+
   // 联系我们
   void contact() {
     fluwx.open(
@@ -326,5 +323,4 @@ class LoginLogic extends GetxController {
             corpId: 'ww9d9a8a9c7211e1f8',
             url: 'https://work.weixin.qq.com/kfid/kfc001bab61abbb134c'));
   }
-
 }

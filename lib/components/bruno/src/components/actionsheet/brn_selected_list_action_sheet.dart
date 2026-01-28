@@ -162,12 +162,12 @@ class BrnSelectedListActionSheet<T> {
     _leftOffset = offset?.dx ?? 0;
     _maxWidth = renderBox?.size.width ?? MediaQuery.of(context).size.width;
     _bottomKeyOffset = MediaQuery.of(context).size.height - (offset?.dy ?? 0);
-    this._innerShow(true);
+    _innerShow(true);
   }
 
   /// 展示弹层
   void show() {
-    this._innerShow(false);
+    _innerShow(false);
   }
 
   void _innerShow(bool showByKey) {
@@ -183,10 +183,10 @@ class BrnSelectedListActionSheet<T> {
         _BrnActionSheetSelectedItemListContentWidget<T>(
       itemWidget: this,
       onDismiss: (isClear) {
-        this._dismissHandler(isClear);
+        _dismissHandler(isClear);
       },
-      itemTitleBuilder: this.itemTitleBuilder,
-      onItemDelete: this.onItemDelete,
+      itemTitleBuilder: itemTitleBuilder,
+      onItemDelete: onItemDelete,
       controller: tempController,
     );
     content._overlayState = Overlay.of(context);
@@ -267,7 +267,7 @@ class _BrnActionSheetSelectedItemListState<T>
     _controller = widget.controller;
     _controller?.addListener(_onListenHandler);
 
-    this._initStartAnimation();
+    _initStartAnimation();
   }
 
   @override
@@ -299,17 +299,16 @@ class _BrnActionSheetSelectedItemListState<T>
     AnimationController alphaAnimationController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
     widget._alphaAnimationController = alphaAnimationController;
-    Animation<double> yAnimation =
-        Tween(begin: 65.0, end: this._getContentHeight())
-            .animate(yAnimationController)
-          ..addListener(() {
-            setState(() => {});
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.dismissed) {
-              widget.onDismiss!(_isClosedByClear);
-            }
-          });
+    Animation<double> yAnimation = Tween(begin: 65.0, end: _getContentHeight())
+        .animate(yAnimationController)
+      ..addListener(() {
+        setState(() => {});
+      })
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.dismissed) {
+          widget.onDismiss!(_isClosedByClear);
+        }
+      });
     widget._yAnimation = yAnimation;
     Animation<double> alphaAnimation = Tween(begin: 0.0, end: 0.7)
         .animate(alphaAnimationController)
@@ -332,7 +331,7 @@ class _BrnActionSheetSelectedItemListState<T>
   void _onClearAction() {
     if (widget.itemWidget.onClear == null) {
       // 如果没有实现 onClear，执行默认弹窗并删除的逻辑
-      this.dismissContent(true);
+      dismissContent(true);
       BrnDialogManager.showConfirmDialog(context,
           title: BrnIntl.of(context).localizedResource.confirmClearSelectedList,
           cancel: BrnIntl.of(context).localizedResource.cancel,
@@ -395,7 +394,7 @@ class _BrnActionSheetSelectedItemListState<T>
     if (!widget.itemWidget.isClearButtonHidden) {
       Widget clearWidget = GestureDetector(
         onTap: () {
-          this._onClearAction();
+          _onClearAction();
         },
         child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 20, 20, 15),
@@ -424,11 +423,11 @@ class _BrnActionSheetSelectedItemListState<T>
     }
 
     // 视图的高度
-    double contentHeight = this._getContentHeight();
+    double contentHeight = _getContentHeight();
 
     return GestureDetector(
       onTap: () {
-        this.dismissContent(false);
+        dismissContent(false);
       },
       child: Container(
           color: Color.fromRGBO(0, 0, 0, widget._alphaAnimation.value),
@@ -505,7 +504,7 @@ class _BrnActionSheetSelectedItemListState<T>
                                             .itemWidget.isDeleteButtonHidden,
                                         child: GestureDetector(
                                           onTap: () {
-                                            this._onDeleteItemAction(index);
+                                            _onDeleteItemAction(index);
                                           },
                                           child: Container(
                                               color: Colors.white,

@@ -52,7 +52,11 @@ class JoinActivityController extends GetxController {
 
   void readClipboard() {
     Clipboard.getData('text/plain').then((value) {
-      Log().d(value!.text!);
+      if (value == null || value.text == null) {
+        ToastUtil.showSnackBar("提示", "剪贴板为空");
+        return;
+      }
+      Log().d(value.text!);
       // String reg = regInviteId(value.text) ?? "";
       id.value = value.text!;
       textEditController.text = value.text!;

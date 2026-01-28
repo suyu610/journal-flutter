@@ -11,13 +11,13 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string/>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>com.uuorb.journal</string>
+	<string>com.uuorb.susujournal</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -46,35 +46,33 @@
 	<string>NO</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
-
-
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>alipay</string>
 		<string>alipays</string>
-			<string>weixinURLParamsAPI</string>
+		<string>weixinURLParamsAPI</string>
 		<string>weixinULAPI</string>
 		<string>wechat</string>
 		<string>weixin</string>
-        <string>comgooglemaps</string>
-        <string>baidumap</string>
-        <string>iosamap</string>
-        <string>waze</string>
-        <string>yandexmaps</string>
-        <string>yandexnavi</string>
-        <string>citymapper</string>
-        <string>mapswithme</string>
-        <string>osmandmaps</string>
-        <string>dgis</string>
-        <string>qqmap</string>
-        <string>here-location</string>
-        <string>tomtomgo</string>
-        <string>copilot</string>
-        <string>com.sygic.aura</string>
-        <string>nmap</string>
-        <string>kakaomap</string>
-        <string>tmap</string>
-        <string>szn-mapy</string>
+		<string>comgooglemaps</string>
+		<string>baidumap</string>
+		<string>iosamap</string>
+		<string>waze</string>
+		<string>yandexmaps</string>
+		<string>yandexnavi</string>
+		<string>citymapper</string>
+		<string>mapswithme</string>
+		<string>osmandmaps</string>
+		<string>dgis</string>
+		<string>qqmap</string>
+		<string>here-location</string>
+		<string>tomtomgo</string>
+		<string>copilot</string>
+		<string>com.sygic.aura</string>
+		<string>nmap</string>
+		<string>kakaomap</string>
+		<string>tmap</string>
+		<string>szn-mapy</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
@@ -82,16 +80,15 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-<string>your usage description here</string>
-<key>NSMicrophoneUsageDescription</key>
-<string>your usage description here</string>
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>Please allow the APP to save photos to the album</string>
-
+	<string>your usage description here</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>用于发送语音消息</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Please allow the APP to save photos to the album</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>用于在聊天时，发送图片</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

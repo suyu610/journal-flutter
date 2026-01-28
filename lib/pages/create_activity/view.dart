@@ -24,7 +24,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         BrnSwitchFormItem(
           isRequire: false,
           value: controller.activity.value.activated,
-          title: "当前账本",
+          title: "设为当前账本",
           onChanged: (oldValue, newValue) {
             controller.updateActivated(newValue);
           },
@@ -54,8 +54,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
             child: BrnBigMainButton(
-              title:
-                  controller.activity.value.activityId == "" ? "创建" : "保存",
+              title: controller.activity.value.activityId == "" ? "创建" : "保存",
               onTap: () {
                 controller.createActivity(context);
               },

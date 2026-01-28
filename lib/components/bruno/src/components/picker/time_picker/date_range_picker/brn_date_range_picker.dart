@@ -124,11 +124,11 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
     this.themeData,
     RouteSettings? settings,
   }) : super(settings: settings) {
-    this.themeData ??= BrnPickerConfig();
-    this.themeData = BrnThemeConfigurator.instance
-        .getConfig(configId: this.themeData!.configId)
+    themeData ??= BrnPickerConfig();
+    themeData = BrnThemeConfigurator.instance
+        .getConfig(configId: themeData!.configId)
         .pickerConfig
-        .merge(this.themeData);
+        .merge(themeData);
   }
 
   @override

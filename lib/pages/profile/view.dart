@@ -60,31 +60,29 @@ class ProfilePage extends GetView<ProfileController> {
       children: [
         _buildUserCard(context),
         const SizedBox(height: 16),
-
         TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
           TDCell(
             leftIconWidget: Image.asset(
               "assets/icons/supervisor_account.png",
               height: 24,
               width: 24,
-            ), 
+            ),
             arrow: true,
             title: "选择角色",
             onClick: (v) {
               Get.toNamed(Routers.AIConfigPageUrl);
             },
           ),
-          TDCell(
-            arrow: true,
-            leftIconWidget: Image.asset("assets/icons/fact_check.png",
-                height: 24, width: 24),
-            title: "自动记账",
-            onClick: (v) {
-              Get.toNamed(Routers.AutoWriteIntroPageUrl);
-            },
-          ),
+          // TDCell(
+          //   arrow: true,
+          //   leftIconWidget: Image.asset("assets/icons/fact_check.png",
+          //       height: 24, width: 24),
+          //   title: "自动记账",
+          //   onClick: (v) {
+          //     Get.toNamed(Routers.AutoWriteIntroPageUrl);
+          //   },
+          // ),
         ]),
-
         const SizedBox(height: 10),
         TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
           TDCell(
@@ -128,7 +126,6 @@ class ProfilePage extends GetView<ProfileController> {
           ),
         ]),
         SizedBox(height: 80.h),
-
         FutureBuilder(
           future: appVersion(),
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -156,7 +153,7 @@ class ProfilePage extends GetView<ProfileController> {
         children: <Widget>[
           GestureDetector(
             onTap: () {
-              controller.showImagePicker(context);
+              // controller.showImagePicker(context);
             },
             child: Stack(
               children: [

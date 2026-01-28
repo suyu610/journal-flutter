@@ -272,7 +272,6 @@ class ChatController extends GetxController {
                 action: () {
                   Get.back();
                   BrnLoadingDialog.show(context);
-
                   HttpRequest.request(Method.get,
                       "/ai/tts?sentence=$text&activityId=${activity.value.activityId}",
                       fail: (code, msg) {}, success: (data) async {

@@ -132,7 +132,9 @@ class BrnPopupWindow extends StatefulWidget {
     assert(popKey.currentContext != null &&
         popKey.currentContext!.findRenderObject() != null);
     if (popKey.currentContext == null ||
-        popKey.currentContext!.findRenderObject() == null) return;
+        popKey.currentContext!.findRenderObject() == null) {
+      return;
+    }
     Navigator.push(
         context,
         BrnPopupRoute(
@@ -505,7 +507,9 @@ class BrnPopupListWindow {
     assert(popKey.currentContext != null &&
         popKey.currentContext!.findRenderObject() != null);
     if (popKey.currentContext == null ||
-        popKey.currentContext!.findRenderObject() == null) return;
+        popKey.currentContext!.findRenderObject() == null) {
+      return;
+    }
     Navigator.push(
         context,
         BrnPopupRoute(
@@ -571,7 +575,9 @@ class BrnPopupListWindow {
     assert(popKey.currentContext != null &&
         popKey.currentContext!.findRenderObject() != null);
     if (popKey.currentContext == null ||
-        popKey.currentContext!.findRenderObject() == null) return;
+        popKey.currentContext!.findRenderObject() == null) {
+      return;
+    }
 
     double arrowHeight = 6.0;
     double borderRadius = 4;

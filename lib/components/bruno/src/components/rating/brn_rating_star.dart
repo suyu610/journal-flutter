@@ -135,7 +135,6 @@ class _BrnRatingStarState extends State<BrnRatingStar> {
       case RatingState.half:
         return BrunoTools.getAssetSizeImage(BrnAsset.iconStarHalf, 16, 16);
       case RatingState.unselect:
-      default:
         return BrunoTools.getAssetSizeImage(BrnAsset.iconStar, 16, 16,
             color: const Color(0xFFF0F0F0));
     }

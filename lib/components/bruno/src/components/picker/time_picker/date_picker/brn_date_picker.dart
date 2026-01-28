@@ -131,11 +131,11 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
     RouteSettings? settings,
     this.themeData,
   }) : super(settings: settings) {
-    this.themeData ??= BrnPickerConfig();
-    this.themeData = BrnThemeConfigurator.instance
-        .getConfig(configId: this.themeData!.configId)
+    themeData ??= BrnPickerConfig();
+    themeData = BrnThemeConfigurator.instance
+        .getConfig(configId: themeData!.configId)
         .pickerConfig
-        .merge(this.themeData);
+        .merge(themeData);
   }
 
   final DateTime? minDateTime, maxDateTime, initialDateTime;

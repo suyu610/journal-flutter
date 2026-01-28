@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/user.dart';
 import 'package:journal/request/request.dart';
-import 'package:journal/util/cos.dart';
 
 class LayoutController extends GetxController {
   late PageController pageController;
@@ -22,16 +21,18 @@ class LayoutController extends GetxController {
     pageController.jumpToPage(index);
     currentIndex.value = index;
   }
+
   @override
- void dispose() {
+  void dispose() {
     super.dispose();
     pageController.dispose();
   }
+
   @override
   void onInit() {
     super.onInit();
     pageController = PageController(initialPage: 0, keepPage: true);
-    initTencentCos();
+    // initTencentCos();
 
     // 获取用户profile
     HttpRequest.request(

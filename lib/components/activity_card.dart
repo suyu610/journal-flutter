@@ -184,7 +184,9 @@ Widget activityCard(
                         ),
                       ),
                       Text(
-                        ((activity.totalIncome ?? 0) - (activity.totalExpense ?? 0)).toStringAsFixed(2),
+                        ((activity.totalIncome ?? 0) -
+                                (activity.totalExpense ?? 0))
+                            .toStringAsFixed(2),
                         style: const TextStyle(
                           fontSize: 22,
                           fontFamily: 'SourceCodePro',
