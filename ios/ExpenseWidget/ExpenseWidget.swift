@@ -59,131 +59,176 @@ struct Provider: TimelineProvider {
 }
 
 // --- 视图部分 ---
+// --- 视图部分 ---
 struct ExpenseWidgetEntryView : View {
     var entry: SimpleEntry
 
-    var body: some View {
-        // 1. 计算今日预算目标
-        // 如果是月度预算模式，除以30天作为日预算；如果是总预算模式，这里暂时按月/30估算，你可以根据业务逻辑修改
+var body: some View {
         let dailyTarget = entry.budgetAmount / 30.0
         let todayPercent = dailyTarget > 0 ? (entry.todayExpense / dailyTarget) : 0
+        let themeColor = getThemeColor(percent: todayPercent)
         
-        return VStack(alignment: .leading, spacing: 0) {
+        // --- 核心修改：移除最外层的 ZStack，直接写内容，背景通过修饰符添加 ---
+        VStack(alignment: .leading, spacing: 0) {
             
-            // --- 第一部分：今日支出 (主角：带进度条的大数字) ---
-            VStack(alignment: .leading, spacing: 6) {
-                
-                // 顶部标签栏：左边标题，右边百分比
+            // --- 顶部区域：标题 + 大数字 + 主进度条 ---
+            VStack(alignment: .leading, spacing: 4) {
+                // ... (这里的内容保持不变，代码省略以节省篇幅) ...
+                // 1. 标题栏
                 HStack {
                     Text("今日支出")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
-                    
                     Spacer()
-                    
-                    // 今日的百分比显示在这里
                     Text("\(Int(min(todayPercent, 9.9) * 100))%")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(todayPercent > 1.0 ? .red : .primary)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundColor(todayPercent > 1.0 ? .red : .secondary)
                 }
                 
-                // 核心数字
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                // 2. 大数字
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
                     Text("¥")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
-                    
+                        .padding(.bottom, 2)
                     Text(String(format: "%.1f", entry.todayExpense))
-                        .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        .font(.system(size: 36, weight: .heavy, design: .rounded))
                         .foregroundColor(.primary)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.6)
                         .lineLimit(1)
                 }
+                .padding(.vertical, 2)
                 
-                // 今日专属进度条 (比较粗，更显眼)
+                // 3. 主进度条
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color.secondary.opacity(0.15))
-                            .frame(height: 10) // 比如下面周月的 6px 更粗
-                        
+                            .fill(Color.secondary.opacity(0.12))
+                            .frame(height: 14)
                         Capsule()
-                            .fill(todayPercent > 1.0 ? Color.red : Color.blue) // 也是蓝色，但超支变红
-                            .frame(width: min(CGFloat(todayPercent) * geo.size.width, geo.size.width), height: 10)
+                            .fill(getGradient(percent: todayPercent))
+                            .frame(width: max(12, min(CGFloat(todayPercent) * geo.size.width, geo.size.width)), height: 14)
+                            .shadow(color: getShadowColor(percent: todayPercent).opacity(0.25), radius: 3, x: 0, y: 2)
                     }
                 }
-                .frame(height: 10)
+                .frame(height: 14)
             }
             
-            Spacer() // 撑开中间空隙
+            Spacer()
             
-            // --- 第二部分：周与月 (配角：迷你进度条) ---
-            VStack(spacing: 8) {
-                // 计算辅助目标
+            // --- 底部区域：周/月统计 ---
+            VStack(spacing: 10) {
                 let weekTarget = entry.budgetAmount / 4.0
                 let monthTarget = entry.budgetAmount
                 
-                // 复用之前的迷你组件，视觉上更细、更低调
                 MiniProgressBar(
                     label: "本周",
                     percent: entry.weekExpense / (weekTarget > 0 ? weekTarget : 1.0)
                 )
-                
                 MiniProgressBar(
                     label: "本月",
                     percent: entry.monthExpense / (monthTarget > 0 ? monthTarget : 1.0)
                 )
             }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .containerBackground(for: .widget) { Color(UIColor.systemBackground) }
-    }
-}
-
-// --- 提取出的迷你进度条组件 ---
-// 专门用于只展示进度，不展示金额的场景
-struct MiniProgressBar: View {
-    let label: String
-    let percent: Double
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            // 左侧：标签
-            Text(label)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.secondary)
-                .frame(width: 48, alignment: .leading) // 固定宽度对齐
-            
-            // 中间：进度槽
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    // 灰色底槽
-                    Capsule()
-                        .fill(Color.secondary.opacity(0.15))
-                        .frame(height: 6)
-                    
-                    // 彩色进度
-                    Capsule()
-                        .fill(progressColor)
-                        .frame(width: min(CGFloat(percent) * geo.size.width, geo.size.width), height: 6)
+        // --- 关键点 1：在这里设置铺满的背景 ---
+        .containerBackground(for: .widget) {
+            ZStack {
+                // 1. 底色
+                Color(UIColor.systemBackground)
+                
+                // 2. 光晕 (现在会铺满整个Widget)
+                LinearGradient(
+                    gradient: Gradient(colors: [themeColor.opacity(0.12), themeColor.opacity(0.02), Color.clear]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                
+                // 3. 水印
+                GeometryReader { geo in
+                    Text("¥")
+                        .font(.system(size: 140, weight: .black, design: .serif))
+                        .foregroundColor(themeColor)
+                        .opacity(0.05)
+                        .position(x: geo.size.width * 0.9, y: geo.size.height * 0.4)
+                        .rotationEffect(.degrees(-15))
                 }
             }
-            .frame(height: 6) // 限制高度
-            
-            // 右侧：百分比
-            Text("\(Int(min(percent, 9.9) * 100))%")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundColor(percent > 1.0 ? .red : .secondary) // 超支变红
-                .frame(width: 38, alignment: .trailing) // 固定宽度对齐
         }
     }
     
-    // 根据进度决定颜色：正常是蓝色，稍微多了是橙色，超支是红色
-    var progressColor: Color {
+    // --- 辅助逻辑 ---
+    
+    // 获取当前的主题色（用于背景光晕）
+    func getThemeColor(percent: Double) -> Color {
         if percent > 1.0 { return .red }
         if percent > 0.8 { return .orange }
-        return .blue
+        if percent > 0.4 { return .blue }
+        return .green // 消费低时显示清新的绿色
+    }
+    
+    // 渐变进度条逻辑 (保持原样)
+    func getGradient(percent: Double) -> LinearGradient {
+        if percent > 1.0 {
+            return LinearGradient(gradient: Gradient(colors: [Color.red, Color.purple]), startPoint: .leading, endPoint: .trailing)
+        } else if percent > 0.8 {
+            return LinearGradient(gradient: Gradient(colors: [Color.orange, Color.red]), startPoint: .leading, endPoint: .trailing)
+        } else if percent > 0.4 {
+            return LinearGradient(gradient: Gradient(colors: [Color.cyan, Color.blue]), startPoint: .leading, endPoint: .trailing)
+        } else {
+            return LinearGradient(gradient: Gradient(colors: [Color(red: 0.4, green: 0.9, blue: 0.6), Color.green]), startPoint: .leading, endPoint: .trailing)
+        }
+    }
+    
+    func getShadowColor(percent: Double) -> Color {
+        if percent > 1.0 { return .red }
+        if percent > 0.8 { return .orange }
+        if percent > 0.4 { return .blue }
+        return .green
+    }
+}
+
+// --- 迷你进度条组件 ---
+struct MiniProgressBar: View {
+    let label: String
+    let percent: Double
+    var themeColor: Color = .blue // 新增：可接收外部主题色，或者内部自己算
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.secondary)
+                .frame(width: 40, alignment: .leading)
+            
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.1))
+                        .frame(height: 6)
+                    
+                    Capsule()
+                        .fill(getMiniGradient(percent: percent))
+                        .frame(width: min(CGFloat(percent) * geo.size.width, geo.size.width), height: 6)
+                }
+            }
+            .frame(height: 6)
+            
+            Text("\(Int(min(percent, 9.9) * 100))%")
+                .font(.system(size: 11, weight: .bold))
+                // 让百分比文字颜色也稍微呼应一下状态
+                .foregroundColor(percent > 1.0 ? .red : .secondary)
+                .frame(width: 38, alignment: .trailing)
+        }
+    }
+    
+    func getMiniGradient(percent: Double) -> LinearGradient {
+        let colors: [Color]
+        if percent > 1.0 { colors = [.red, .purple] }
+        else if percent > 0.8 { colors = [.orange, .red] }
+        else if percent > 0.4 { colors = [.cyan, .blue] }
+        else { colors = [.green, .mint] }
+        return LinearGradient(gradient: Gradient(colors: colors), startPoint: .leading, endPoint: .trailing)
     }
 }
 

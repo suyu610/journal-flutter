@@ -74,7 +74,9 @@ class ChatController extends GetxController {
     formatAndReply(textMessage.text, loadingMessage.id);
   }
 
-  void formatAndReply(text, id) {
+  // 标记为已过时
+  @Deprecated("已废弃，使用 formatAndReply 方法")
+  void formatAndReply1(text, id) {
     HttpRequest.request(
       Method.get,
       "/ai/format?sentence=$text&activityId=${activity.value.activityId}",
@@ -93,6 +95,7 @@ class ChatController extends GetxController {
         praise(text);
         try {
           Log().d(data.toString());
+          // 现在是个List了
           Expense expense = Expense.fromJson(data as Map<String, dynamic>);
           // Log().d("expense.expenseId： ${expense.expenseId}");
           var reMessage = types.CustomMessage(
@@ -112,6 +115,78 @@ class ChatController extends GetxController {
           var reMessage = types.TextMessage(
               author: aiUser,
               text: data.toString(),
+              createdAt: DateTime.now().millisecondsSinceEpoch,
+              id: DateTime.now().millisecondsSinceEpoch.toString());
+          messages.insert(0, reMessage);
+          update(["chat"]);
+        }
+      },
+    );
+  }
+
+  void formatAndReply(text, id) {
+    HttpRequest.request(
+      Method.get,
+      "/ai/format/v2?sentence=$text&activityId=${activity.value.activityId}",
+      fail: (code, msg) {
+        messages.removeWhere((element) => element.id == id);
+        var reMessage = types.TextMessage(
+            author: aiUser,
+            text: "未能获取有效信息",
+            createdAt: DateTime.now().millisecondsSinceEpoch,
+            id: DateTime.now().millisecondsSinceEpoch.toString());
+        // 删除思考中...
+        messages.insert(0, reMessage);
+        update(["chat"]);
+      },
+      success: (data) {
+        praise(text);
+        try {
+          Log().d("AI返回数据: $data");
+
+          // 1. 先把“思考中...”的消息删掉
+          messages.removeWhere((element) => element.id == id);
+
+          // 2. 判断返回数据是否为 List (处理批量记账)
+          if (data is List) {
+            int now = DateTime.now().millisecondsSinceEpoch;
+            int magicInterval = 610;
+            for (var i = 0; i < data.length; i++) {
+              var item = data[i];
+              Expense expense = Expense.fromJson(item as Map<String, dynamic>);
+              int fakeTimestamp = now - ((data.length - 1 - i) * magicInterval);
+              var reMessage = types.CustomMessage(
+                  author: aiUser,
+                  metadata: {"msgType": "expense", ...expense.toJson()},
+                  createdAt: fakeTimestamp,
+                  id: expense.expenseId);
+
+              messages.insert(0, reMessage);
+            }
+          } else if (data is Map) {
+            // 兼容旧逻辑（万一后端返回单个对象）
+            Expense expense = Expense.fromJson(data as Map<String, dynamic>);
+            var reMessage = types.CustomMessage(
+                author: aiUser,
+                metadata: {"msgType": "expense", ...expense.toJson()},
+                createdAt: DateTime.now().millisecondsSinceEpoch,
+                id: expense.expenseId);
+            messages.insert(0, reMessage);
+          }
+
+          update(["chat"]);
+
+          // 3. 刷新数据
+          eventBus.fire(const NeedRefreshData(
+              refreshChartsList: true,
+              refreshActivityList: true,
+              refreshCurrentActivity: true));
+        } catch (e) {
+          Log().d("解析失败: $e");
+          // 解析失败，把原始返回显示出来用于调试
+          var reMessage = types.TextMessage(
+              author: aiUser,
+              text: "解析错误: $data",
               createdAt: DateTime.now().millisecondsSinceEpoch,
               id: DateTime.now().millisecondsSinceEpoch.toString());
           messages.insert(0, reMessage);

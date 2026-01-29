@@ -72,6 +72,7 @@ Chat chatView(ChatController controller, BuildContext context) {
     avatarBuilder: (author) => buildAvatar(author),
     dateFormat: DateFormat('yyyy-MM-dd'),
     timeFormat: DateFormat('HH:mm'),
+
     // 底部功能区
     customBottomWidget: buildBottomWidget(controller, context),
     theme: THEME(controller),
