@@ -47,6 +47,7 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
               const SizedBox(
                 height: 16,
               ),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ClipRRect(
@@ -54,30 +55,37 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                   borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(10),
                       topRight: Radius.circular(10)),
-                  child: TDInput(
-                    backgroundColor: Colors.white,
-                    maxLines: 1,
-                    // leftLabelSpace: 150,
-                    leftIcon: const Flex(
-                      children: [
-                        Text(
-                          "角色称呼你为",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 14),
-                        )
-                      ],
-                      direction: Axis.horizontal,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
                     ),
-                    leftLabelStyle:
-                        const TextStyle(fontWeight: FontWeight.bold),
-                    hintText: "请输入角色称呼你为",
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 18, horizontal: 16),
-                    type: TDInputType.normal,
-                    contentAlignment: TextAlign.end,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8.0, left: 16),
+                          child: Text(
+                            "角色怎么称呼你",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        TDInput(
+                          backgroundColor: Colors.white,
+                          leftLabelStyle:
+                              const TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          hintText: "请输入角色怎么称呼你",
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 16),
+                          type: TDInputType.twoLine,
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ClipRRect(
@@ -95,7 +103,7 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                         const Padding(
                           padding: EdgeInsets.only(top: 8.0, left: 16),
                           child: Text(
-                            "角色开场白为",
+                            "角色开场白",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -130,7 +138,9 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                         }))
                     .toList(),
               ),
-              const SizedBox(height: 80,)
+              const SizedBox(
+                height: 80,
+              )
               // Expanded(
               //   child: ListView.builder(
               //     itemCount: characters.length,

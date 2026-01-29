@@ -65,14 +65,15 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             expense.label = v;
           },
         ),
-        // 收入/支出
         // 账单备注
         TDCell(
           title: "收入/支出",
           arrow: true,
           noteWidget: Text(
             expense.positive == 0 ? "支出" : "收入",
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(
+                fontSize: 16,
+                color: expense.positive == 0 ? Colors.red : Colors.green),
           ),
           onClick: (v) {
             expense.positive = expense.positive == 0 ? 1 : 0;
@@ -83,19 +84,23 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
         TDCell(
           titleWidget: const Text(
             "账单时间",
-            style: TextStyle(fontSize: 16, ),
+            style: TextStyle(
+              fontSize: 16,
+            ),
           ),
           disabled: false,
           arrow: false,
           noteWidget: Text(
             expense.expenseTime,
-            style: const TextStyle(fontSize: 16, ),
+            style: const TextStyle(
+              fontSize: 16,
+            ),
           ),
           onClick: (v) {
             // return;
             // initialDate: 当前这个账单的日期
             // startDate: 2020-01-01
-            // endDate: 今年的最后一天？ 
+            // endDate: 今年的最后一天？
             // ignore: dead_code
             var date = DateTime.parse(expense.expenseTime);
 

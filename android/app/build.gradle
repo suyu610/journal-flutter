@@ -26,11 +26,16 @@ if (flutterVersionName == null) {
 android {
     namespace = "com.uuorb.susujournal"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -55,4 +60,12 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // ... 现有的其他依赖
+
+    // 🔥 添加这一行：这是谷歌提供的脱糖库
+    // 版本号 2.0.4 是目前比较通用的稳定版，也可以根据需要使用更新版本
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

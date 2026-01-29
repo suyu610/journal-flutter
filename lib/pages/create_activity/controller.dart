@@ -91,7 +91,6 @@ class CreateActivityController extends GetxController {
 
     // 账本名称
     activity.value.activityName = activityNameController.text;
-    Log().d(activity.value.toString());
 
     TDToast.showLoading(context: context, text: "处理中");
 
@@ -183,5 +182,10 @@ class CreateActivityController extends GetxController {
         );
       },
     );
+  }
+
+  void updateBudgetType(String newValue) {
+    activity.value.budgetType = newValue;
+    update(["createactivitypage"]);
   }
 }

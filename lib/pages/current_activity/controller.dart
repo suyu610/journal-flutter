@@ -8,6 +8,7 @@ import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
 import 'package:journal/models/paging.dart';
 import 'package:journal/request/request.dart';
+import 'package:journal/services/widget_service.dart';
 
 class CurrentActivityController extends GetxController {
   CurrentActivityController();
@@ -85,7 +86,7 @@ class CurrentActivityController extends GetxController {
     HttpRequest.request(
       Method.get,
       "/activity/current",
-      success: (data) {
+      success: (data) async {
         if (data == null) {
           Log().d("无当前账本");
           currentActivity.value = Activity.empty();
@@ -94,6 +95,19 @@ class CurrentActivityController extends GetxController {
               Activity.fromJson(data as Map<String, dynamic>);
           // 获取expenseList
           getExpenseList();
+
+          // 3. 同步给小组件
+          await WidgetSyncService.updateWidget(
+            budgetType: currentActivity.value.budgetType ?? "total",
+            todayExpense:
+                (currentActivity.value.todayExpense ?? 0.0).toDouble(),
+            weekExpense: (currentActivity.value.weekExpense ?? 0.0).toDouble(),
+            monthExpense:
+                (currentActivity.value.monthExpense ?? 0.0).toDouble(),
+            totalExpense:
+                (currentActivity.value.totalExpense ?? 0.0).toDouble(),
+            budgetAmount: (currentActivity.value.budget ?? 0.0).toDouble(),
+          );
         }
         update(["current_activity"]);
       },

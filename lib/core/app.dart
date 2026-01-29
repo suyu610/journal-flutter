@@ -70,7 +70,7 @@ Widget _myApp() {
     designSize: const Size(375, 812),
     child: GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "好享记账",
+      title: "小素记账",
       onDispose: () {
         Log().d("parent view onDispose");
       },

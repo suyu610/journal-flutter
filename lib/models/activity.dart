@@ -11,7 +11,11 @@ class Activity {
   String activityId;
   String userId;
   num? budget;
+  String? budgetType;
   num? remainingBudget;
+  num? todayExpense;
+  num? weekExpense;
+  num? monthExpense;
   num? totalExpense;
   num? totalIncome;
   bool activated;
@@ -32,6 +36,7 @@ class Activity {
       activityName: '',
       activityId: '',
       budget: 0,
+      budgetType: '',
       remainingBudget: 0,
       activated: false,
       createTime: '',
@@ -47,7 +52,11 @@ class Activity {
     required this.activityName,
     required this.activityId,
     this.budget,
+    this.budgetType,
     this.remainingBudget,
+    this.todayExpense,
+    this.weekExpense,
+    this.monthExpense,
     required this.activated,
     required this.createTime,
     this.totalExpense,

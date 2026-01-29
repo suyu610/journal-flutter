@@ -56,7 +56,6 @@ class ExpensePageController extends GetxController {
           refreshCurrentActivity: true));
       Get.back(result: true);
       Get.back(result: true);
-
     });
   }
 
@@ -86,31 +85,10 @@ class ExpensePageController extends GetxController {
     } catch (e) {
       Log().d(e.toString());
     }
-    // HttpRequest.request(Method.patch, "/expense", params: expense.value,
-    //     success: (data) {
-    //   // Get.back();
-    //   update(["expense_item"]);
-    //   eventBus.fire(const NeedRefreshData(
-    //     refreshActivityList: true,
-    //     refreshCurrentActivity: true,
-    //     refreshChartsList: true,
-    //   ));
-    // });
   }
 
   void modifyExpenseLabel(String v) {
     expense.value.label = v;
-
-    // HttpRequest.request(Method.patch, "/expense", params: expense.value,
-    //     success: (data) {
-    //   // Get.back();
-    //   update(["expense_item"]);
-    //   eventBus.fire(const NeedRefreshData(
-    //     refreshActivityList: true,
-    //     refreshCurrentActivity: true, 
-    //     refreshChartsList: true,
-    //   ));
-    // });
   }
 
   Future<bool> updateExpense(context) async {
@@ -134,7 +112,8 @@ class ExpensePageController extends GetxController {
       },
       fail: (code, msg) {
         TDToast.dismissLoading();
-        TDToast.showFail(msg, context: context, duration: const Duration(seconds: 1));
+        TDToast.showFail(msg,
+            context: context, duration: const Duration(seconds: 1));
       },
     );
 

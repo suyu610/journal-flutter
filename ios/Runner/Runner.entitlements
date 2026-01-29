@@ -10,5 +10,9 @@
 	<array>
 		<string>applinks:journal.uuorb.com</string>
 	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.uuorb.susujournal</string>
+	</array>
 </dict>
 </plist>

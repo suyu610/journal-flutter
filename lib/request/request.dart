@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:connectivity/connectivity.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
 import 'package:journal/core/log.dart';
@@ -62,10 +62,12 @@ class HttpRequest {
       bool isStream = false}) async {
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
-      if (connectivityResult == ConnectivityResult.none) {
+
+      if (connectivityResult.contains(ConnectivityResult.none)) {
         fail?.call(HttpException.netError, HttpException.netWorkError);
         return Future.value(null);
       }
+
       Dio dio = createInstance();
       Log().d("request url -> $path request param:$params");
 
@@ -115,17 +117,13 @@ class HttpRequest {
   }
 }
 
-
-
 /// 处理流式响应
 Future<void> processStreamResponse(Stream stream) async {
-
   // 用于每个阶段的对话结果
   final StringBuffer buffer = StringBuffer();
 
   // 处理流式响应
   await for (var data in stream) {
-
     // 将字节数据解码为字符串
     final bytes = data as List<int>;
     final decodedData = utf8.decode(bytes);
@@ -138,7 +136,6 @@ Future<void> processStreamResponse(Stream stream) async {
 
     // 遍历每个阶段
     for (var element in jsonData) {
-
       // 判断是否结束，如果结束则直接返回
       if (element == '[DONE]') {
         break;
@@ -163,7 +160,6 @@ Future<void> processStreamResponse(Stream stream) async {
           print(buffer.toString());
           break;
         }
-
       } catch (e) {
         print('Error parsing JSON: $e');
         // 如果解析失败，可以尝试其他方式处理数据
@@ -172,7 +168,6 @@ Future<void> processStreamResponse(Stream stream) async {
     }
   }
 }
-
 
 enum Method { get, post, delete, put, patch, head }
 

@@ -47,6 +47,17 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           controller: controller.budgetController,
           inputType: BrnInputType.decimal,
         ),
+        BrnRadioInputFormItem(
+          title: "预算模式",
+          isRequire: false,
+          options: const ["月预算", "总预算"],
+          value:
+              controller.activity.value.budgetType == "month" ? "月预算" : "总预算",
+          onChanged: (oldValue, newValue) {
+            print(newValue);
+            controller.updateBudgetType(newValue == "月预算" ? "month" : "total");
+          },
+        ),
         BrnBarBottomDivider(),
         Visibility(
           visible: controller.isOwner.value ||

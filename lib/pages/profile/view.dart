@@ -70,7 +70,7 @@ class ProfilePage extends GetView<ProfileController> {
             arrow: true,
             title: "选择角色",
             onClick: (v) {
-              Get.toNamed(Routers.AIConfigPageUrl);
+              Get.toNamed(Routers.AIConfigPageV2Url);
             },
           ),
           TDCell(
