@@ -8,6 +8,8 @@ fluwx:
   ios:
     universal_link: https://journal.uuorb.com/app/
     no_pay: true
+  android:
+    universal_link: https://journal.uuorb.com/app/
 environment:
   sdk: ">=3.4.0 <4.0.0"
 

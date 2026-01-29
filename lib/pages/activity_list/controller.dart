@@ -26,7 +26,7 @@ class ActivityListController extends GetxController {
     super.onInit();
     scrollController = ScrollController();
     refreshController = EasyRefreshController(
-      controlFinishRefresh: true, 
+      controlFinishRefresh: true,
       controlFinishLoad: true,
     );
     Log().d("activityList controller activity list onInit");
@@ -52,9 +52,11 @@ class ActivityListController extends GetxController {
       Method.get,
       "/activity/list",
       success: (data) {
+        Log().d("activityList data: ${activityList.toString()}");
+
         activityList.value =
             (data as List).map((e) => Activity.fromJson(e)).toList();
-        Log().d(activityList.toString());
+        Log().d("activityList: ${activityList.toString()}");
         refreshController.finishRefresh();
         refreshController.resetFooter();
         update(["activity_list"]);

@@ -48,7 +48,6 @@ class CurrentActivityController extends GetxController {
           }
           expenseMap[date]!.add(element);
         });
-        Log().d(expenseMap.toString());
         // 处理已存在的
         expenseDateGroupList.forEach((element) {
           if (expenseMap.containsKey(element.date)) {

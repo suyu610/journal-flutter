@@ -110,6 +110,7 @@ class CreateActivityController extends GetxController {
         Log().d(msg.toString());
       });
     } else {
+      print("patch activity: ${activity.value.toJson()}");
       // 更新
       HttpRequest.request(Method.patch, "/activity",
           params: activity.value.toJson(), success: (data) {

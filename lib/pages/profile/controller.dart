@@ -47,6 +47,7 @@ class ProfileController extends GetxController {
     super.onReady();
     fluwx.registerApi(
         doOnIOS: true,
+        doOnAndroid: true,
         appId: "wx30e85737940da4af",
         universalLink: "https://journal.uuorb.com/app/");
     _initData();

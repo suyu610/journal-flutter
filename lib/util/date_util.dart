@@ -1,5 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, no_leading_underscores_for_local_identifiers
 
+import 'package:intl/intl.dart';
+
 class DateFormats {
   static String full = 'yyyy-MM-dd HH:mm:ss';
   static String y_mo_d_h_m = 'yyyy-MM-dd HH:mm';
@@ -378,5 +380,27 @@ class DateUtil {
         DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 0, 0);
 
     return tomorrowZero.millisecondsSinceEpoch ~/ 1000;
+  }
+
+  static String getFriendlyDate(String dateStr) {
+    final DateTime date = DateTime.parse(dateStr);
+    final DateTime now = DateTime.now();
+
+    // 重点：只比较日期，忽略时间
+    // 构建一个新的 DateTime，只保留年月日
+    final DateTime dateOnly = DateTime(date.year, date.month, date.day);
+    final DateTime nowOnly = DateTime(now.year, now.month, now.day);
+
+    // 计算差值
+    final int difference = nowOnly.difference(dateOnly).inDays;
+
+    if (difference == 0) {
+      return '今天';
+    } else if (difference == 1) {
+      return '昨天';
+    } else {
+      // 超出昨天范围，显示 MM月dd日
+      return DateFormat('MM月dd日').format(date);
+    }
   }
 }

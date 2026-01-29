@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/bruno/bruno.dart';
-import 'package:journal/components/custom_floating_action_button_location.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/routers.dart';
@@ -27,78 +26,78 @@ class ActivityListPage extends GetView<ActivityListController> {
           backgroundColor: const Color(0xfff3f3f3),
           appBar: _buildappbar(context),
           body: _buildView(context),
-          floatingActionButton: _buildFloatingActionButton(),
-          floatingActionButtonLocation: CustomFloatingActionButtonLocation(
-              FloatingActionButtonLocation.endContained, 0, -24.h),
+          // floatingActionButton: _buildFloatingActionButton(),
+          // floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+          // FloatingActionButtonLocation.endContained, 0, -24.h),
         );
       },
     );
   }
 
 // 浮动按钮
-  Widget _buildFloatingActionButton() {
-    return GestureDetector(
-      onTap: () {
-        Get.toNamed(Routers.CreateActivityUrl);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        clipBehavior: Clip.antiAlias,
-        decoration: ShapeDecoration(
-          color: const Color(0xFF3C3C43),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          shadows: const [
-            BoxShadow(
-              color: Color(0x19000000),
-              blurRadius: 5,
-              offset: Offset(0, 5),
-              spreadRadius: -3,
-            ),
-            BoxShadow(
-              color: Color(0x0F000000),
-              blurRadius: 10,
-              offset: Offset(0, 8),
-              spreadRadius: 1,
-            ),
-            BoxShadow(
-              color: Color(0x0C000000),
-              blurRadius: 14,
-              offset: Offset(0, 3),
-              spreadRadius: 2,
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-                width: 24,
-                height: 24,
-                child: const Icon(
-                  Icons.add,
-                  size: 20,
-                  color: Colors.white,
-                )),
-            const SizedBox(width: 4),
-            const Text(
-              "新建账本",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontFamily: 'PingFang SC',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildFloatingActionButton() {
+  //   return GestureDetector(
+  //     onTap: () {
+  //       Get.toNamed(Routers.CreateActivityUrl);
+  //     },
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+  //       clipBehavior: Clip.antiAlias,
+  //       decoration: ShapeDecoration(
+  //         color: const Color(0xFF3C3C43),
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(24),
+  //         ),
+  //         shadows: const [
+  //           BoxShadow(
+  //             color: Color(0x19000000),
+  //             blurRadius: 5,
+  //             offset: Offset(0, 5),
+  //             spreadRadius: -3,
+  //           ),
+  //           BoxShadow(
+  //             color: Color(0x0F000000),
+  //             blurRadius: 10,
+  //             offset: Offset(0, 8),
+  //             spreadRadius: 1,
+  //           ),
+  //           BoxShadow(
+  //             color: Color(0x0C000000),
+  //             blurRadius: 14,
+  //             offset: Offset(0, 3),
+  //             spreadRadius: 2,
+  //           )
+  //         ],
+  //       ),
+  //       child: Row(
+  //         mainAxisSize: MainAxisSize.min,
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         crossAxisAlignment: CrossAxisAlignment.center,
+  //         children: [
+  //           Container(
+  //               width: 24,
+  //               height: 24,
+  //               child: const Icon(
+  //                 Icons.add,
+  //                 size: 20,
+  //                 color: Colors.white,
+  //               )),
+  //           const SizedBox(width: 4),
+  //           const Text(
+  //             "新建账本",
+  //             textAlign: TextAlign.center,
+  //             style: TextStyle(
+  //               color: Colors.white,
+  //               fontSize: 14,
+  //               fontFamily: 'PingFang SC',
+  //               fontWeight: FontWeight.w600,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // 浮动按钮
 
@@ -228,21 +227,29 @@ class ActivityListPage extends GetView<ActivityListController> {
   }
 
   PreferredSizeWidget _buildappbar(context) => TDNavBar(
-          useBorderStyle: true,
-          height: 48,
-          useDefaultBack: false,
-          titleWidget: Text(
-            "账本列表",
-            style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
-          ),
-          border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
-          // 创建账本
-          rightBarItems: [
-            TDNavBarItem(
-                iconWidget: const Text("加入账本", style: TextStyle()),
-                action: () {
-                  Get.toNamed(Routers.JoinActivityPageUrl);
-                  return;
-                }),
-          ]);
+      useBorderStyle: true,
+      height: 48,
+      useDefaultBack: false,
+      titleWidget: Text(
+        "账本列表",
+        style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
+      ),
+      leftBarItems: [
+        TDNavBarItem(
+            iconWidget: const Text("加入账本", style: TextStyle()),
+            action: () {
+              Get.toNamed(Routers.JoinActivityPageUrl);
+              return;
+            }),
+      ],
+      border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
+      // 创建账本
+      rightBarItems: [
+        TDNavBarItem(
+            iconWidget: const Text("新建", style: TextStyle()),
+            action: () {
+              Get.toNamed(Routers.CreateActivityUrl);
+              return;
+            }),
+      ]);
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/routers.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -12,7 +11,8 @@ Widget activityCard(
     {Widget? footerWidget, Widget? topRightWidget}) {
   // 1. 初始化计算逻辑
   final stats = _BudgetStats(activity);
-
+  print("budgetType: ${activity.budgetType}");
+  print("isMonthType: ${stats.isMonthType}");
   return GestureDetector(
     behavior: HitTestBehavior.translucent,
     onTap: () => Get.toNamed(Routers.CreateActivityUrl, arguments: activity),
@@ -147,7 +147,7 @@ class _Header extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(99),
                   boxShadow: [
                     BoxShadow(
                         color: const Color(0xFF0052D9).withOpacity(0.3),
@@ -157,7 +157,7 @@ class _Header extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 activity.activityName.length > 1
-                    ? activity.activityName.substring(0, 2)
+                    ? activity.activityName.substring(0, 1)
                     : (activity.activityName.isNotEmpty
                         ? activity.activityName
                         : ""),
@@ -170,26 +170,28 @@ class _Header extends StatelessWidget {
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
                   activity.activityName,
                   style: const TextStyle(
                       color: Color(0xFF1D1D1D),
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 2),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                      color: const Color(0xFFF2F3F5),
-                      borderRadius: BorderRadius.circular(4)),
-                  child: const Text(
-                    "当前账本",
-                    style: TextStyle(color: Color(0xFF666666), fontSize: 10),
+                const SizedBox(height: 4),
+                if (activity.activated)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                        color: const Color(0xFFF2F3F5),
+                        borderRadius: BorderRadius.circular(4)),
+                    child: const Text(
+                      "当前账本",
+                      style: TextStyle(color: Color(0xFF666666), fontSize: 10),
+                    ),
                   ),
-                ),
               ],
             ),
           ],
@@ -221,16 +223,18 @@ class _FinanceOverview extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text("总支出",
+                  const Text("总支出",
                       style: TextStyle(color: Color(0xFF999999), fontSize: 12)),
-                  SizedBox(width: 4),
-                  Text("/ 限额",
-                      style: TextStyle(color: Color(0xFF999999), fontSize: 10)),
+                  const SizedBox(width: 4),
+                  if (activity.budget != 0)
+                    const Text("/ 限额",
+                        style:
+                            TextStyle(color: Color(0xFF999999), fontSize: 10)),
                 ],
               ),
               const SizedBox(height: 4),
@@ -253,14 +257,15 @@ class _FinanceOverview extends StatelessWidget {
                         color: Color(0xFF1D1D1D)),
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    "/ ${activity.budget?.toStringAsFixed(2) ?? "0.00"}",
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'SourceCodePro',
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF999999)),
-                  ),
+                  if (activity.budget != 0)
+                    Text(
+                      "/ ${activity.budget?.toStringAsFixed(2) ?? "0.00"}",
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'SourceCodePro',
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF999999)),
+                    ),
                 ],
               ),
             ],
@@ -411,16 +416,7 @@ class _BudgetAnalysis extends StatelessWidget {
         remaining < 0 ? const Color(0xFFE34D59) : const Color(0xFF1D1D1D);
 
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 4,
-                offset: const Offset(0, 2))
-          ]),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

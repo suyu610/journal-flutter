@@ -26,6 +26,11 @@ class Injection {
     //整理日志文件
     ConsoleOutput().clearUpLogFile();
     // 判断是否安装了微信
+    await Fluwx().registerApi(
+        doOnIOS: true,
+        doOnAndroid: true,
+        appId: "wx30e85737940da4af",
+        universalLink: "https://journal.uuorb.com/app/");
     SpUtil.setWeChatInstalled(await Fluwx().isWeChatInstalled);
   }
 }

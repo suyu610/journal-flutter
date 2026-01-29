@@ -10,6 +10,7 @@ import 'package:journal/components/expense_item.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense_date_group.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/util/date_util.dart';
 import 'package:journal/util/keyboard_util.dart';
 import 'package:journal/util/toast_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -239,16 +240,20 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            expenseDateGroup.date,
+            DateUtil.getFriendlyDate(expenseDateGroup.date),
+            // GetTimeAgo.parse(DateTime.parse(expenseDateGroup.date)), // 改成：今天，昨天
+
             style: const TextStyle(
               color: Color(0xFF666666),
-              fontSize: 16,
+              fontSize: 14,
               fontFamily: 'SourceCodePro',
               fontWeight: FontWeight.w600,
               height: 0,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 6),
+          BrnBarBottomDivider(),
+          const SizedBox(height: 10),
           ...expenseDateGroup.expenses
               .map((e) => ActivityExpenseItem(e, context)),
         ],
