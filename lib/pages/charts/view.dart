@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/util/keyboard_util.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 
@@ -29,7 +30,15 @@ class ChartsPage extends GetView<ChartsController> {
     //
     double totalValue = groupByTypeData.fold(
         0.0, (prev, curr) => prev + double.parse(curr.value ?? '0'));
-
+    List colors = [
+      TDTheme.of(context).brandColor7,
+      TDTheme.of(context).brandColor6,
+      TDTheme.of(context).brandColor5,
+      TDTheme.of(context).brandColor4,
+      TDTheme.of(context).brandColor3,
+      TDTheme.of(context).brandColor2,
+      TDTheme.of(context).brandColor1
+    ];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
       color: Colors.white,
@@ -184,11 +193,8 @@ class ChartsPage extends GetView<ChartsController> {
                           !controller.showTitleWhenSelected.value,
                       data: groupByTypeData
                           .map((item) => BrnDoughnutDataItem(
-                              color: const Color.fromARGB(255, 15, 97, 230)
-                                  .withOpacity(1 -
-                                      groupByTypeData.indexOf(item) /
-                                          groupByTypeData.length),
-                              // colorList[groupByTypeData.indexOf(item) %   colorList.length],
+                              color: colors[groupByTypeData.indexOf(item) %
+                                  colors.length],
                               value: double.parse((item).value!) / totalValue,
                               title: "${item.name}¥${item.value ?? ""}"))
                           .toList(),
