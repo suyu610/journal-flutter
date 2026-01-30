@@ -103,65 +103,49 @@ class ActivityListPage extends GetView<ActivityListController> {
 
 // 尾巴
   Widget _buildFooter(Activity activity, context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        GestureDetector(
-          onTap: () =>
-              Get.toNamed(Routers.CreateActivityUrl, arguments: activity),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
-            decoration: BoxDecoration(
-                color: const Color(0xffF3F3F3),
-                borderRadius: BorderRadius.circular(20.r)),
-            child: Text(
-              "更多",
-              style: TextStyle(color: const Color(0xff181818), fontSize: 12.sp),
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              var a =
+                  Get.toNamed(Routers.ExpenseListPageUrl, arguments: activity);
+              Log().d(a.toString());
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
+              decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xff3C3C43), width: 1),
+                  borderRadius: BorderRadius.circular(20.r)),
+              child: Text(
+                "账单详情",
+                style: TextStyle(fontSize: 12.sp),
+              ),
             ),
           ),
-        ),
-        Row(
-          children: [
-            GestureDetector(
-              onTap: () {
-                var a = Get.toNamed(Routers.ExpenseListPageUrl,
-                    arguments: activity);
-                Log().d(a.toString());
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
-                decoration: BoxDecoration(
-                    border:
-                        Border.all(color: const Color(0xff3C3C43), width: 1),
-                    borderRadius: BorderRadius.circular(20.r)),
-                child: Text(
-                  "账单详情",
-                  style: TextStyle(fontSize: 12.sp),
-                ),
+          SizedBox(
+            width: 10.w,
+          ),
+          // 我记一笔
+          GestureDetector(
+            onTap: () {
+              Get.toNamed(Routers.ChatDetailPageUrl, arguments: activity);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
+              decoration: BoxDecoration(
+                  color: const Color(0xff3C3C43),
+                  borderRadius: BorderRadius.circular(20.r)),
+              child: Text(
+                "我记一笔",
+                style: TextStyle(color: Colors.white, fontSize: 12.sp),
               ),
             ),
-            SizedBox(
-              width: 10.w,
-            ),
-            // 我记一笔
-            GestureDetector(
-              onTap: () {
-                Get.toNamed(Routers.ChatDetailPageUrl, arguments: activity);
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
-                decoration: BoxDecoration(
-                    color: const Color(0xff3C3C43),
-                    borderRadius: BorderRadius.circular(20.r)),
-                child: Text(
-                  "我记一笔",
-                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
-                ),
-              ),
-            ),
-          ],
-        )
-      ],
+          ),
+        ],
+      ),
     );
   }
 

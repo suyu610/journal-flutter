@@ -99,7 +99,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.all(12),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
           color: const Color(0xFF3C3C43),
@@ -133,33 +133,13 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 24,
-              height: 24,
-              child: controller.currentActivity.value.activityId == ""
-                  ? const Icon(
-                      Icons.add,
-                      size: 18,
-                      color: Colors.white,
-                    )
-                  : const Icon(
-                      Icons.edit,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              controller.currentActivity.value.activityId == ""
-                  ? "创建账本"
-                  : "记一笔",
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontFamily: 'PingFang SC',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+                width: 24,
+                height: 24,
+                child: const Icon(
+                  Icons.add,
+                  size: 18,
+                  color: Colors.white,
+                )),
           ],
         ),
       ),

@@ -12,4 +12,6 @@ class SPKey {
   static const String chatBg = "chatBg";
   static const String reminderTimes = "reminderTimes";
   static const String reminderEnabled = "reminderEnabled";
+
+  static const String keyboardMode = "keyboardMode";
 }

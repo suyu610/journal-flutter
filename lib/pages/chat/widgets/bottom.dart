@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/util/sp_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +29,30 @@ Widget buildBottomWidget(ChatController controller, BuildContext context) {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Visibility(
+          visible: PlatformUtil.isIOS,
+          child: GestureDetector(
+            onTap: () {
+              controller.keyboardMode.value = !controller.keyboardMode.value;
+              // 存起来
+              SpUtil.setKeyboardMode(controller.keyboardMode.value);
+              if (!controller.keyboardMode.value) {
+                KeyboardUtils.hideKeyboard(context);
+              } else {
+                controller.focusNode.requestFocus();
+              }
+            },
+            child: Obx(() => Icon(
+                  controller.keyboardMode.value
+                      ? Icons.keyboard_voice_outlined
+                      : Icons.keyboard_outlined,
+                  size: 24,
+                  color: Colors.black.withOpacity(0.9),
+                )),
+          ),
+        ),
+        Visibility(
+            visible: PlatformUtil.isIOS, child: const SizedBox(width: 12)),
         Expanded(
           child: Obx(() {
             bool isLongPressing = controller.isLongPressing.value;
@@ -116,7 +141,7 @@ Widget buildBottomWidget(ChatController controller, BuildContext context) {
                         ),
                         child: Center(
                           child: Text(
-                            '长按识别',
+                            '按住 说话',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.black.withOpacity(0.9),
@@ -130,28 +155,6 @@ Widget buildBottomWidget(ChatController controller, BuildContext context) {
                     ),
                   );
           }),
-        ),
-        Visibility(
-            visible: PlatformUtil.isIOS, child: const SizedBox(width: 12)),
-        Visibility(
-          visible: PlatformUtil.isIOS,
-          child: GestureDetector(
-            onTap: () {
-              controller.keyboardMode.value = !controller.keyboardMode.value;
-              if (!controller.keyboardMode.value) {
-                KeyboardUtils.hideKeyboard(context);
-              } else {
-                controller.focusNode.requestFocus();
-              }
-            },
-            child: Obx(() => Icon(
-                  controller.keyboardMode.value
-                      ? Icons.keyboard_voice
-                      : Icons.keyboard,
-                  size: 24,
-                  color: Colors.black.withOpacity(0.9),
-                )),
-          ),
         ),
       ],
     ),

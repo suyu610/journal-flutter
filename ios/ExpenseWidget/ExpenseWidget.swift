@@ -59,7 +59,6 @@ struct Provider: TimelineProvider {
 }
 
 // --- 视图部分 ---
-// --- 视图部分 ---
 struct ExpenseWidgetEntryView : View {
     var entry: SimpleEntry
 

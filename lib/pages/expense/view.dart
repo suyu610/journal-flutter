@@ -194,7 +194,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
         showLeadingDivider: true,
         automaticallyImplyLeading: true,
         title: const Text(
-          "账单详情",
+          "账单",
           style: TextStyle(fontSize: 16),
         ),
         //多icon

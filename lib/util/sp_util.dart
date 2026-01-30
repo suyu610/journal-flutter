@@ -62,4 +62,14 @@ class SpUtil {
     SharedPreferences sp = Get.find<SharedPreferences>();
     return sp.getBool(SPKey.wechatInstall) ?? true;
   }
+
+  static void setKeyboardMode(bool value) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    sp.setBool(SPKey.keyboardMode, value);
+  }
+
+  static bool getKeyboardMode() {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.getBool(SPKey.keyboardMode) ?? true;
+  }
 }

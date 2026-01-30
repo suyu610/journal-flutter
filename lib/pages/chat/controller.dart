@@ -43,6 +43,8 @@ class ChatController extends GetxController {
   final focusNode = FocusNode();
 
   _initData() async {
+    // 从sp中获取
+    keyboardMode.value = SpUtil.getKeyboardMode();
     update(["chat"]);
   }
 
@@ -144,10 +146,8 @@ class ChatController extends GetxController {
         try {
           Log().d("AI返回数据: $data");
 
-          // 1. 先把“思考中...”的消息删掉
           messages.removeWhere((element) => element.id == id);
 
-          // 2. 判断返回数据是否为 List (处理批量记账)
           if (data is List) {
             int now = DateTime.now().millisecondsSinceEpoch;
             int magicInterval = 610;
@@ -260,11 +260,11 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (Get.find<LayoutController>().user.value.vip) {
-      bgImage.value = SpUtil.getChatBg() ?? "";
-    } else {
-      bgImage.value = "";
-    }
+
+    bgImage.value = SpUtil.getChatBg() ?? "";
+    print("bgImage: ${bgImage.value}");
+    update(["chat"]);
+
     setKeyboardModeAndRequestFocus();
 
     var greetingMessage = types.TextMessage(
