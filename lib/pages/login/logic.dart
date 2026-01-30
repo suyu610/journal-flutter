@@ -228,7 +228,9 @@ class LoginLogic extends GetxController {
                       state.isAgree.value = true;
                       Navigator.of(context).pop();
                       Future.delayed(const Duration(milliseconds: 500), () {
-                        loginWithWechat(context);
+                        if (context.mounted) {
+                          loginWithWechat(context);
+                        }
                       });
                     },
                     style: ButtonStyle(

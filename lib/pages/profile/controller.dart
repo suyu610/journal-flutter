@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
@@ -11,12 +10,14 @@ import 'package:journal/models/user.dart';
 import 'package:journal/pages/ai_config/index.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
+import 'package:journal/util/cos.dart';
+import 'package:journal/util/media_util.dart';
 import 'package:journal/util/sp_util.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ProfileController extends GetxController {
   var nicknameTextEditController = TextEditingController();
+  Fluwx fluwx = Fluwx();
 
   ProfileController();
   Rx<User> user = User(
@@ -103,96 +104,44 @@ class ProfileController extends GetxController {
     );
   }
 
-  Future<bool> getPhotosPermission() async {
-    if (Platform.isAndroid) {
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt <= 32) {
-        return await Permission.storage
-            .request()
-            .then((e) => e == PermissionStatus.granted);
-      } else {
-        return await Permission.photos
-            .request()
-            .then((e) => e == PermissionStatus.granted);
+  void changeUserAvatar(BuildContext context) async {
+    // 1. 选图
+    File? file = await MediaHelper.pickImageWithPermission(context);
+    if (file == null) return; // 用户取消或没权限
+
+    // 2. 上传 (自动处理 Loading UI)
+    String userId = user.value.userId;
+    if (context.mounted) {
+      String? url = await TencentCosService().uploadFile(
+          filePath: file.path,
+          userId: userId,
+          prefix: "avatar",
+          context: context // 传入 context 自动展示 loading
+          );
+      if (url == null) return; // 上传失败内部已经处理了 Toast
+
+      // 3. 更新业务数据
+      if (context.mounted) {
+        _updateAvatarApi(url, context);
       }
     }
-
-    if (Platform.isIOS) {
-      return await Permission.photos
-          .request()
-          .then((e) => e == PermissionStatus.granted);
-    }
-    return false;
   }
 
-  // void showImagePicker(context) async {
-  //   final photoPermissionGranted = await getPhotosPermission();
+  void _updateAvatarApi(String url, BuildContext context) {
+    HttpRequest.request(Method.patch, "/user", params: {
+      "avatarUrl": url,
+    }, success: (data) {
+      // 更新本地状态
+      user.value.avatarUrl = url;
+      update(['profile']);
+      // 如果需要同步更新 LayoutController
+      var layoutCtrl = Get.find<LayoutController>();
+      layoutCtrl.user.value.avatarUrl = url;
+      layoutCtrl.update(["user"]);
 
-  //   if (!photoPermissionGranted) {
-  //     showGeneralDialog(
-  //         context: Get.context!,
-  //         pageBuilder: (BuildContext buildContext, Animation<double> animation,
-  //             Animation<double> secondaryAnimation) {
-  //           return TDAlertDialog(
-  //             buttonStyle: TDDialogButtonStyle.text,
-  //             title: "希望读取你的相册，用于上传图片",
-  //             rightBtnAction: () async {
-  //               openAppSettings();
-  //             },
-  //           );
-  //         });
-  //     return;
-  //   }
-
-  //   final result = await ImagePicker().pickImage(
-  //     imageQuality: 70,
-  //     maxWidth: 1440,
-  //     source: ImageSource.gallery,
-  //   );
-  //   String userId = Get.find<LayoutController>().user.value.userId;
-  //   if (result != null) {
-  //     var fileUrl = result.path;
-  //     var fileName = fileUrl.split('/').last;
-  //     var filePath = fileUrl.substring(0, fileUrl.length - fileName.length);
-  //     var targetPath = '${filePath}compress_$fileName';
-  //     Log().d("fileUrl:$fileUrl");
-
-  //     await File(targetPath).readAsBytes();
-  //     await FetchCredentials().upload(
-  //       targetPath,
-  //       userId,
-  //       "avatar",
-  //       context,
-  //       (Map<String?, String?>? header, CosXmlResult? cosResult) {
-  //         if (cosResult != null) {
-  //           Future.delayed(const Duration(seconds: 1), () {
-  //             ToastUtil.hideLoading();
-  //           });
-  //           var imageUrl = cosResult.accessUrl == null
-  //               ? ""
-  //               : cosResult.accessUrl!.replaceAll(
-  //                   "https://uuorb-1254798469.cos.ap-beijing.myqcloud.com",
-  //                   "https://cdn.uuorb.com");
-  //           Log().d("图片上传地址：$imageUrl");
-
-  //           HttpRequest.request(Method.patch, "/user", params: {
-  //             "avatarUrl": imageUrl,
-  //           }, success: (data) {
-  //             update(['profile']);
-  //             user.value.avatarUrl = imageUrl;
-  //             Get.find<LayoutController>().user.value.avatarUrl = imageUrl;
-  //             Get.find<LayoutController>().update(["user"]);
-  //           });
-  //         } else {
-  //           Log().d("upload:${cosResult.toString()}");
-  //           ToastUtil.hideLoading();
-  //         }
-  //       },
-  //     );
-  //   }
-  // }
-
-  Fluwx fluwx = Fluwx();
+      BrnToast.showInCenter(text: "更新成功", context: context);
+    });
+  }
 
   void contact() {
     fluwx.open(

@@ -165,7 +165,7 @@ class ProfilePage extends GetView<ProfileController> {
         children: <Widget>[
           GestureDetector(
             onTap: () {
-              // controller.showImagePicker(context);
+              controller.changeUserAvatar(context);
             },
             child: Stack(
               children: [
@@ -174,7 +174,7 @@ class ProfilePage extends GetView<ProfileController> {
                     user.avatarUrl,
                     height: 55.r,
                     width: 55.r,
-                    fit: BoxFit.fill,
+                    fit: BoxFit.fitWidth,
                   ),
                 ),
                 Positioned(

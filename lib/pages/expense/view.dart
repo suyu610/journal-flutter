@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/core/log.dart';
+import 'package:journal/pages/image_preview_page.dart';
 import 'package:journal/routers.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -65,7 +67,8 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             expense.label = v;
           },
         ),
-        // 账单备注
+
+        // 收入/支出
         TDCell(
           title: "收入/支出",
           arrow: true,
@@ -80,6 +83,8 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             controller.update(['expense_item']);
           },
         ),
+        // === 修改：在备注下面插入图片选择器 ===
+        BrnBarBottomDivider(),
         // 账单日期
         TDCell(
           titleWidget: const Text(
@@ -97,11 +102,6 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             ),
           ),
           onClick: (v) {
-            // return;
-            // initialDate: 当前这个账单的日期
-            // startDate: 2020-01-01
-            // endDate: 今年的最后一天？
-            // ignore: dead_code
             var date = DateTime.parse(expense.expenseTime);
 
             TDPicker.showDatePicker(context, title: '选择时间',
@@ -141,6 +141,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
           },
         ),
         BrnBarBottomDivider(),
+        _buildImageSection(context),
 
         TDButton(
           margin: EdgeInsets.only(top: 28.h, left: 16, right: 16),
@@ -213,6 +214,106 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
           ),
         );
       },
+    );
+  }
+
+  // === 新增：构建图片附件区域 ===
+  Widget _buildImageSection(BuildContext context) {
+    var expense = controller.expense.value;
+    var fileList = expense.fileList ?? []; // 确保不为空
+
+    // 计算网格宽度，一行3个
+    double itemWidth = (MediaQuery.of(context).size.width - 32 - 20) / 3;
+
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("附件图片", style: TextStyle(fontSize: 16)),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              // 1. 渲染已有图片
+              ...List.generate(fileList.length, (index) {
+                return Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    // 图片本体
+                    GestureDetector(
+                      onTap: () {
+                        showCupertinoDialog(
+                          context: context,
+                          builder: (context) {
+                            return ImagePreviewPage(
+                              urls: fileList,
+                              initialIndex: index,
+                            );
+                          },
+                        );
+
+                        print("查看大图: ${fileList[index]}");
+                      },
+                      child: Container(
+                        width: itemWidth,
+                        height: itemWidth,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          image: DecorationImage(
+                            image: NetworkImage(fileList[index]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // 删除按钮 (小红叉)
+                    GestureDetector(
+                      onTap: () {
+                        // 从列表中移除
+                        expense.fileList?.removeAt(index);
+                        controller.update(['expense_item']);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close,
+                            size: 14, color: Colors.white),
+                      ),
+                    )
+                  ],
+                );
+              }),
+
+              // 2. 添加按钮 (如果图片数量没达到上限，比如9张，才显示)
+              if (fileList.length < 9)
+                GestureDetector(
+                  onTap: () {
+                    controller.pickAndUploadImage(context);
+                  },
+                  child: Container(
+                    width: itemWidth,
+                    height: itemWidth,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F3F3),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.grey, size: 30),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

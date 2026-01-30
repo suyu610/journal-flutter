@@ -91,7 +91,7 @@ abstract class Routers {
     GetPage(name: CreateActivityUrl, page: () => const CreateActivityPage()),
     GetPage(
         name: ReminderSettingsPageUrl,
-        page: () => ReminderSettingsPage(),
+        page: () => const ReminderSettingsPage(),
         binding: ReminderSettingsBinding()),
     GetPage(
         name: LayoutPageUrl,

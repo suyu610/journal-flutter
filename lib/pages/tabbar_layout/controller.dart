@@ -32,7 +32,6 @@ class LayoutController extends GetxController {
   void onInit() {
     super.onInit();
     pageController = PageController(initialPage: 0, keepPage: true);
-    // initTencentCos();
 
     // 获取用户profile
     HttpRequest.request(

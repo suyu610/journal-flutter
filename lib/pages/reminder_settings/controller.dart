@@ -12,16 +12,23 @@ class ReminderSettingsController extends GetxController {
       if (!hasPermission) {
         await service.requestPermissions();
         if (!service.isEnabled.value) {
-          BrnToast.show('请开启通知权限', context);
+          if (context.mounted) {
+            BrnToast.show('请开启通知权限', context);
+          }
+
           return;
         }
       }
     }
     service.toggleEnabled(value);
     if (value) {
-      BrnToast.show('提醒已开启', context);
+      if (context.mounted) {
+        BrnToast.show('提醒已开启', context);
+      }
     } else {
-      BrnToast.show('提醒已关闭', context);
+      if (context.mounted) {
+        BrnToast.show('提醒已关闭', context);
+      }
     }
   }
 

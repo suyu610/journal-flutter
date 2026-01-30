@@ -5,14 +5,13 @@ import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
+import 'package:journal/config/api_config.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/request/http_exception.dart';
 import 'package:journal/request/http_response.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/device_util.dart';
 import 'package:journal/util/sp_util.dart';
-
-import 'url.dart';
 
 /// 连接超时时间
 const int _connectTimeout = 1500000;

@@ -17,9 +17,13 @@ class Expense {
   String activityId;
   int positive;
 
+  // === 新增：图片列表 ===
+  // 使用 List<String>? 允许为空，或者使用 @JsonKey(defaultValue: [])
+  List<String>? fileList;
+
   @override
   toString() {
-    return 'Expense{expenseId: $expenseId, type: $type, price: $price, label: $label, userId: $userId, createTime: $createTime, updateTime: $updateTime, userNickname: $userNickname, userAvatar: $userAvatar, activityId: $activityId},positive: $positive';
+    return 'Expense{expenseId: $expenseId, type: $type, price: $price, label: $label, userId: $userId, createTime: $createTime, updateTime: $updateTime, userNickname: $userNickname, userAvatar: $userAvatar, activityId: $activityId, positive: $positive, fileList: $fileList}';
   }
 
   Expense({
@@ -35,6 +39,8 @@ class Expense {
     required this.activityId,
     required this.positive,
     this.updateTime,
+    // === 新增构造参数 ===
+    this.fileList,
   });
 
   // JSON serialization logic
@@ -54,6 +60,8 @@ class Expense {
         createTime: '',
         userNickname: '',
         userAvatar: '',
-        positive: 0);
+        positive: 0,
+        // === 新增初始化 ===
+        fileList: []);
   }
 }

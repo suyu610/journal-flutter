@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:journal/components/bruno/src/components/toast/brn_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/request/request.dart';
+import 'package:journal/util/cos.dart';
+import 'package:journal/util/media_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ExpensePageController extends GetxController {
@@ -19,15 +25,8 @@ class ExpensePageController extends GetxController {
       Log().d(expense.value.type.toString());
       expensePriceTextEditController.text = expense.value.price.toString();
       expenseLabelTextEditController.text = expense.value.label.toString();
-      // activityNameController.text = activity.value.activityName;
-      // creatorController.text = activity.value.creatorName;
-      // budgetController.text = (activity.value.budget ?? 0).toString();
     } else {
       expense.value = Expense.empty();
-      // activityNameController.text = "";
-      // creatorController.text = "";
-
-      // budgetController.text = "";
     }
 
     update(["expense_item"]);
@@ -121,6 +120,40 @@ class ExpensePageController extends GetxController {
   }
 
   void modifyExpenseItem() {}
+
+  Future<void> pickAndUploadImage(BuildContext context) async {
+    try {
+      File? file = await MediaHelper.pickImageWithPermission(context);
+      if (file == null) return;
+      String userId = "appendix";
+
+      if (context.mounted) {
+        String? url = await TencentCosService().uploadFile(
+            filePath: file.path,
+            userId: userId,
+            prefix: "expense",
+            context: context // 传入 context 自动展示 loading
+            );
+        if (url == null) return; // 上传失败内部已经处理了 Toast
+
+        // 3. 更新业务数据
+        if (context.mounted) {
+          // 4. 将 URL 添加到 expense 的 fileList
+          if (expense.value.fileList == null) {
+            expense.value.fileList = [];
+          }
+          expense.value.fileList!.add(url);
+        }
+        // 5. 刷新界面
+        update(['expense_item']);
+      }
+    } catch (e) {
+      Log().d("上传失败: $e");
+      BrnToast.show("上传失败", Get.context!);
+    } finally {
+      TDToast.dismissLoading();
+    }
+  }
 
   // @override
   // void onClose() {

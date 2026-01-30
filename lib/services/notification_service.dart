@@ -70,7 +70,7 @@ class NotificationService extends GetxService {
   Future<void> saveSettings() async {
     final sp = Get.find<SharedPreferences>();
     await sp.setBool(SPKey.reminderEnabled, isEnabled.value);
-    await sp.setString(SPKey.reminderTimes, json.encode(reminderTimes.value));
+    await sp.setString(SPKey.reminderTimes, json.encode(reminderTimes));
 
     if (isEnabled.value) {
       await scheduleAllNotifications();
@@ -82,8 +82,8 @@ class NotificationService extends GetxService {
   Future<void> scheduleAllNotifications() async {
     await _notifications.cancelAll();
 
-    for (int i = 0; i < reminderTimes.value.length; i++) {
-      await _scheduleNotification(reminderTimes.value[i], i);
+    for (int i = 0; i < reminderTimes.length; i++) {
+      await _scheduleNotification(reminderTimes[i], i);
     }
   }
 

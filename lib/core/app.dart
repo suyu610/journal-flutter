@@ -28,18 +28,18 @@ bool get isNeedUme {
 Future<void> initApp(Env env) async {
   appEnv = env;
   await Injection.init();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: [SystemUiOverlay.bottom]); //隐藏状态栏 上方黑边
+  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+  //     overlays: [SystemUiOverlay.bottom]); //隐藏状态栏 上方黑边
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: [SystemUiOverlay.top]); //隐藏导航栏
+  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+  //     overlays: [SystemUiOverlay.top]); //隐藏导航栏
 
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  // 隐藏状态栏和导航栏  上方黑板
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    //设置状态栏透明
-    statusBarColor: Colors.transparent,
-  ));
+  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+  // // 隐藏状态栏和导航栏  上方黑板
+  // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+  //   //设置状态栏透明
+  //   statusBarColor: Colors.transparent,
+  // ));
 
   EasyRefresh.defaultHeaderBuilder = () => ClassicHeader(
         dragText: 'Pull to refresh'.tr,

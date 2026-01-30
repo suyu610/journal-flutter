@@ -6,16 +6,7 @@ import 'package:flutter/services.dart';
 /// 屏幕适配工具类
 class ScreenUtils {
   ///去除状态栏半透明
-  static setSystemTransparent() {
-    if (Platform.isAndroid) {
-      SystemUiOverlayStyle style = const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.dark,
-      );
-      SystemChrome.setSystemUIOverlayStyle(style);
-    }
-  }
+  static setSystemTransparent() {}
 
   static setSystemStatusBarColor({
     Color? statusBarColor,

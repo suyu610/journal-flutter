@@ -1,113 +1,121 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:journal/components/bruno/bruno.dart';
-// import 'package:journal/core/log.dart';
-// import 'package:journal/request/request.dart';
-// import 'package:journal/util/toast_util.dart';
-// import 'package:tencentcloud_cos_sdk_plugin/cos.dart';
-// import 'package:tencentcloud_cos_sdk_plugin/cos_transfer_manger.dart';
-// import 'package:tencentcloud_cos_sdk_plugin/fetch_credentials.dart';
-// import 'package:tencentcloud_cos_sdk_plugin/pigeon.dart';
-// import 'package:tencentcloud_cos_sdk_plugin/transfer_task.dart';
-// import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
+import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/config/cos_config.dart';
+import 'package:journal/core/log.dart';
+import 'package:journal/request/request.dart';
+import 'package:journal/util/toast_util.dart';
+import 'package:tencentcloud_cos_sdk_plugin/cos.dart';
+import 'package:tencentcloud_cos_sdk_plugin/cos_transfer_manger.dart';
+import 'package:tencentcloud_cos_sdk_plugin/fetch_credentials.dart';
+import 'package:tencentcloud_cos_sdk_plugin/pigeon.dart';
+import 'package:uuid/uuid.dart';
+import 'dart:async';
 
-// typedef ResultSuccessCallBack = Function(
-//     Map<String?, String?>? header, CosXmlResult? result);
+class TencentCosService {
+  // 单例模式 (可选，为了保持全局只初始化一次)
+  static final TencentCosService _instance = TencentCosService._internal();
+  factory TencentCosService() => _instance;
+  TencentCosService._internal();
 
-// class FetchCredentials implements IFetchCredentials {
-//   var kDebugMode = true;
-//   Future<String> upload(
-//     String filePath,
-//     String userId,
-//     String prifix,
-//     BuildContext context,
-//     ResultSuccessCallBack successCallBack,
-//   ) async {
-//     //上传失败回调
-//     failCallBack(clientException, serviceException) {
-//       ToastUtil.hideLoading();
-//       BrnToast.show("上传失败", Get.context!);
-//       if (clientException != null) {
-//         Log().d(clientException);
-//       }
-//       if (serviceException != null) {
-//         Log().d(serviceException);
-//       }
-//     }
+  /// 初始化 SDK
+  static Future<void> init() async {
+    Log().d("TencentCosService: init");
+    await Cos().initWithSessionCredential(_CredentialFetcher());
 
-//     try {
-//       BrnLoadingDialog.show(context, content: "上传中", useRootNavigator: true);
-//       String uuid = const Uuid().v4().toString();
-//       // uuid
+    CosXmlServiceConfig serviceConfig = CosXmlServiceConfig(
+      region: CosConfig.region,
+      isDebuggable: true, // 生产环境建议改为 false
+      isHttps: true,
+    );
 
-//       CosTransferManger transferManager = Cos().getDefaultTransferManger();
-//       String bucket = "uuorb-1254798469";
-//       // // 对象key
+    TransferConfig transferConfig = TransferConfig(
+      forceSimpleUpload: false,
+      enableVerification: true,
+      divisionForUpload: 2097152,
+      sliceSizeForUpload: 1048576,
+    );
 
-//       String cosPath = "/journal/$prifix/$userId/$uuid.png";
-//       // // 本地文件的绝对路径
-//       String srcPath = filePath;
-//       String? uploadId;
+    Cos().registerDefaultTransferManger(serviceConfig, transferConfig);
+  }
 
-//       // 开始上传
-//       TransferTask transferTask = await transferManager.upload(bucket, cosPath,
-//           filePath: srcPath,
-//           uploadId: uploadId,
-//           resultListener: ResultListener(successCallBack, failCallBack));
+  /// 通用上传方法
+  /// 返回: 成功返回完整 CDN URL，失败返回 null
+  Future<String?> uploadFile({
+    required String filePath,
+    required String userId,
+    String prefix = "common",
+    BuildContext? context, // 传入 Context 用于显示 Loading，可空
+  }) async {
+    final Completer<String?> completer = Completer();
 
-//       Log().d(transferTask.toString());
-//       return "https://cdn.uuorb.com/$cosPath";
-//     } catch (e) {
-//       // BrnToast.show(e.toString(), context);
-//       Log().d(e.toString());
-//       e.printError();
-//       return "";
-//     }
-//   }
+    // 1. 显示 Loading (如果传入了 Context)
+    if (context != null && context.mounted) {
+      BrnLoadingDialog.show(context, content: "上传中", useRootNavigator: true);
+    }
 
-//   @override
-//   Future<SessionQCloudCredentials> fetchSessionCredentials() async {
-//     Log().d("fetchSessionCredentials");
-//     // 首先从您的临时密钥服务器获取包含了密钥信息的响应，例如：
-//     try {
-//       var response =
-//           await HttpRequest.request(Method.get, "/tencent/cos/credential");
+    // try {
+    String uuid = const Uuid().v4().toString();
+    String cosPath = "/journal/$prefix/$userId/$uuid.png";
 
-//       var data = response['data'];
-//       // 然后解析响应，获取临时密钥信息
-//       Log().d("Credentials: $data");
-//       // 最后返回临时密钥信息对象
-//       return SessionQCloudCredentials(
-//           secretId: data['secretId'], // 临时密钥 SecretId
-//           secretKey: data['secretKey'], // 临时密钥 SecretKey
-//           token: data['sessionToken'], // 临时密钥 Token
-//           startTime: data['startTime'] ?? "", //临时密钥有效起始时间，单位是秒
-//           expiredTime: data['expiredTime'] ?? "" //临时密钥有效截止时间戳，单位是秒
-//           );
-//     } catch (exception) {
-//       throw ArgumentError();
-//     }
-//   }
-// }
+    // 2. 获取 TransferManager
+    CosTransferManger transferManager = Cos().getDefaultTransferManger();
 
-// void initTencentCos() async {
-//   Log().d("initTencentCos");
-//   String region = "ap-beijing";
-//   await Cos().initWithSessionCredential(FetchCredentials());
-//   // 创建 CosXmlServiceConfig 对象，根据需要修改默认的配置参数
-//   CosXmlServiceConfig serviceConfig = CosXmlServiceConfig(
-//     region: region,
-//     isDebuggable: true,
-//     isHttps: true,
-//   );
+    // 3. 定义回调监听
+    ResultListener listener = ResultListener((header, result) {
+      // --- 成功 ---
+      if (context != null) ToastUtil.hideLoading();
 
-//   TransferConfig transferConfig = TransferConfig(
-//     forceSimpleUpload: false,
-//     enableVerification: true,
-//     divisionForUpload: 2097152, // 设置大于等于 2M 的文件进行分块上传
-//     sliceSizeForUpload: 1048576, //设置默认分块大小为 1M
-//   );
+      if (result != null && result.accessUrl != null) {
+        // 替换域名为 CDN
+        String finalUrl =
+            result.accessUrl!.replaceAll(CosConfig.cosHost, CosConfig.cdnHost);
+        // 这里为了保险，也可以直接拼：String finalUrl = "${CosConfig.cdnHost}$cosPath";
+        completer.complete(finalUrl);
+      } else {
+        completer.complete(null);
+      }
+    }, (clientException, serviceException) {
+      // --- 失败 ---
+      if (context != null) {
+        ToastUtil.hideLoading();
+        BrnToast.show("上传失败", context);
+      }
+      Log().d("ClientErr: $clientException, ServiceErr: $serviceException");
+      completer.complete(null);
+    });
 
-//   // 注册默认 COS TransferManger
-//   Cos().registerDefaultTransferManger(serviceConfig, transferConfig);
-// }
+    // 4. 执行上传
+    await transferManager.upload(CosConfig.bucket, cosPath,
+        filePath: filePath, resultListener: listener);
+    // } catch (e) {
+    //   if (context != null) ToastUtil.hideLoading();
+    //   e.printInfo();
+    //   Log().d("Upload Exception: ${e..toString()}");
+    //   completer.complete(null);
+    // }
+
+    return completer.future;
+  }
+}
+
+/// 内部私有类：专门负责获取凭证
+class _CredentialFetcher implements IFetchCredentials {
+  @override
+  Future<SessionQCloudCredentials> fetchSessionCredentials() async {
+    try {
+      var response =
+          await HttpRequest.request(Method.get, "/tencent/cos/credential");
+      var data = response['data'];
+      Log().d("Credentials fetched");
+      return SessionQCloudCredentials(
+          secretId: data['secretId'],
+          secretKey: data['secretKey'],
+          token: data['sessionToken'],
+          startTime: data['startTime'] ?? "",
+          expiredTime: data['expiredTime'] ?? "");
+    } catch (e) {
+      Log().d("Credential Error: $e");
+      throw ArgumentError("Failed to fetch credentials");
+    }
+  }
+}

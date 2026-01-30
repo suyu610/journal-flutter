@@ -29,6 +29,15 @@ PODS:
     - Flutter
   - permission_handler_apple (9.3.0):
     - Flutter
+  - QCloudCore (6.5.1):
+    - QCloudCore/Default (= 6.5.1)
+  - QCloudCore/Default (6.5.1):
+    - QCloudTrack/Beacon (= 6.5.1)
+  - QCloudCOSXML (6.5.1):
+    - QCloudCOSXML/Default (= 6.5.1)
+  - QCloudCOSXML/Default (6.5.1):
+    - QCloudCore (= 6.5.1)
+  - QCloudTrack/Beacon (6.5.1)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -38,6 +47,12 @@ PODS:
     - CwlCatchException
     - Flutter
     - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - tencentcloud_cos_sdk_plugin (1.2.6):
+    - Flutter
+    - QCloudCOSXML (= 6.5.1)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -62,6 +77,8 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
   - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+  - tencentcloud_cos_sdk_plugin (from `.symlinks/plugins/tencentcloud_cos_sdk_plugin/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
@@ -71,6 +88,9 @@ SPEC REPOS:
     - CwlCatchException
     - CwlCatchExceptionSupport
     - OpenWeChatSDKNoPay
+    - QCloudCore
+    - QCloudCOSXML
+    - QCloudTrack
 
 EXTERNAL SOURCES:
   audio_session:
@@ -101,6 +121,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sign_in_with_apple/ios"
   speech_to_text:
     :path: ".symlinks/plugins/speech_to_text/darwin"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
+  tencentcloud_cos_sdk_plugin:
+    :path: ".symlinks/plugins/tencentcloud_cos_sdk_plugin/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   video_player_avfoundation:
@@ -123,9 +147,14 @@ SPEC CHECKSUMS:
   OpenWeChatSDKNoPay: a391d2a7c0d4db1bdc870f885bd4cba99b64f243
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  QCloudCore: 6f8c67b96448472d2c6a92b9cfe1bdb5abbb1798
+  QCloudCOSXML: 92f50a787b4e8d9a7cb6ea8e626775256b4840a7
+  QCloudTrack: 20b79388365b4c8ed150019c82a56f1569f237f8
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   speech_to_text: 3b313d98516d3d0406cea424782ec25470c59d19
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  tencentcloud_cos_sdk_plugin: b7a4260f562e220cdb3933b881e092199a3e43f8
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
