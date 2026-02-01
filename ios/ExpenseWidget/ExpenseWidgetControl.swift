@@ -12,7 +12,7 @@ import WidgetKit
 struct ExpenseWidgetControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(
-            kind: "com.uuorb.susujournal.ExpenseWidget",
+            kind: "com.uuorb.journal.MyExpenseWidget",
             provider: Provider()
         ) { value in
             ControlWidgetToggle(

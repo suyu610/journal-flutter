@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/components/custom_floating_action_button_location.dart';
+import 'package:journal/components/empty_item.dart';
 import 'package:journal/components/expense_item.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense_date_group.dart';
@@ -49,20 +50,14 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   }
 
   _buildEmptyCard() {
-    return BrnAbnormalStateWidget(
-      img: Image.asset(
-        'assets/images/no_data.png',
-        scale: 3.0,
-      ),
-      isCenterVertical: true,
-      title: "无默认账本",
-      operateTexts: const <String>["刷新"],
-      operateAreaType: OperateAreaType.textButton,
-      action: (index) {
-        KeyboardUtils.hide();
-        controller.initData();
-      },
-    );
+    return buildEmptyItem(
+        title: "暂无默认账本",
+        operateText: "刷新",
+        action: () {
+          KeyboardUtils.hide();
+          controller.initData();
+        });
+
   }
 
   // NavBar
@@ -102,7 +97,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         padding: const EdgeInsets.all(12),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
-          color: const Color(0xFF3C3C43),
+          color: const Color(0xFF000000),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -219,17 +214,56 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            DateUtil.getFriendlyDate(expenseDateGroup.date),
-            // GetTimeAgo.parse(DateTime.parse(expenseDateGroup.date)), // 改成：今天，昨天
-
-            style: const TextStyle(
-              color: Color(0xFF666666),
-              fontSize: 14,
-              fontFamily: 'SourceCodePro',
-              fontWeight: FontWeight.w600,
-              height: 0,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                DateUtil.getFriendlyDate(expenseDateGroup.date),
+                style: const TextStyle(
+                  color: Color(0xFF666666),
+                  fontSize: 14,
+                  fontFamily: 'SourceCodePro',
+                  fontWeight: FontWeight.w600,
+                  height: 0,
+                ),
+              ),
+              Row(
+                children: [
+                  const Text(
+                    "支出",
+                    style: TextStyle(
+                      color: Color(0xFF666666),
+                      fontSize: 12,
+                      fontFamily: 'SourceCodePro',
+                      fontWeight: FontWeight.w400,
+                      height: 0,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    expenseDateGroup.totalExpense.toStringAsFixed(2),
+                    style: const TextStyle(
+                      color: Color(0xFF666666),
+                      fontSize: 14,
+                      fontFamily: 'SourceCodePro',
+                      fontWeight: FontWeight.w600,
+                      height: 0,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    "元",
+                    style: TextStyle(
+                      color: Color(0xFF666666),
+                      fontSize: 12,
+                      fontFamily: 'SourceCodePro',
+                      fontWeight: FontWeight.w400,
+                      height: 0,
+                    ),
+                  )
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 6),
           BrnBarBottomDivider(),

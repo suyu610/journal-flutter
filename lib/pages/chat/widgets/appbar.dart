@@ -13,7 +13,7 @@ PreferredSizeWidget buildAppbar(context, controller) {
     centerTitle: true,
     useDefaultBack: true,
     useBorderStyle: false,
-    rightBarItems: !Get.find<LayoutController>().user.value.vip
+    rightBarItems: Get.find<LayoutController>().user.value.vip
         ? [
             TDNavBarItem(
                 padding: const EdgeInsets.only(right: 10),
@@ -55,7 +55,6 @@ PreferredSizeWidget buildAppbar(context, controller) {
                 iconColor: Colors.grey[700],
                 iconSize: 18,
                 action: () {
-                  // 改背景
                   Get.toNamed(Routers.CreateActivityUrl,
                       arguments: controller.activity.value);
                 })

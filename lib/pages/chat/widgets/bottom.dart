@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -72,26 +74,57 @@ Widget buildBottomWidget(ChatController controller, BuildContext context) {
                         borderRadius: BorderRadius.circular(99),
                       ),
                     ),
-                    child: TDInput(
-                      hintText: "请输入",
+                    child: TextField(
+                      contextMenuBuilder: (context, editableTextState) {
+                        // 获取默认的菜单按钮列表
+                        final List<ContextMenuButtonItem> buttonItems =
+                            editableTextState.contextMenuButtonItems;
+
+                        buttonItems
+                            .removeWhere((ContextMenuButtonItem buttonItem) {
+                          return buttonItem.type ==
+                              ContextMenuButtonType.liveTextInput;
+                        });
+
+                        // 返回构建好的菜单
+                        return AdaptiveTextSelectionToolbar.buttonItems(
+                          anchors: editableTextState.contextMenuAnchors,
+                          buttonItems: buttonItems,
+                        );
+                      },
+                      toolbarOptions: const ToolbarOptions(
+                        copy: true,
+                        cut: true,
+                        paste: true,
+                        selectAll: true,
+                      ),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "请输入",
+                        hintStyle: TextStyle(
+                          color: Colors.black.withOpacity(0.3),
+                          fontSize: 16,
+                          fontFamily: 'PingFang SC',
+                          fontWeight: FontWeight.w400,
+                        ),
+                        contentPadding: const EdgeInsets.only(
+                            left: 16, right: 8, bottom: 8),
+                      ),
+                      textInputAction: TextInputAction.send,
                       controller: controller.textEditingController,
                       focusNode: controller.focusNode,
-                      inputAction: TextInputAction.send,
                       maxLines: 1,
-                      width: 385.w,
                       cursorColor: const Color(0xFF0064FF),
-                      backgroundColor: Colors.transparent,
-                      contentPadding: const EdgeInsets.only(
-                          left: 16, bottom: 8, top: 8, right: 8),
-                      textStyle: TextStyle(
+                      onSubmitted: (text) {
+                        controller.handleSendPressed(
+                            PartialText(text: text), context);
+                      },
+                      style: TextStyle(
                         color: Colors.black.withOpacity(0.9),
                         fontSize: 16,
                         fontFamily: 'PingFang SC',
                         fontWeight: FontWeight.w400,
                       ),
-                      onSubmitted: (text) {
-                        controller.handleSendPressed(PartialText(text: text));
-                      },
                     ))
                 : Listener(
                     onPointerMove: (PointerMoveEvent move) {

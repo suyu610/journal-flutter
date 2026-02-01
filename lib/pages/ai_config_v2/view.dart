@@ -1,334 +1,381 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
-
-import 'index.dart';
-
-class AICharacter {
-  String avatarUrl;
-  String name;
-  String description;
-  bool selected = false;
-  AICharacter(
-      {required this.avatarUrl, required this.name, required this.description});
-}
-
-List<AICharacter> characters = [
-  AICharacter(
-    avatarUrl: "https://avatars.githubusercontent.com/caixuan29",
-    name: "学霸姐姐",
-    description:
-        "聪明、勤奋、自律，学习成绩优异。她把记账也当成一种学习和管理生活的方式，非常注重细节和数据分析。她会用科学的方法帮助用户制定预算和理财计划，同时还会分享一些学习方法和时间管理技巧，鼓励用户在提升自己的同时，也能合理规划财务，实现全面发展。",
-  ),
-  AICharacter(
-      avatarUrl: "https://avatars.githubusercontent.com/Jayclelon",
-      name: "账房先生",
-      description:
-          "古灵精怪，对数字极为敏感，虽然看似年轻但却有着丰富的记账经验。他说话幽默风趣，常常会用一些古代的典故或者俗语来解释记账的道理，让记账这件事变得生动有趣。"),
-  AICharacter(
-      avatarUrl: "https://avatars.githubusercontent.com/Jayclelon",
-      name: "小刚",
-      description:
-          "性格特点：充满活力，热情洋溢，对新鲜事物充满好奇。他用嘻哈的态度对待记账，觉得记账也可以很潮很酷。他说话幽默风趣，经常会蹦出一些流行的嘻哈词汇和段子，让记账过程变得轻松愉快。他还喜欢分享一些时尚的消费观念和理财小技巧，鼓励用户在合理规划财务的同时，也不要忘记享受生活。"),
-];
+import 'package:webview_flutter/webview_flutter.dart';
+import 'controller.dart';
 
 class AiConfigV2Page extends GetView<AiConfigV2Controller> {
   const AiConfigV2Page({super.key});
 
-  // 主视图
-  Widget _buildView() {
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 16,
-              ),
+  @override
+  Widget build(BuildContext context) {
+    // 注入 Controller
+    Get.put(AiConfigV2Controller());
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ClipRRect(
-                  clipBehavior: Clip.antiAlias,
-                  borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10)),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8.0, left: 16),
-                          child: Text(
-                            "角色怎么称呼你",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TDInput(
-                          backgroundColor: Colors.white,
-                          leftLabelStyle:
-                              const TextStyle(fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          hintText: "请输入角色怎么称呼你",
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
-                          type: TDInputType.twoLine,
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const BackButton(color: Colors.white),
+      ),
+      body: Stack(
+        children: [
+          // 1. 动态背景层 (核心修改)
+          _buildAnimatedBackground(),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ClipRRect(
-                  clipBehavior: Clip.antiAlias,
-                  borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10)),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8.0, left: 16),
-                          child: Text(
-                            "角色开场白",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        TDInput(
-                          backgroundColor: Colors.white,
-                          leftLabelStyle:
-                              const TextStyle(fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          hintText: "在此输入角色开场白",
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
-                          type: TDInputType.twoLine,
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const Padding(
-                padding:
-                    EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 4),
-                child: Text(
-                  "角色列表",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              Column(
-                children: characters
-                    .map((e) => AiCharacterItem(e, onTap: () {
-                          controller.selectCharacter(e);
-                        }))
-                    .toList(),
-              ),
-              const SizedBox(
-                height: 80,
-              )
-              // Expanded(
-              //   child: ListView.builder(
-              //     itemCount: characters.length,
-              //     itemBuilder: (context, index) {
-              //       return AiCharacterItem(
-              //         characters[index],
-              //         onTap: () {
-              //           controller.selectCharacter(characters[index]);
-              //         },
-              //       );
-              //     },
-              //   ),
-              // )
-            ],
+          // 2. Live2D 层
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsets.only(top: 30.h, bottom: 200.h),
+              child: WebViewWidget(controller: controller.webViewController),
+            ),
           ),
-        ),
-        Positioned(
-          bottom: 30,
-          left: 0,
-          right: 0,
-          child: TDButton(
-            margin: EdgeInsets.only(top: 28.h, left: 16, right: 16),
-            height: 44,
-            isBlock: true,
-            theme: TDButtonTheme.primary,
-            text: "保存",
-            onTap: () {},
-          ),
-        ),
-      ],
+
+          // 3. 切换按钮
+          // _buildSwitchArrows(),
+          _buildCharacterSelector(),
+          // 4. 底部面板
+          _buildBottomPanel(),
+        ],
+      ),
     );
   }
 
-  // ignore: non_constant_identifier_names
-  Widget AiCharacterItem(AICharacter character, {required VoidCallback onTap}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: GestureDetector(
-        onTap: onTap,
+  // 核心修改：带动画的渐变背景
+  Widget _buildAnimatedBackground() {
+    return Obx(() {
+      // 获取当前角色的渐变色数组
+      final bgColors =
+          controller.characters[controller.currentIndex.value].bgColors;
+
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 600), // 600ms 平滑过渡
+        curve: Curves.easeInOut, // 缓动曲线
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: bgColors, // 动态颜色
+          ),
+        ),
         child: Stack(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                    width: 2,
-                    color: controller.selectedCharacter.value != null &&
-                            controller.selectedCharacter.value!.name ==
-                                character.name
-                        ? const Color(0xff0052D9)
-                        : const Color(0xffDCDCDC)),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      ClipOval(
-                        child: Image.network(
-                          character.avatarUrl,
-                          height: 40.r,
-                          width: 40.r,
-                          fit: BoxFit.fill,
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        character.name,
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
+            // 叠加一层顶部的聚光灯 (白色径向渐变)
+            // 这样无论背景是什么颜色，头顶都有光照感
+            Positioned(
+              top: -150,
+              left: 0,
+              right: 0,
+              height: 600,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topCenter,
+                    radius: 0.7,
+                    colors: [
+                      Colors.white.withOpacity(0.3), // 高光
+                      Colors.transparent,
                     ],
+                    stops: const [0.0, 1.0],
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    margin: const EdgeInsets.only(top: 10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xffF3F3F3),
-                      borderRadius: BorderRadius.all(Radius.circular(8)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: RichText(
-                              text: TextSpan(children: <TextSpan>[
-                            const TextSpan(
-                                text: "性格特点：",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black)),
-                            TextSpan(
-                                text: character.description,
-                                style: const TextStyle(color: Colors.black))
-                          ])),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-            Visibility(
-              visible: controller.selectedCharacter.value != null &&
-                  controller.selectedCharacter.value!.name == character.name,
-              child: Positioned(
-                  child: CustomPaint(
-                      painter: TrianglePainter(),
-                      child: const Padding(
-                        padding: EdgeInsets.only(
-                            right: 8.0, top: 4, left: 4, bottom: 6),
-                        child: Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 12,
-                        ),
-                      ))),
-            )
+
+            // 叠加一层底部的深色阴影，让白色文字更清晰，同时增加空间纵深
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 300.h,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.2),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildSwitchArrows() {
+    return Positioned(
+      left: 10,
+      right: 10,
+      top: 0,
+      bottom: 200.h,
+      child: Center(
+        // 垂直居中
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // 左箭头 (带一点磨砂背景，防止在浅色背景看不清)
+            _buildArrowButton(
+                Icons.arrow_back_ios_new, () => controller.switchCharacter(-1)),
+            // 右箭头
+            _buildArrowButton(
+                Icons.arrow_forward_ios, () => controller.switchCharacter(1)),
           ],
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GetBuilder<AiConfigV2Controller>(
-      init: AiConfigV2Controller(),
-      id: "ai_config_v2",
-      builder: (_) {
-        return Scaffold(
-          appBar: AppBar(
-              title: const Text("选择角色",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-          body: SafeArea(
-            bottom: false,
-            child: _buildView(),
+  Widget _buildArrowButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.1), // 淡淡的黑底
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 28),
+      ),
+    );
+  }
+
+  Widget _buildBottomPanel() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 32.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.6), // 稍微透一点背景色出来
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(32)),
+              border: Border(
+                  top: BorderSide(
+                      color: Colors.white.withOpacity(0.6), width: 1)),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5))
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 顶部：名字 + 性格标签
+                Obx(() {
+                  final char =
+                      controller.characters[controller.currentIndex.value];
+                  return Row(
+                    children: [
+                      Text(
+                        char.name,
+                        style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black87),
+                      ),
+                      const Spacer(),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                            color: char.themeColor, // 标签颜色也跟随主题
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: char.themeColor.withOpacity(0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2))
+                            ]),
+                        child: Text(
+                          char.defaultPersonality,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    ],
+                  );
+                }),
+
+                SizedBox(height: 12.h),
+
+                // 描述文本
+                Obx(() => Text(
+                      controller.characters[controller.currentIndex.value]
+                          .description,
+                      style: TextStyle(
+                          fontSize: 13.sp, color: Colors.black54, height: 1.5),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )),
+
+                SizedBox(height: 20.h),
+
+                // 输入框区域
+                Row(
+                  children: [
+                    Expanded(
+                        child:
+                            _buildGlassInput("称呼", controller.nameController)),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                        child: _buildGlassInput(
+                            "开场白", controller.openingController)),
+                  ],
+                ),
+
+                SizedBox(height: 24.h),
+
+                // 确认按钮
+                Obx(() {
+                  final char =
+                      controller.characters[controller.currentIndex.value];
+                  return GestureDetector(
+                    onTap: () => controller.saveConfig(), // 你的保存逻辑
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: double.infinity,
+                      height: 50.h,
+                      decoration: BoxDecoration(
+                          // 按钮也做成渐变，呼应背景
+                          color: char.bgColors[0],
+                          // gradient: LinearGradient(colors: [char.bgColors[0]]),
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                                color: char.bgColors[0].withOpacity(0.5),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6))
+                          ]),
+                      child: Center(
+                        child: Text(
+                          "确认签约 ${char.name.split('·').last}", // 只要名字后半部分
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
-}
 
-class TrianglePainter extends CustomPainter {
-  final double radius; // 圆角的半径
-  TrianglePainter({this.radius = 0.0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xff0052D9)
-      ..style = PaintingStyle.fill;
-
-    final path = Path();
-    path.moveTo(0, size.height + 10);
-    path.lineTo(size.width + 8, 0);
-    path.lineTo(8, 0);
-    path.arcToPoint(
-      const Offset(0, 8),
-      radius: const Radius.circular(9),
-      largeArc: false,
-      clockwise: false,
+  // 磨砂风格输入框
+  Widget _buildGlassInput(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 6),
+          child: Text(label,
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.black45,
+                  fontWeight: FontWeight.bold)),
+        ),
+        Container(
+          height: 44.h,
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.1), // 极淡的灰
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black.withOpacity(0.05)),
+          ),
+          child: TextField(
+            controller: controller,
+            style: TextStyle(fontSize: 14.sp, color: Colors.black87),
+            cursorColor: Colors.black54,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            ),
+          ),
+        ),
+      ],
     );
-
-    // path.lineTo(0, 0);
-    path.close();
-
-    canvas.drawPath(path, paint);
   }
 
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
+  // 2. 新增 _buildCharacterSelector 方法
+  Widget _buildCharacterSelector() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 300.h, // 这里的数值取决于你的 BottomPanel 高度，根据实际调整
+      child: SizedBox(
+        height: 100.w, // 列表高度
+        child: ListView.separated(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          scrollDirection: Axis.horizontal,
+          itemCount: controller.characters.length,
+          separatorBuilder: (c, i) => SizedBox(width: 16.w),
+          itemBuilder: (context, index) {
+            final char = controller.characters[index];
 
-class TriangleWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: TrianglePainter(),
-      child: const SizedBox(
-        width: 100,
-        height: 100,
+            return Obx(() {
+              final isSelected = controller.currentIndex.value == index;
+              return GestureDetector(
+                onTap: () => controller.selectCharacter(index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: isSelected ? 65.w : 50.w, // 选中变大
+                  height: isSelected ? 65.w : 50.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: char.themeColor, // 使用角色主题色作为头像底色
+                    border: isSelected
+                        ? Border.all(color: Colors.white, width: 3) // 选中加白边
+                        : null,
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: char.themeColor.withOpacity(0.6),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        )
+                    ],
+                  ),
+                  // 如果有图片资源，这里可以用 Image.asset
+                  // 暂时用首字母代替
+                  child: Center(
+                    child: Text(
+                      char.name.split('·').last, // 取名字第一个字
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isSelected ? 14.sp : 12.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            });
+          },
+        ),
       ),
     );
   }

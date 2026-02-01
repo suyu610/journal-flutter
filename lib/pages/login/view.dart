@@ -162,7 +162,7 @@ class LoginPage extends StatelessWidget {
 
   Widget _buildWelcomeText() {
     return Text(
-      "欢迎登陆 小素记账",
+      "欢迎登陆 好享记账",
       style: TextStyle(
         fontWeight: FontWeight.w500,
         fontSize: 28.sp,

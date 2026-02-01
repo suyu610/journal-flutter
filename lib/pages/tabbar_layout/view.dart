@@ -56,32 +56,36 @@ class _LayoutPageState extends State<LayoutPage>
               ? [
                   TDBottomTabBarTabConfig(
                     tabText: '首页',
-                    selectedIcon: const Icon(Icons.home_outlined,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.home_outlined,
+                    ),
                     unselectedIcon:
                         const Icon(Icons.home_outlined, color: Colors.grey),
                     onTap: () => controller.jumpToPage(0),
                   ),
                   TDBottomTabBarTabConfig(
                     tabText: '账本',
-                    selectedIcon: const Icon(Icons.folder_outlined,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.folder_outlined,
+                    ),
                     unselectedIcon:
                         const Icon(Icons.folder_outlined, color: Colors.grey),
                     onTap: () => controller.jumpToPage(1),
                   ),
                   TDBottomTabBarTabConfig(
                     tabText: '图表',
-                    selectedIcon: const Icon(Icons.analytics_outlined,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.analytics_outlined,
+                    ),
                     unselectedIcon: const Icon(Icons.analytics_outlined,
                         color: Colors.grey),
                     onTap: () => controller.jumpToPage(2),
                   ),
                   TDBottomTabBarTabConfig(
                     tabText: '我的',
-                    selectedIcon: const Icon(Icons.person_outline,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.person_outline,
+                    ),
                     unselectedIcon:
                         const Icon(Icons.person_outline, color: Colors.grey),
                     onTap: () => controller.jumpToPage(3),
@@ -90,24 +94,27 @@ class _LayoutPageState extends State<LayoutPage>
               : [
                   TDBottomTabBarTabConfig(
                     tabText: '首页',
-                    selectedIcon: const Icon(Icons.home_outlined,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.home_outlined,
+                    ),
                     unselectedIcon:
                         const Icon(Icons.home_outlined, color: Colors.grey),
                     onTap: () => controller.jumpToPage(0),
                   ),
                   TDBottomTabBarTabConfig(
                     tabText: '账本',
-                    selectedIcon: const Icon(Icons.folder_outlined,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.folder_outlined,
+                    ),
                     unselectedIcon:
                         const Icon(Icons.folder_outlined, color: Colors.grey),
                     onTap: () => controller.jumpToPage(1),
                   ),
                   TDBottomTabBarTabConfig(
                     tabText: '我的',
-                    selectedIcon: const Icon(Icons.person_outline,
-                        color: Color(0xFF0052D9)),
+                    selectedIcon: const Icon(
+                      Icons.person_outline,
+                    ),
                     unselectedIcon:
                         const Icon(Icons.person_outline, color: Colors.grey),
                     onTap: () => controller.jumpToPage(2),

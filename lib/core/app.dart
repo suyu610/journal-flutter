@@ -12,6 +12,7 @@ import 'package:journal/routers.dart';
 import 'package:journal/services/notification_service.dart';
 import 'package:journal/util/keyboard_util.dart';
 import 'package:journal/util/sp_util.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 环境类型
 enum Env { qa, beta, mp }
@@ -28,18 +29,7 @@ bool get isNeedUme {
 Future<void> initApp(Env env) async {
   appEnv = env;
   await Injection.init();
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-  //     overlays: [SystemUiOverlay.bottom]); //隐藏状态栏 上方黑边
-
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-  //     overlays: [SystemUiOverlay.top]); //隐藏导航栏
-
-  // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  // // 隐藏状态栏和导航栏  上方黑板
-  // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-  //   //设置状态栏透明
-  //   statusBarColor: Colors.transparent,
-  // ));
+  TDTheme.needMultiTheme();
 
   EasyRefresh.defaultHeaderBuilder = () => ClassicHeader(
         dragText: 'Pull to refresh'.tr,
@@ -61,16 +51,39 @@ Future<void> initApp(Env env) async {
         failedText: 'Failed'.tr,
         messageText: 'Last updated at %T'.tr,
       );
+  var jsonString = await rootBundle.loadString('assets/tdtheme.json');
+  var _themeData = TDThemeData.fromJson('black', jsonString);
 
-  runApp(_myApp());
+  runApp(_myApp(_themeData));
 }
 
-Widget _myApp() {
+TDThemeData _buildBlackTheme() {
+  var defaultTheme = TDThemeData.defaultData();
+  return defaultTheme.copyWithTDThemeData(
+    'black',
+    colorMap: {
+      'brandColor1': Colors.black,
+      'brandColor2': Colors.black.withOpacity(0.9),
+      'brandColor3': Colors.black.withOpacity(0.8),
+      'brandColor4': Colors.black.withOpacity(0.7),
+      'brandColor5': Colors.black.withOpacity(0.6),
+      'brandColor6': Colors.black.withOpacity(0.5),
+      'brandColor7': Colors.black.withOpacity(0.4),
+      'brandColor8': Colors.black.withOpacity(0.3),
+      'brandColor9': Colors.black.withOpacity(0.2),
+      'brandColor10': Colors.black.withOpacity(0.1),
+    },
+  );
+}
+
+Widget _myApp(_themeData) {
+  var blackTheme = _buildBlackTheme();
+
   return ScreenUtilInit(
     designSize: const Size(375, 812),
     child: GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "小素记账",
+      title: "好享记账",
       onDispose: () {
         Log().d("parent view onDispose");
       },
@@ -88,12 +101,14 @@ Widget _myApp() {
       darkTheme: ThemeData(
           scaffoldBackgroundColor: const Color(0xff35353b),
           cardColor: const Color(0xff35353b),
-          appBarTheme: const AppBarTheme(backgroundColor: Color(0xff35353b))),
+          appBarTheme: const AppBarTheme(backgroundColor: Color(0xff35353b)),
+          extensions: [_themeData]),
       theme: ThemeData(
           useMaterial3: true,
           cardColor: Colors.white,
           scaffoldBackgroundColor: const Color(0xfff1f1f1),
-          appBarTheme: const AppBarTheme(backgroundColor: Colors.white)),
+          appBarTheme: const AppBarTheme(backgroundColor: Colors.white),
+          extensions: [_themeData]),
       initialRoute: SpUtil.getToken() == ""
           ? Routers.LoginPageUrl
           : Routers.LayoutPageUrl,

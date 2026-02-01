@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/empty_item.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/routers.dart';
@@ -44,7 +45,7 @@ class ActivityListPage extends GetView<ActivityListController> {
   //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
   //       clipBehavior: Clip.antiAlias,
   //       decoration: ShapeDecoration(
-  //         color: const Color(0xFF3C3C43),
+  //         color: const Color(0xFF000000),
   //         shape: RoundedRectangleBorder(
   //           borderRadius: BorderRadius.circular(24),
   //         ),
@@ -117,7 +118,7 @@ class ActivityListPage extends GetView<ActivityListController> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
               decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xff3C3C43), width: 1),
+                  border: Border.all(color: const Color(0xff000000), width: 1),
                   borderRadius: BorderRadius.circular(20.r)),
               child: Text(
                 "账单详情",
@@ -136,7 +137,7 @@ class ActivityListPage extends GetView<ActivityListController> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
               decoration: BoxDecoration(
-                  color: const Color(0xff3C3C43),
+                  color: const Color(0xff000000),
                   borderRadius: BorderRadius.circular(20.r)),
               child: Text(
                 "我记一笔",
@@ -168,24 +169,12 @@ class ActivityListPage extends GetView<ActivityListController> {
                   color: Colors.white,
                   height: 600.h,
                   padding: const EdgeInsets.only(bottom: 15.0),
-                  child: BrnAbnormalStateWidget(
-                    img: Image.asset(
-                      'assets/images/no_data.png',
-                      scale: 3.0,
-                    ),
-                    isCenterVertical: true,
-                    title: "未找到账本",
-                    operateTexts: const <String>["点击重试", "创建账本"],
-                    operateAreaType: OperateAreaType.doubleButton,
-                    action: (index) {
-                      if (index == 0) {
+                  child: buildEmptyItem(
+                      title: "未找到账本",
+                      operateText: "点击重试",
+                      action: () {
                         controller.fetchSelfActivityList();
-                      } else {
-                        Get.toNamed(Routers.CreateActivityUrl);
-                      }
-                    },
-                  ),
-                )
+                      }))
               : ConstrainedBox(
                   constraints: BoxConstraints(minHeight: 800.h),
                   child: Column(
@@ -220,7 +209,10 @@ class ActivityListPage extends GetView<ActivityListController> {
       ),
       leftBarItems: [
         TDNavBarItem(
-            iconWidget: const Text("加入账本", style: TextStyle()),
+            iconWidget: Text("加入账本",
+                style: TextStyle(
+                  color: const Color(0xff000000).withOpacity(0.8),
+                )),
             action: () {
               Get.toNamed(Routers.JoinActivityPageUrl);
               return;
@@ -230,7 +222,10 @@ class ActivityListPage extends GetView<ActivityListController> {
       // 创建账本
       rightBarItems: [
         TDNavBarItem(
-            iconWidget: const Text("新建", style: TextStyle()),
+            iconWidget: Text("新建账本",
+                style: TextStyle(
+                  color: const Color(0xff000000).withOpacity(0.8),
+                )),
             action: () {
               Get.toNamed(Routers.CreateActivityUrl);
               return;

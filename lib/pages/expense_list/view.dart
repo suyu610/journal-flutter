@@ -83,7 +83,7 @@ class ExpenseListPage extends GetView<ExpenseListController> {
                 // padding: EdgeInsets.only(right: 0.0, top: 4),
                 // child: Icon(
                 // Icons.analytics_outlined,
-                // color: Color(0xCC3C3C43),
+                // color: Color(0xCC000000),
                 // ),),)
                 ),
             SizedBox(

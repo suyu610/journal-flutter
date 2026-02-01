@@ -31,7 +31,6 @@ class CodePage extends StatelessWidget {
           Text(
             "输入短信验证码",
             style: TextStyle(
-              
               fontSize: 30.sp,
               fontWeight: FontWeight.w600,
               color: Colors.black,
@@ -41,7 +40,6 @@ class CodePage extends StatelessWidget {
           Text(
             "已向您的手机 ${logic.phoneNum} 发送验证码",
             style: TextStyle(
-              
               fontSize: 15.sp,
               color: Colors.grey,
             ),
@@ -80,7 +78,6 @@ class CodePage extends StatelessWidget {
                         ? "重新发送"
                         : "重新发送(${logic.state.countDownNum.value})s",
                     style: TextStyle(
-                      
                       fontSize: 15.sp,
                       color: logic.state.countDownNum.value == -1
                           ? Colors.blue
@@ -104,12 +101,11 @@ class CodePage extends StatelessWidget {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(6.r)),
                     color: logic.codeIsCompleted
-                        ? const Color(0xff0052D9)
-                        : const Color(0xff0052D9).withAlpha(50)),
+                        ? const Color(0xff000000)
+                        : const Color(0xff000000).withAlpha(50)),
                 child: Text(
                   "下一步",
                   style: TextStyle(
-                    
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -122,7 +118,6 @@ class CodePage extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Container()),
-
             ],
           )
         ],

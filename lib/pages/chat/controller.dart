@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
@@ -9,21 +12,46 @@ import 'package:get/get.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
+import 'package:journal/models/ai_config_model.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/pages/activity_list/controller.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:just_audio/just_audio.dart';
+
 import 'package:tdesign_flutter/tdesign_flutter.dart';
+import 'package:webview_flutter/src/webview_controller.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ChatController extends GetxController {
   ChatController();
+  RxString bubbleText = "".obs; // 气泡内容
+  RxBool isBubbleVisible = false.obs; // 气泡是否可见
+  Timer? _bubbleTimer; // 自动隐藏定时器
+// 显示气泡的方法
+  void showBubble(String text) {
+    bubbleText.value = text;
+    isBubbleVisible.value = true;
+
+    // 震动反馈，增加交互感
+    HapticFeedback.lightImpact();
+
+    // 每次显示前取消上一次的定时器
+    _bubbleTimer?.cancel();
+
+    // 5秒后自动消失，模仿游戏对话
+    _bubbleTimer = Timer(const Duration(seconds: 5), () {
+      isBubbleVisible.value = false;
+    });
+  }
 
   RxString bgImage = "".obs;
 
   // 添加这一行
   final isLongPressing = false.obs;
+  // webview 加载完模型了
+  final isModelLoaded = false.obs;
 
   Rx<Activity> activity = Activity.empty().obs;
   late TextEditingController textEditingController;
@@ -41,14 +69,50 @@ class ChatController extends GetxController {
   RxList<types.Message> messages = RxList();
 
   final focusNode = FocusNode();
+  static List<String> animationList = [
+    "Dance",
+    "Death",
+    "Idle",
+    "Jump",
+    "No",
+    "Punch",
+    "Running",
+    "Sitting",
+    "Standing",
+    "ThumbsUp",
+    "Walking",
+    "WalkJump",
+    "Wave",
+    "Yes"
+  ];
+  var animationName = animationList[2].obs;
+
+  late WebViewController webViewController = WebViewController();
+
+  /// 获取当前配置并回显
+  void _fetchCurrentConfig() async {
+    var result =
+        await HttpRequest.request(Method.get, "/api/ai-config/current");
+
+    if (result != null) {
+      try {
+        UserAIConfig config = UserAIConfig.fromJson(result['data']);
+        _initLive2D(config);
+      } catch (e) {
+        debugPrint("解析配置失败: $e");
+      }
+    }
+  }
 
   _initData() async {
     // 从sp中获取
     keyboardMode.value = SpUtil.getKeyboardMode();
+    // 取当前的AI配置
+    _fetchCurrentConfig();
     update(["chat"]);
   }
 
-  void handleSendPressed(types.PartialText message) {
+  void handleSendPressed(types.PartialText message, context) {
     if (message.text.isEmpty) return;
     final textMessage = types.TextMessage(
       author: user,
@@ -66,67 +130,16 @@ class ChatController extends GetxController {
         createdAt: DateTime.now().millisecondsSinceEpoch,
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         text: '对方正在输入...');
-
     messages.insert(0, loadingMessage);
-    update(['id']);
+    update(['chat']);
     if (keyboardMode.value) {
       focusNode.requestFocus();
     }
 
-    formatAndReply(textMessage.text, loadingMessage.id);
+    formatAndReply(textMessage.text, loadingMessage.id, context);
   }
 
-  // 标记为已过时
-  @Deprecated("已废弃，使用 formatAndReply 方法")
-  void formatAndReply1(text, id) {
-    HttpRequest.request(
-      Method.get,
-      "/ai/format?sentence=$text&activityId=${activity.value.activityId}",
-      fail: (code, msg) {
-        messages.removeWhere((element) => element.id == id);
-        var reMessage = types.TextMessage(
-            author: aiUser,
-            text: "未能获取有效信息",
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-            id: DateTime.now().millisecondsSinceEpoch.toString());
-        // 删除思考中...
-        messages.insert(0, reMessage);
-        update(["chat"]);
-      },
-      success: (data) {
-        praise(text);
-        try {
-          Log().d(data.toString());
-          // 现在是个List了
-          Expense expense = Expense.fromJson(data as Map<String, dynamic>);
-          // Log().d("expense.expenseId： ${expense.expenseId}");
-          var reMessage = types.CustomMessage(
-              author: aiUser,
-              metadata: {"msgType": "expense", ...expense.toJson()},
-              createdAt: DateTime.now().millisecondsSinceEpoch,
-              id: expense.expenseId);
-          messages.removeWhere((element) => element.id == id);
-          messages.insert(0, reMessage);
-          update(["chat"]);
-          eventBus.fire(const NeedRefreshData(
-              refreshChartsList: true,
-              refreshActivityList: true,
-              refreshCurrentActivity: true));
-        } catch (e) {
-          Log().d(e.toString());
-          var reMessage = types.TextMessage(
-              author: aiUser,
-              text: data.toString(),
-              createdAt: DateTime.now().millisecondsSinceEpoch,
-              id: DateTime.now().millisecondsSinceEpoch.toString());
-          messages.insert(0, reMessage);
-          update(["chat"]);
-        }
-      },
-    );
-  }
-
-  void formatAndReply(text, id) {
+  void formatAndReply(text, id, context) {
     HttpRequest.request(
       Method.get,
       "/ai/format/v2?sentence=$text&activityId=${activity.value.activityId}",
@@ -134,18 +147,32 @@ class ChatController extends GetxController {
         messages.removeWhere((element) => element.id == id);
         var reMessage = types.TextMessage(
             author: aiUser,
-            text: "未能获取有效信息",
+            text: "未获取有效信息",
             createdAt: DateTime.now().millisecondsSinceEpoch,
             id: DateTime.now().millisecondsSinceEpoch.toString());
         // 删除思考中...
         messages.insert(0, reMessage);
+        animationName.value = "No";
+        HttpRequest.request(Method.get,
+            "/ai/chat?sentence=$text&activityId=${activity.value.activityId}",
+            success: (data) {
+          showBubble(data.toString());
+        });
+
         update(["chat"]);
       },
       success: (data) {
         praise(text);
         try {
+          // 如果是纯文本（非记账数据），或者你想在记账成功时也说句话
+          if (data is! List && data is! Map) {
+            // 假设后端有时候直接返回字符串
+            showBubble(data.toString());
+          } else {
+            // 记账成功，也可以让角色卖个萌
+            showBubble("记下来啦！每笔开销都要精打细算哦~");
+          }
           Log().d("AI返回数据: $data");
-
           messages.removeWhere((element) => element.id == id);
 
           if (data is List) {
@@ -198,18 +225,15 @@ class ChatController extends GetxController {
 
   void praise(sentence) {
     var uuid = DateTime.now().millisecondsSinceEpoch.toString();
-    HttpRequest.request<Stream>(
+    HttpRequest.request(
       Method.get,
-      "/ai/praise/stream?sentence=$sentence&activityId=${activity.value.activityId}",
-      isStream: true,
-      success: (stream) {
-        var praiseMessage = types.TextMessage(
-            author: aiUser,
-            text: "对方正在输入...",
-            createdAt: DateTime.now().millisecondsSinceEpoch,
-            id: uuid);
-        messages.insert(0, praiseMessage);
-        processStreamResponse(stream, uuid);
+      "/ai/praise/advance?sentence=$sentence&activityId=${activity.value.activityId}",
+      success: (data) {
+        // 【修改】夸奖的话最适合用气泡显示了！
+        showBubble(data.toString());
+
+        // 原有的动画逻辑保留
+        animationName.value = "ThumbsUp";
         update(["chat"]);
       },
     );
@@ -260,21 +284,21 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
+// 【修改】开场白直接用气泡显示，而不是插入列表
     bgImage.value = SpUtil.getChatBg() ?? "";
-    print("bgImage: ${bgImage.value}");
+
     update(["chat"]);
 
     setKeyboardModeAndRequestFocus();
 
-    var greetingMessage = types.TextMessage(
-        author: aiUser,
-        text: "你好，我是你的财务助手，有什么可以帮助你的吗？",
-        createdAt: DateTime.now().millisecondsSinceEpoch,
-        id: DateTime.now().millisecondsSinceEpoch.toString());
+    // var greetingMessage = types.TextMessage(
+    //     author: aiUser,
+    //     text: "你好，我是你的财务助手，有什么可以帮助你的吗？",
+    //     createdAt: DateTime.now().millisecondsSinceEpoch,
+    //     id: DateTime.now().millisecondsSinceEpoch.toString());
 
-    messages.insert(0, greetingMessage);
-    update(["chat"]);
+    // messages.insert(0, greetingMessage);
+    // update(["chat"]);
 
     // 这个地方得设计下
     if (Get.arguments == null) {
@@ -298,6 +322,48 @@ class ChatController extends GetxController {
   void onReady() {
     super.onReady();
     _initData();
+  }
+
+  void _initLive2D(UserAIConfig config) {
+    // 替换为你需要的角色 URL
+    String url =
+        "https://cdn.uuorb.com/live2d/index@9.html?roleName=${config.characterCode}";
+
+    webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent) // 背景透明
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            print("加载进度: $progress%");
+          },
+          onPageFinished: (String url) {
+            // 再延迟2秒，确保人物加载完成
+          },
+        ),
+      )
+      ..addJavaScriptChannel(
+        'ToFlutter',
+        onMessageReceived: (JavaScriptMessage message) {
+          _handleLive2DInteraction(message.message);
+          final data = jsonDecode(message.message);
+          if (data['event'] == 'init' && data['message'] == 'done') {
+            Future.delayed(const Duration(milliseconds: 300), () {
+              showBubble(config.openingStatement);
+              isModelLoaded.value = true;
+            });
+          }
+        },
+      )
+      ..loadRequest(Uri.parse(url));
+  }
+
+  void _handleLive2DInteraction(String data) {
+    print("Live2D 交互: $data");
+    // 可以在这里加震动反馈，或者让人物说句话
+    if (data.contains("head") || data.contains("tap")) {
+      HapticFeedback.lightImpact();
+    }
   }
 
   @override
@@ -350,13 +416,34 @@ class ChatController extends GetxController {
                       "/ai/tts?sentence=$text&activityId=${activity.value.activityId}",
                       fail: (code, msg) {}, success: (data) async {
                     BrnLoadingDialog.dismiss(context);
-                    Log().d("tts:$data");
                     final player = AudioPlayer();
-                    await player.setUrl(data as String);
-                    player.play();
+                    // 1. 解码 Base64
+                    Uint8List bytes = base64Decode(data as String);
+
+                    // 2. 使用自定义 Source 加载
+                    await player.setAudioSource(MyBufferSource(bytes));
+                    player.play(); // 2. 加载并播放
                   });
                 }),
           );
         });
+  }
+}
+
+class MyBufferSource extends StreamAudioSource {
+  final List<int> bytes;
+  MyBufferSource(this.bytes);
+
+  @override
+  Future<StreamAudioResponse> request([int? start, int? end]) async {
+    start ??= 0;
+    end ??= bytes.length;
+    return StreamAudioResponse(
+      sourceLength: bytes.length,
+      contentLength: end - start,
+      offset: start,
+      contentType: 'audio/mpeg',
+      stream: Stream.value(bytes.sublist(start, end)),
+    );
   }
 }

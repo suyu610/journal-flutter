@@ -67,8 +67,19 @@ class CurrentActivityController extends GetxController {
           expenseDateGroupList
               .add(ExpenseDateGroup(element, expenseMap[element]!));
         });
+
+        // 计算总金额
+
+        expenseDateGroupList.forEach((element) {
+          double totalExpense = 0.0;
+          element.expenses.forEach((expense) {
+            if (expense.positive == 0) {
+              totalExpense += expense.price;
+            }
+          });
+          element.totalExpense = totalExpense;
+        });
         update(["current_activity"]);
-        // Log().d("expenseList: ${expenseDateGroupList.toString()}");
       }
     }, fail: (code, msg) {
       Log().d(msg);

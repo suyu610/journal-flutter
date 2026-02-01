@@ -1,7 +1,7 @@
 name: journal
 description: "A new Flutter project."
 publish_to: "none"
-version: 1.2.3+1
+version: 2.0.0+1
 fluwx:
   app_id: "wx30e85737940da4af"
   debug_logging: true 
@@ -83,12 +83,16 @@ flutter:
     - assets/icons/radio/
     - assets/icons/bill_column/
     - assets/chat_bg/
-
+    - assets/glb/
+    - assets/tdtheme.json
+    - assets/live2d/hiyori/ 
   fonts:
     - family: SmileySans
       fonts:
         - asset: assets/fonts/SmileySans-Oblique.ttf
-
+    - family: ZCOOLKuaiLle
+      fonts:
+        - asset: assets/fonts/ZCOOLKuaiLe-Regular.ttf
     - family: SourceCodePro
       fonts:
         - asset: assets/fonts/SourceCodePro-Light.ttf

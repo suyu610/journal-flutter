@@ -13,7 +13,7 @@
 //        
 //    
 //    static var parameterSummary: some ParameterSummary {
-//        Summary("小素记账") {
+//        Summary("好享记账") {
 //            \.$content
 //        }
 //    }
@@ -118,7 +118,7 @@ struct Intent: AppIntent, CustomIntentMigratedAppIntent, PredictableIntent {
     var content: String?
     
     static var parameterSummary: some ParameterSummary {
-        Summary("小素记账") {
+        Summary("好享记账") {
             \.$content
         }
     }

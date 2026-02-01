@@ -38,14 +38,6 @@ class ProfilePage extends GetView<ProfileController> {
         width: 70,
         height: 24,
       ),
-      // rightBarItems: [
-      //   TDNavBarItem(
-      //       icon: TDIcons.usergroup_add,
-      //       iconSize: 24,
-      //       action: () {
-      //         Get.toNamed(Routers.CreateActivityUrl);
-      //       }),
-      // ],
     );
   }
 
@@ -62,10 +54,9 @@ class ProfilePage extends GetView<ProfileController> {
         const SizedBox(height: 16),
         TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
           TDCell(
-            leftIconWidget: Image.asset(
-              "assets/icons/supervisor_account.png",
-              height: 24,
-              width: 24,
+            leftIconWidget: const Icon(
+              Icons.supervisor_account_outlined,
+              size: 18,
             ),
             arrow: true,
             title: "选择角色",
@@ -77,30 +68,33 @@ class ProfilePage extends GetView<ProfileController> {
             arrow: true,
             leftIconWidget: const Icon(
               Icons.notifications_outlined,
-              size: 24,
-              color: Color(0xff0053d9),
+              size: 18,
             ),
             title: "记账提醒",
             onClick: (v) {
               Get.toNamed(Routers.ReminderSettingsPageUrl);
             },
           ),
-          // TDCell(
-          //   arrow: true,
-          //   leftIconWidget: Image.asset("assets/icons/fact_check.png",
-          //       height: 24, width: 24),
-          //   title: "自动记账",
-          //   onClick: (v) {
-          //     Get.toNamed(Routers.AutoWriteIntroPageUrl);
-          //   },
-          // ),
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
+              Icons.fact_check_outlined,
+              size: 18,
+            ),
+            title: "自动记账",
+            onClick: (v) {
+              Get.toNamed(Routers.AutoWriteIntroPageUrl);
+            },
+          ),
         ]),
         const SizedBox(height: 10),
         TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
           TDCell(
             arrow: true,
-            leftIconWidget: Image.asset("assets/icons/question_answer.png",
-                height: 24, width: 24),
+            leftIconWidget: const Icon(
+              Icons.question_answer_outlined,
+              size: 18,
+            ),
             title: "联系我们",
             onClick: (v) {
               controller.contact();
@@ -108,20 +102,24 @@ class ProfilePage extends GetView<ProfileController> {
           ),
           TDCell(
             arrow: true,
-            leftIconWidget:
-                Image.asset("assets/icons/wysiwyg.png", height: 24, width: 24),
+            leftIconWidget: const Icon(
+              Icons.wysiwyg_outlined,
+              size: 18,
+            ),
             title: "隐私协议",
             onClick: (v) {
               Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                "url": "https://journal.aceword.xyz/privacy.html",
+                "url": "https://video.uuorb.com/",
                 "title": "隐私协议"
               });
             },
           ),
           TDCell(
             arrow: true,
-            leftIconWidget: Image.asset("assets/icons/exit_to_app.png",
-                height: 24, width: 24),
+            leftIconWidget: const Icon(
+              Icons.exit_to_app_outlined,
+              size: 18,
+            ),
             title: "退出登录",
             onClick: (v) {
               controller.logout(context);
@@ -129,8 +127,10 @@ class ProfilePage extends GetView<ProfileController> {
           ),
           TDCell(
             arrow: true,
-            leftIconWidget:
-                Image.asset("assets/icons/delete.png", height: 24, width: 24),
+            leftIconWidget: const Icon(
+              Icons.delete_outlined,
+              size: 18,
+            ),
             title: "注销账号",
             onClick: (v) {
               controller.deleteAccount(context);
@@ -146,7 +146,7 @@ class ProfilePage extends GetView<ProfileController> {
               style: TextStyle(color: Colors.grey[500]),
             );
           },
-        )
+        ),
       ],
     );
   }
@@ -221,13 +221,14 @@ class ProfilePage extends GetView<ProfileController> {
                           },
                           type: TDButtonType.fill,
                           title: '确认',
-                          theme: TDButtonTheme.danger),
+                          theme: TDButtonTheme.primary),
                     );
                   });
               return;
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
@@ -260,15 +261,14 @@ class ProfilePage extends GetView<ProfileController> {
                   },
                   child: Row(
                     children: [
-                      Text(
+                      const Text(
                         "ID: ",
-                        style:
-                            TextStyle(fontSize: 14.sp, color: Colors.black87),
+                        style: TextStyle(fontSize: 12, color: Colors.black87),
                       ),
                       Text(
                         user.userId,
-                        style:
-                            TextStyle(fontSize: 14.sp, color: Colors.black87),
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.black87),
                       ),
                       const SizedBox(
                         width: 4,

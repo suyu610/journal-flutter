@@ -70,7 +70,6 @@ const zhCN = {
   'Chat page example': '聊天页面示例',
   'PageView example': 'PageView 示例',
   'Join discussion': '加入讨论',
-  'Join the QQ group (554981921)': '加入QQ群(554981921)',
   'Repository': '项目地址',
   'Support me': '支持作者',
   'Buy me a coffee ~': '请作者喝一杯咖啡~',

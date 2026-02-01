@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
-import 'package:journal/util/keyboard_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
@@ -30,14 +29,13 @@ class ChartsPage extends GetView<ChartsController> {
     //
     double totalValue = groupByTypeData.fold(
         0.0, (prev, curr) => prev + double.parse(curr.value ?? '0'));
-    List colors = [
-      TDTheme.of(context).brandColor7,
-      TDTheme.of(context).brandColor6,
-      TDTheme.of(context).brandColor5,
-      TDTheme.of(context).brandColor4,
-      TDTheme.of(context).brandColor3,
-      TDTheme.of(context).brandColor2,
-      TDTheme.of(context).brandColor1
+    // 在 build 方法或 controller 中定义
+    List<Color> colors = [
+      Colors.blueGrey[900]!, // 深蓝灰
+      Colors.blueGrey[700]!,
+      Colors.blueGrey[500]!,
+      Colors.blueGrey[300]!,
+      Colors.blueGrey[100]!, // 浅蓝灰
     ];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
@@ -76,10 +74,10 @@ class ChartsPage extends GetView<ChartsController> {
                       isCurve: true,
                       points: _linePointsForDemo1(dailyData),
                       shaderColors: [
-                        const Color(0xff0052D9).withOpacity(0.3),
-                        const Color(0xff0052D9).withOpacity(0.01)
+                        const Color(0xff000000).withOpacity(0.3),
+                        const Color(0xff000000).withOpacity(0.01)
                       ],
-                      lineColor: const Color(0xff0052D9).withOpacity(.8),
+                      lineColor: const Color(0xff000000).withOpacity(.8),
                     ),
                   ],
                   yHintLineOffset: 20,
@@ -284,34 +282,14 @@ class ChartsPage extends GetView<ChartsController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          appBar: BrnAppBar(
-            themeData: BrnAppBarConfig.light(),
-            automaticallyImplyLeading: false,
-            leadingWidth: 280.w,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: BrnTextAction(
-                controller.currentActivity.value.activityName,
-                key: actionKey,
-                iconPressed: () {
-                  BrnPopupListWindow.showPopListWindow(context, actionKey,
-                      offset: 10, onItemClick: (index, name) {
-                    controller.currentActivity.value =
-                        controller.allActivityList[index];
-                    controller.onInit();
-                    controller.update(['charts']);
-                    Get.back();
-                    return true;
-                  },
-                      data: controller.allActivityList.isEmpty
-                          ? ["加载中"]
-                          : controller.allActivityList
-                              .map((e) => e.activityName)
-                              .toList());
-                },
-              ),
-            ),
-          ),
+          appBar: _buildAppbar(context, actionKey),
+
+          //  BrnAppBar(
+          //   themeData: BrnAppBarConfig.light(),
+          //   automaticallyImplyLeading: false,
+          //   leadingWidth: 280.w,
+          //
+          // ),
           body: SafeArea(
             child: controller.charts.isEmpty ||
                     controller.groupByTypeCharts.isEmpty
@@ -323,20 +301,79 @@ class ChartsPage extends GetView<ChartsController> {
     );
   }
 
+  PreferredSizeWidget _buildAppbar(context, actionKey) => TDNavBar(
+        useBorderStyle: true,
+        height: 48,
+        useDefaultBack: false,
+        titleWidget: Text(
+          "图表",
+          style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
+        ),
+        leftBarItems: [
+          TDNavBarItem(
+            iconWidget: controller.allActivityList.isEmpty
+                ? const SizedBox()
+                : Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: BrnTextAction(
+                      controller.currentActivity.value.activityName,
+                      key: actionKey,
+                      iconPressed: () {
+                        BrnPopupListWindow.showPopListWindow(context, actionKey,
+                            offset: 10, onItemClick: (index, name) {
+                          controller.currentActivity.value =
+                              controller.allActivityList[index];
+                          controller.onInit();
+                          controller.update(['charts']);
+                          Get.back();
+                          return true;
+                        },
+                            data: controller.allActivityList.isEmpty
+                                ? ["加载中"]
+                                : controller.allActivityList
+                                    .map((e) => e.activityName)
+                                    .toList());
+                      },
+                    ),
+                  ),
+          )
+        ],
+        border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
+      );
+
   _buildEmptyCard() {
-    return BrnAbnormalStateWidget(
-      img: Image.asset(
-        'assets/images/no_data.png',
-        scale: 3.0,
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: GestureDetector(
+          onTap: () {
+            controller.onInit();
+            controller.update(['charts']);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 16.h),
+              Text(
+                "暂无数据",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16.sp,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                "刷新",
+                style: TextStyle(
+                  fontSize: 14.sp,
+                ),
+              )
+            ],
+          ),
+        ),
       ),
-      isCenterVertical: true,
-      title: "无数据",
-      operateTexts: const <String>["刷新"],
-      operateAreaType: OperateAreaType.textButton,
-      action: (index) {
-        KeyboardUtils.hide();
-        controller.onInit();
-      },
     );
   }
 }

@@ -27,7 +27,7 @@ class InviteController extends GetxController {
   void copyInviteCode() {
     // copy
     Clipboard.setData(ClipboardData(
-        text: "快来和我一起用【小素记账】吧，我的邀请码是：${activity.value.activityId}"));
+        text: "快来和我一起用【好享记账】吧，我的邀请码是：${activity.value.activityId}"));
     // show snackbar
     Get.snackbar("复制成功", "邀请码已复制到剪贴板",
         backgroundColor: Colors.green, colorText: Colors.white);

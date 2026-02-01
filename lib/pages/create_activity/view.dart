@@ -65,6 +65,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
             child: BrnBigMainButton(
+              bgColor: Colors.black,
               title: controller.activity.value.activityId == "" ? "创建" : "保存",
               onTap: () {
                 controller.createActivity(context);

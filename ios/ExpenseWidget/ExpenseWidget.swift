@@ -29,7 +29,7 @@ struct Provider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        let userDefaults = UserDefaults(suiteName: "group.com.uuorb.susujournal")
+        let userDefaults = UserDefaults(suiteName: "group.com.uuorb.journal_v2")
         
         // 读取 Flutter 传过来的数据
         let typeString = userDefaults?.string(forKey: "budget_type") ?? "total"

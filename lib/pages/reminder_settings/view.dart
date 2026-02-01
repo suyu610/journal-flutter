@@ -58,31 +58,19 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4A90E2), Color(0xFF50C8EF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        border: Border.all(
+          color: const Color(0xFF000000),
+          width: 1.w,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4A90E2).withOpacity(0.3),
-            offset: const Offset(0, 8),
-            blurRadius: 20,
-          ),
-        ],
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
             child: Icon(
               Icons.notifications_active_outlined,
-              color: Colors.white,
+              color: Colors.black,
               size: 32.sp,
             ),
           ),
@@ -94,7 +82,7 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
                 Text(
                   '养成记账好习惯',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
@@ -103,7 +91,7 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
                 Text(
                   '定时提醒，不再遗漏每一笔开支',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.black.withOpacity(0.9),
                     fontSize: 13.sp,
                   ),
                 ),
@@ -148,16 +136,14 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
                 controller.service.isEnabled.value ? '已开启' : '已关闭',
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: controller.service.isEnabled.value
-                      ? const Color(0xFF4A90E2)
-                      : const Color(0xFF999999),
+                  color: Colors.black.withOpacity(0.9),
                 ),
               ),
             ],
           ),
           Switch(
             value: controller.service.isEnabled.value,
-            activeColor: const Color(0xFF4A90E2),
+            activeColor: Colors.black,
             onChanged: (value) {
               controller.toggleReminder(value, context);
             },
@@ -283,30 +269,23 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color(0xFF4A90E2),
+            color: Colors.black,
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF4A90E2).withOpacity(0.1),
-              offset: const Offset(0, 4),
-              blurRadius: 12,
-            ),
-          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.add_circle_outline_rounded,
-              color: const Color(0xFF4A90E2),
+              color: Colors.black,
               size: 20.sp,
             ),
             SizedBox(width: 8.w),
             Text(
               '添加提醒时间',
               style: TextStyle(
-                color: const Color(0xFF4A90E2),
+                color: Colors.black,
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),

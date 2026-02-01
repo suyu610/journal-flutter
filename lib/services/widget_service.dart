@@ -2,7 +2,7 @@ import 'package:home_widget/home_widget.dart';
 
 // 假设你的 Activity 模型或传入参数包含这些字段
 class WidgetSyncService {
-  static const String appGroupId = 'group.com.uuorb.susujournal';
+  static const String appGroupId = 'group.com.uuorb.journal_v2';
   static const String iOSWidgetName = 'ExpenseWidget';
 
   static Future<void> updateWidget({

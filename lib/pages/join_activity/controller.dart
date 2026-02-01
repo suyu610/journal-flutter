@@ -34,8 +34,8 @@ class JoinActivityController extends GetxController {
 
   String? regInviteId(String? text) {
     if (text == null) return null;
-    // 快来和我一起用【小素记账】吧，我的邀请码是：aca120b534f3b04eb8
-    // 快来和我一起用【小素记账】吧，我的邀请码是：ac0f05629ba46e41a0
+    // 快来和我一起用【好享记账】吧，我的邀请码是：aca120b534f3b04eb8
+    // 快来和我一起用【好享记账】吧，我的邀请码是：ac0f05629ba46e41a0
 
     var reg = RegExp(r'ac[a-zA-Z0-9]{16}');
     var match = reg.firstMatch(text);

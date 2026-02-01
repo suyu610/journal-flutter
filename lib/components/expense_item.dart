@@ -27,13 +27,13 @@ Widget ActivityExpenseItem(Expense e, context) {
             padding: const EdgeInsets.all(10),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
-              color: const Color(0xFF0052D9).withAlpha(10),
+              color: const Color.fromARGB(255, 0, 0, 0).withAlpha(10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(799.20),
               ),
             ),
             child: Icon(getIconByType(e.type),
-                size: 19.20, color: const Color(0xFF0052D9)),
+                size: 19.20, color: const Color.fromARGB(255, 0, 0, 0)),
           ),
           const SizedBox(width: 12),
           Expanded(

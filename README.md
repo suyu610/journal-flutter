@@ -1,4 +1,4 @@
-## 小素记账前端
+## 好享记账前端
 ### 视频介绍 
 https://www.bilibili.com/video/BV1WbGBzcEec
 ### 如有疑问，可与我联系
@@ -12,7 +12,7 @@ uuorb@foxmail.com
 - 项目体验：[AppStore](https://apps.apple.com/cn/app/%E5%A5%BD%E4%BA%AB%E8%AE%B0%E8%B4%A6/id6736673372)
 ## 项目简介
 
-`小素记账`是一个基于flutter开发的，跨端AI记账APP。实现了多人记账、语音记账、截屏快捷记账、自然语言记账等功能。
+`好享记账`是一个基于flutter开发的，跨端AI记账APP。实现了多人记账、语音记账、截屏快捷记账、自然语言记账等功能。
 整体功能完整，前后端全开源。
 
 ## 技术栈

@@ -22,13 +22,6 @@ Widget activityCard(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2B303B).withOpacity(0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          )
-        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -142,18 +135,9 @@ class _Header extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0052D9), Color(0xFF003FBD)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(99),
-                  boxShadow: [
-                    BoxShadow(
-                        color: const Color(0xFF0052D9).withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2))
-                  ]),
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(99),
+              ),
               alignment: Alignment.center,
               child: Text(
                 activity.activityName.length > 1
@@ -177,7 +161,7 @@ class _Header extends StatelessWidget {
                   style: const TextStyle(
                       color: Color(0xFF1D1D1D),
                       fontSize: 15,
-                      fontWeight: FontWeight.w600),
+                      fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 4),
                 if (activity.activated)
@@ -253,7 +237,7 @@ class _FinanceOverview extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 36,
                         fontFamily: 'SourceCodePro',
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Color(0xFF1D1D1D)),
                   ),
                   const SizedBox(width: 4),
@@ -314,7 +298,7 @@ class _FinanceOverview extends StatelessWidget {
               style: TextStyle(
                   fontSize: 18,
                   fontFamily: 'SourceCodePro',
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: valueColor),
             ),
           ),
@@ -344,13 +328,13 @@ class _BudgetAnalysis extends StatelessWidget {
               Text(stats.isMonthType ? "本月花销进度" : "总花销进度",
                   style: const TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: Color(0xFF333333))),
               Text("${(stats.progress * 100).toStringAsFixed(1)}%",
                   style: const TextStyle(
                       fontSize: 12,
                       fontFamily: 'SourceCodePro',
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: Color(0xFF0052D9)))
             ],
           ),
@@ -362,12 +346,11 @@ class _BudgetAnalysis extends StatelessWidget {
               backgroundColor: const Color(0xFFE0E0E0),
               valueColor: AlwaysStoppedAnimation<Color>(stats.progress >= 1.0
                   ? const Color(0xFFE34D59)
-                  : const Color(0xFF0052D9)),
+                  : const Color(0xFF000000)),
               minHeight: 8,
             ),
           ),
 
-          // 2. 日/周 重点展示区 (仅月模式)
           if (stats.isMonthType) ...[
             const SizedBox(height: 20), // 加大间距
             Row(
@@ -375,7 +358,8 @@ class _BudgetAnalysis extends StatelessWidget {
                 Expanded(
                     child: _highlightCard(
                         title: "今日",
-                        remainingLabel: "今日剩余",
+                        remainingLabel:
+                            "今日${stats.dayRemaining < 0 ? "超出" : "剩余"}",
                         remaining: stats.dayRemaining,
                         spent: (activity.todayExpense ?? 0).toDouble(),
                         limit: stats.dayLimit)),
@@ -425,7 +409,7 @@ class _BudgetAnalysis extends StatelessWidget {
               Container(
                   width: 3,
                   height: 12,
-                  color: const Color(0xFF0052D9),
+                  color: const Color(0xff000000),
                   margin: const EdgeInsets.only(right: 6)),
               Text(title,
                   style: const TextStyle(
@@ -444,7 +428,7 @@ class _BudgetAnalysis extends StatelessWidget {
             style: TextStyle(
                 fontSize: 18,
                 fontFamily: 'SourceCodePro',
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: remainColor),
           ),
 
