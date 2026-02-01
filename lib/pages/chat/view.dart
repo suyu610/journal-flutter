@@ -124,8 +124,7 @@ class ChatPage extends GetView<ChatController> {
                     // 根据你的模型调整高度，通常占屏幕一半多一点
                     height: 0.65.sh,
                     child: controller.isModelLoaded.value
-                        ? live2D(
-                            "http://localhost:${LocalServer.port}/index.html")
+                        ? live2D("${LocalServer.baseUrl}/index.html")
                         : const SizedBox(),
                   )),
 

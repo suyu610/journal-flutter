@@ -341,7 +341,7 @@ class ChatController extends GetxController {
     LocalServer.start();
     // 替换为你需要的角色 URL
     String url =
-        "http://localhost:${LocalServer.port}/index.html?roleName=${config.characterCode}";
+        "${LocalServer.baseUrl}/index.html?roleName=${config.characterCode}";
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

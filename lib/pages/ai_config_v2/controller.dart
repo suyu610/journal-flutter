@@ -109,8 +109,7 @@ class AiConfigV2Controller extends GetxController {
     String defaultId = characters[0].id;
     LocalServer.start();
 
-    String baseUrl =
-        "http://localhost:${LocalServer.port}/index.html?roleName=$defaultId";
+    String baseUrl = "${LocalServer.baseUrl}/index.html?roleName=$defaultId";
     // String baseUrl = "https://cdn.uuorb.com/live2d/index@9.html?roleName=";
 
     webViewController = WebViewController()
