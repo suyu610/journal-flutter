@@ -23,11 +23,17 @@ import 'package:just_audio/just_audio.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'package:journal/models/ai_presets.dart';
+
 class ChatController extends GetxController {
   ChatController();
   RxString bubbleText = "".obs; // 气泡内容
   RxBool isBubbleVisible = false.obs; // 气泡是否可见
   Timer? _bubbleTimer; // 自动隐藏定时器
+
+  // 当前角色配置
+  Rx<AICharacter?> currentCharacter = Rx<AICharacter?>(null);
+
 // 显示气泡的方法
   void showBubble(String text) {
     bubbleText.value = text;
@@ -96,6 +102,14 @@ class ChatController extends GetxController {
     if (result != null) {
       try {
         UserAIConfig config = UserAIConfig.fromJson(result['data']);
+
+        // 查找对应的角色预设
+        final preset = CharacterPresets.list.firstWhere(
+          (c) => c.id == config.characterCode,
+          orElse: () => CharacterPresets.list[0],
+        );
+        currentCharacter.value = preset;
+
         _initLive2D(config);
       } catch (e) {
         debugPrint("解析配置失败: $e");

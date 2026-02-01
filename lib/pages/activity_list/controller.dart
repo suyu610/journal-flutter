@@ -56,7 +56,6 @@ class ActivityListController extends GetxController {
 
         activityList.value =
             (data as List).map((e) => Activity.fromJson(e)).toList();
-        Log().d("activityList: ${activityList.toString()}");
         refreshController.finishRefresh();
         refreshController.resetFooter();
         update(["activity_list"]);

@@ -12,38 +12,31 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 Widget buildExpenseMessage(types.Message message, controller, context) {
   var item = message.metadata!;
 
-  // 统一定义颜色常量
-  const Color kAiBubbleColor = Color(0xFF1E1E1E); // 深灰
-
-  Color kCardBg = kAiBubbleColor.withOpacity(0.9); // 卡片深色背景
-  const Color kTechBlue = Color(0xFF2962FF); // 科技蓝
+  // 获取动态主题色
+  Color themeColor =
+      controller.currentCharacter.value?.themeColor ?? const Color(0xFF2962FF);
   const Color kTextPrimary = Colors.white; // 主文字
   const Color kTextSecondary = Colors.white54; // 次要文字
-
+  final char = controller.currentCharacter.value;
+  List<Color> gradientColors = char?.bgColors ?? [themeColor, themeColor];
+  if (gradientColors.isEmpty) gradientColors = [themeColor, themeColor];
   return Container(
     // 限制卡片最大宽度，防止在大屏上太宽
     width: 260,
-    decoration: ShapeDecoration(
-      color: kCardBg, // 微透深色背景
-      shape: RoundedRectangleBorder(
-        // 给卡片加一个极细的亮边，增加高级感
-        side: BorderSide(width: 1, color: Colors.white.withOpacity(0.1)),
-        borderRadius: const BorderRadius.all(
-          Radius.circular(16),
-          // bottomLeft: Radius.circular(16),
-          // bottomRight: Radius.circular(16),
-          // 左上角留尖角或圆角取决于你气泡的整体逻辑，这里保持统圆角或微调
-          // topLeft: Radius.circular(4),
-        ),
-      ),
-      // 可选：加一点阴影让它浮起来
-      // shadows: [
-      //   BoxShadow(
-      //     color: Colors.black.withOpacity(0.3),
-      //     blurRadius: 10,
-      //     offset: const Offset(0, 4),
-      //   )
-      // ],
+    decoration: BoxDecoration(
+      // 背景：深色半透明 + 极淡的主题色倾向
+      color: Color.alphaBlend(themeColor.withOpacity(0.05),
+          const Color(0xFF1A1A1A).withOpacity(0.9)),
+      borderRadius: BorderRadius.circular(16),
+      // 边框：使用渐变边框或者微弱的主题色边框
+      border: Border.all(color: themeColor.withOpacity(0.2), width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.2),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        )
+      ],
     ),
     padding: const EdgeInsets.all(16), // 增加内边距，呼吸感更强
     child: Column(
@@ -90,14 +83,14 @@ Widget buildExpenseMessage(types.Message message, controller, context) {
                   height: 40,
                   decoration: BoxDecoration(
                       // 科技蓝低透明度背景
-                      color: kTechBlue.withOpacity(0.15),
+                      color: themeColor.withOpacity(0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: kTechBlue.withOpacity(0.3), width: 1)),
+                          color: themeColor.withOpacity(0.3), width: 1)),
                   child: Icon(
                     getIconByType(item['type']),
                     size: 18,
-                    color: kTechBlue, // 亮蓝色图标
+                    color: themeColor, // 亮蓝色图标
                   ),
                 ),
                 const SizedBox(width: 10),

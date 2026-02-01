@@ -19,39 +19,48 @@ Widget buildBubble(
   bool isUser = message.author.id == controller.user.id;
   bool isExpenseMessage = message.type == types.MessageType.custom &&
       message.metadata?['msgType'] == "expense";
-  // 如果是自定义的消费消息，并且你想完全自定义样式（不带气泡尖角），
-  // 可以直接返回内容，或者保留在气泡里。这里我保留在气泡里，但适配深色。
+
+  // 获取动态主题色
+// 获取角色配置
+  final char = controller.currentCharacter.value;
+  Color themeColor = char?.themeColor ?? const Color(0xFF2962FF);
+  // 2. 智能取色逻辑：优先取背景渐变的第一个颜色（通常更鲜艳适合做气泡），如果没有则用主题色
+  Color activeColor = char?.bgColors.isNotEmpty == true
+      ? char!.bgColors.first
+      : (char?.themeColor ?? const Color(0xFF667EEA));
   return Bubble(
-    // 气泡尖角位置
     nip: isUser ? BubbleNip.rightBottom : BubbleNip.leftBottom,
     showNip: !isExpenseMessage,
-    // 调整尖角的大小，不用太尖
     nipWidth: 8,
     nipHeight: 10,
-    radius: const Radius.circular(8), // 更圆润的圆角
-    nipRadius: 2, // 尖角圆角
-    // nipRadius <= nipWidth / 2 && nipRadius <= nipHeight / 2
+    radius: const Radius.circular(8),
+    nipRadius: 2,
     // 内边距
     padding: isExpenseMessage
         ? BubbleEdges.symmetric(horizontal: 0.w, vertical: 10.h)
         : BubbleEdges.symmetric(horizontal: 14.w, vertical: 10.h),
-
-    // 边框逻辑：AI的气泡加一个极细的亮边，增加玻璃质感
-    borderWidth: isExpenseMessage || isUser ? 0 : 1,
-    borderColor: isUser ? Colors.transparent : Colors.white.withOpacity(0.1),
-
+    borderWidth: isExpenseMessage ? 0 : 1,
+    borderColor: Colors.white.withOpacity(.7),
     // 背景颜色
     color: isExpenseMessage
         ? Colors.transparent
         : isUser
-            ? kUserBubbleColor.withOpacity(0.9)
-            : kAiBubbleColor.withOpacity(0.9),
-
-    // 阴影：给用户的蓝色气泡加一点发光效果
+            ? activeColor // 用户气泡颜色走 Theme
+            : Color.alphaBlend(themeColor.withOpacity(0.05),
+                const Color(0xFF1A1A1A).withOpacity(0.9)),
+    alignment: isUser
+        ? Alignment.centerRight
+        : isExpenseMessage
+            ? Alignment.centerLeft
+            : Alignment.topLeft,
     elevation: isUser ? 4 : 0,
-    shadowColor:
-        isUser ? kUserBubbleColor.withOpacity(0.4) : Colors.transparent,
-
+    shadowColor: themeColor.withOpacity(0.4),
+    margin: BubbleEdges.only(
+      top: 4,
+      bottom: 4,
+      left: isUser ? 0 : 8,
+      right: isUser ? 8 : 0,
+    ),
     child: _buildMessage(message, controller, Get.context!),
   );
 }
@@ -72,7 +81,7 @@ Widget _buildMessage(types.Message message, controller, context) {
     Widget textWidget = Text(
       textMessage.text,
       style: TextStyle(
-        fontSize: 15.sp, // 稍微加大一点字号，更易读
+        fontSize: 14.sp, // 稍微加大一点字号，更易读
         height: 1.4, // 增加行高，不仅好看也更像文章
         color: kTextColor, // 无论谁发，在深色背景下都用白色字
         fontWeight: FontWeight.w400,
@@ -80,41 +89,6 @@ Widget _buildMessage(types.Message message, controller, context) {
     );
 
     return textWidget;
-    // VIP 朗读逻辑判断
-    // 只有当：是VIP + 不是“正在输入” + 是对方发的 + 有历史消息时 才触发
-
-    // bool enableTTS = false;
-
-    // Get.find<LayoutController>().user.value.vip &&
-    //     message.text != "对方正在输入..." &&
-    //     !isUser &&
-    //     controller.messages.length >= 1;
-
-    // if (enableTTS) {
-    //   return InkWell(
-    //     onTap: () {
-    //       controller.tts(textMessage.text, context);
-    //     },
-    //     // 使用 InkWell 配合透明材质，点击时不会有难看的水波纹背景块
-    //     splashColor: Colors.transparent,
-    //     highlightColor: Colors.transparent,
-    //     child: Column(
-    //       crossAxisAlignment: CrossAxisAlignment.start,
-    //       children: [
-    //         textWidget,
-    //         // 可选：加一个小喇叭图标提示可以点击朗读（如果不想要可以删掉）
-    //         Padding(
-    //           padding: const EdgeInsets.only(top: 6.0),
-    //           child: Icon(
-    //             Icons.volume_up_rounded,
-    //             size: 14,
-    //             color: Colors.white.withOpacity(0.4),
-    //           ),
-    //         )
-    //       ],
-    //     ),
-    //   );
-    // } else {}
   }
 
   return const SizedBox();

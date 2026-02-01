@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
+import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 
@@ -62,15 +63,17 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         Visibility(
           visible: controller.isOwner.value ||
               controller.activity.value.activityId == "",
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
-            child: BrnBigMainButton(
-              bgColor: Colors.black,
-              title: controller.activity.value.activityId == "" ? "创建" : "保存",
-              onTap: () {
-                controller.createActivity(context);
-              },
-            ),
+          child: TDButton(
+            // padding:
+            margin: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
+            height: 44,
+
+            isBlock: true,
+            theme: TDButtonTheme.primary,
+            text: controller.activity.value.activityId == "" ? "创建" : "保存",
+            onTap: () {
+              controller.createActivity(context);
+            },
           ),
         ),
         Visibility(
@@ -80,8 +83,8 @@ class CreateActivityPage extends GetView<CreateActivityController> {
             padding: EdgeInsets.symmetric(vertical: 0.0.h, horizontal: 8.w),
             child: BrnBigOutlineButton(
               title: "删除账本",
-              lineColor: Colors.red,
-              textColor: Colors.red,
+              lineColor: Colors.black,
+              textColor: Colors.black,
               onTap: () {
                 BrnMiddleInputDialog(
                     title: "确认删除此账本？",

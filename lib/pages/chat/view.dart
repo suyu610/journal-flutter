@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/services/local_server.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
 // 保持你原有的引用
 import 'package:journal/components/voice_record/message_voice_send_widget.dart';
 import 'package:journal/event_bus/event_bus.dart';
@@ -42,20 +41,44 @@ class ChatPage extends GetView<ChatController> {
               // 1. 背景层：温馨的星空/极光渐变
               // ==============================
               Positioned.fill(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF2E335A), // 顶部：深紫蓝 (更有二次元夜晚感)
-                        Color(0xFF1C1B33), // 中部：过渡深色
-                        Color(0xFF000000), // 底部：纯黑 (保证输入框清晰)
-                      ],
-                      stops: [0.0, 0.6, 1.0],
+                child: Obx(() {
+                  final bgColors =
+                      controller.currentCharacter.value?.bgColors ??
+                          [
+                            const Color(0xFF2E335A), // 顶部：深紫蓝 (更有二次元夜晚感)
+                            const Color(0xFF1C1B33), // 中部：过渡深色
+                            const Color(0xFF000000), // 底部：纯黑 (保证输入框清晰)
+                          ];
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 600),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.center,
+                        end: Alignment.bottomCenter,
+                        colors: bgColors.length == 2
+                            ? [
+                                ...bgColors,
+                              ] // 强制加一个黑色底部，保证输入框清晰
+                            : bgColors,
+                      ),
                     ),
-                  ),
-                ),
+                    // 叠加一层黑色遮罩在底部，保证输入框区域的可读性
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.1),
+                            Colors.black.withOpacity(0.6),
+                          ],
+                          stops: const [0.5, 0.8, 1.0],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               ),
 
               // ==============================
@@ -68,20 +91,26 @@ class ChatPage extends GetView<ChatController> {
                 right: 0,
                 height: 400.h,
                 child: Center(
-                  child: Container(
-                    width: 300.w,
-                    height: 300.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          const Color(0xFFFF9A9E).withOpacity(0.12), // 樱花粉光晕
-                          Colors.transparent,
-                        ],
-                        radius: 0.7,
+                  child: Obx(() {
+                    final themeColor =
+                        controller.currentCharacter.value?.themeColor ??
+                            const Color(0xFFFF9A9E);
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      width: 300.w,
+                      height: 300.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            themeColor.withOpacity(0.12), // 使用主题色光晕
+                            Colors.transparent,
+                          ],
+                          radius: 0.7,
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  }),
                 ),
               ),
 
@@ -89,7 +118,7 @@ class ChatPage extends GetView<ChatController> {
               // 2. Live2D 人物层
               // ==============================
               Obx(() => Positioned(
-                    top: 110.h, // 稍微上移，让人物占据上半部分
+                    top: 120.h, // 稍微上移，让人物占据上半部分
                     left: 0,
                     right: 0,
                     // 根据你的模型调整高度，通常占屏幕一半多一点
@@ -103,7 +132,7 @@ class ChatPage extends GetView<ChatController> {
               // ==================== 新增：游戏风格对话气泡层 ====================
               // 位置：放在 Live2D 头部上方 (根据 top: 110.h 估算，头部大概在 120-150 左右，气泡放在 60-80)
               Positioned(
-                top: 80.h,
+                top: 60.h,
                 left: 40.w, // 左右留出边距，防止贴边
                 right: 40.w,
                 child: Obx(() => AnimatedOpacity(
@@ -164,25 +193,6 @@ class ChatPage extends GetView<ChatController> {
               // ==============================
               // 4. 聊天列表遮罩 (底部渐变黑)
               // ==============================
-              Positioned.fill(
-                child: IgnorePointer(
-                  // 这一层只负责视觉，不拦截点击
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          const Color(0xFF101018).withOpacity(0.4), // 中间稍微暗一点
-                          const Color(0xFF000000).withOpacity(0.95), // 底部几乎纯黑
-                        ],
-                        stops: const [0.35, 0.7, 1.0],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
 
               // ==============================
               // 5. 聊天内容列表
@@ -201,25 +211,25 @@ class ChatPage extends GetView<ChatController> {
                     ).createShader(bounds);
                   },
                   blendMode: BlendMode.dstIn,
-                  child: Chat(
-                    messages: controller.messages,
-                    onSendPressed: (types.PartialText text) =>
-                        controller.handleSendPressed(text, context),
-                    user: controller.user,
-                    showUserAvatars: false,
-                    showUserNames: false,
-                    // 自定义气泡构建
-                    bubbleBuilder: (Widget widget,
-                        {required types.Message message,
-                        required bool nextMessageInGroup}) {
-                      return buildBubble(widget, controller,
-                          message: message,
-                          nextMessageInGroup: nextMessageInGroup);
-                    },
-                    // 使用下方定义的温馨暗黑主题
-                    theme: _buildCozyDarkTheme(),
-                    customBottomWidget: const SizedBox(), // 底部留空，我们自己做浮动的
-                  ),
+                  child: Obx(() => Chat(
+                        messages: controller.messages,
+                        onSendPressed: (types.PartialText text) =>
+                            controller.handleSendPressed(text, context),
+                        user: controller.user,
+                        showUserAvatars: false,
+                        showUserNames: false,
+                        // 自定义气泡构建
+                        bubbleBuilder: (Widget widget,
+                            {required types.Message message,
+                            required bool nextMessageInGroup}) {
+                          return buildBubble(widget, controller,
+                              message: message,
+                              nextMessageInGroup: nextMessageInGroup);
+                        },
+                        // 使用下方定义的温馨暗黑主题
+                        theme: _buildCozyDarkTheme(),
+                        customBottomWidget: const SizedBox(), // 底部留空，我们自己做浮动的
+                      )),
                 ),
               ),
 
@@ -417,23 +427,29 @@ class ChatPage extends GetView<ChatController> {
                           text: controller.textEditingController.text),
                       context);
                 },
-                child: Container(
-                  width: 50.h,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                      // 使用暖色调或者原本的科技蓝，这里配合 Hiyori 用粉蓝渐变或者纯色
-                      color: const Color(0xFF667EEA),
-                      borderRadius: BorderRadius.circular(25), // 变成圆形更好看
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF667EEA).withOpacity(0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ]),
-                  child: const Icon(Icons.arrow_upward_rounded,
-                      color: Colors.white),
-                ),
+                child: Obx(() {
+                  final themeColor =
+                      controller.currentCharacter.value?.themeColor ??
+                          const Color(0xFF667EEA);
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 50.h,
+                    height: 50.h,
+                    decoration: BoxDecoration(
+                        // 使用暖色调或者原本的科技蓝，这里配合 Hiyori 用粉蓝渐变或者纯色
+                        color: themeColor,
+                        borderRadius: BorderRadius.circular(25), // 变成圆形更好看
+                        boxShadow: [
+                          BoxShadow(
+                            color: themeColor.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ]),
+                    child: const Icon(Icons.arrow_upward_rounded,
+                        color: Colors.white),
+                  );
+                }),
               )
             ]
           ],
@@ -443,34 +459,39 @@ class ChatPage extends GetView<ChatController> {
   }
 
   Widget _buildTextField(BuildContext context) {
-    return TextField(
-      controller: controller.textEditingController,
-      focusNode: controller.focusNode,
-      style: const TextStyle(color: Colors.white, fontSize: 16),
-      cursorColor: const Color(0xFF667EEA),
-      decoration: InputDecoration(
-        hintText: "说点什么...",
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-        border: InputBorder.none,
-        isCollapsed: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      ),
-      onSubmitted: (text) {
-        controller.handleSendPressed(types.PartialText(text: text), context);
-      },
-      // 禁用 iOS 原生菜单防止遮挡
-      contextMenuBuilder: (context, editableTextState) {
-        final List<ContextMenuButtonItem> buttonItems =
-            editableTextState.contextMenuButtonItems;
-        buttonItems.removeWhere((ContextMenuButtonItem buttonItem) {
-          return buttonItem.type == ContextMenuButtonType.liveTextInput;
-        });
-        return AdaptiveTextSelectionToolbar.buttonItems(
-          anchors: editableTextState.contextMenuAnchors,
-          buttonItems: buttonItems,
-        );
-      },
-    );
+    return Obx(() {
+      final themeColor = controller.currentCharacter.value?.themeColor ??
+          const Color(0xFF667EEA);
+      return TextField(
+        controller: controller.textEditingController,
+        focusNode: controller.focusNode,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+        cursorColor: themeColor,
+        decoration: InputDecoration(
+          hintText: "说点什么...",
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+          border: InputBorder.none,
+          isCollapsed: true,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        ),
+        onSubmitted: (text) {
+          controller.handleSendPressed(types.PartialText(text: text), context);
+        },
+        // 禁用 iOS 原生菜单防止遮挡
+        contextMenuBuilder: (context, editableTextState) {
+          final List<ContextMenuButtonItem> buttonItems =
+              editableTextState.contextMenuButtonItems;
+          buttonItems.removeWhere((ContextMenuButtonItem buttonItem) {
+            return buttonItem.type == ContextMenuButtonType.liveTextInput;
+          });
+          return AdaptiveTextSelectionToolbar.buttonItems(
+            anchors: editableTextState.contextMenuAnchors,
+            buttonItems: buttonItems,
+          );
+        },
+      );
+    });
   }
 
   Widget _buildVoiceButton(
@@ -509,6 +530,17 @@ class ChatPage extends GetView<ChatController> {
   // 主题配置：温馨暗色调
   // --------------------------------------------------------------------------
   ChatTheme _buildCozyDarkTheme() {
+    // 1. 安全获取当前角色
+    final char = controller.currentCharacter.value;
+    // 2. 智能取色逻辑：优先取背景渐变的第一个颜色（通常更鲜艳适合做气泡），如果没有则用主题色
+    Color activeColor = char?.bgColors.isNotEmpty == true
+        ? char!.bgColors.first
+        : (char?.themeColor ?? const Color(0xFF667EEA));
+    // 3. 智能文字反色：计算背景亮度，如果太亮，文字就用黑色
+    bool isLightColor = activeColor.computeLuminance() > 0.5;
+    Color textColor =
+        isLightColor ? Colors.black.withOpacity(0.8) : Colors.white;
+
     return DefaultChatTheme(
       emptyChatPlaceholderTextStyle: const TextStyle(
         color: Colors.transparent,
@@ -518,34 +550,30 @@ class ChatPage extends GetView<ChatController> {
       backgroundColor: Colors.transparent,
 
       // 机器人气泡：半透明的深色，带一点紫灰，不突兀
-      secondaryColor: const Color(0xFF2B2D42).withOpacity(0.9),
+      secondaryColor: const Color(0xFF1E1E1E).withOpacity(0.8),
       receivedMessageBodyTextStyle: const TextStyle(
         color: Color(0xFFEBEBEB),
         fontSize: 15,
         height: 1.4,
       ),
 
-      // 用户气泡：柔和的蓝色 (或者你可以改成 Pink 如果喜欢)
-      primaryColor: const Color(0xFF667EEA),
-      sentMessageBodyTextStyle: const TextStyle(
-        color: Colors.white,
+      // 用户气泡（发送）：使用角色的“主氛围色”
+      primaryColor: activeColor,
+      sentMessageBodyTextStyle: TextStyle(
+        color: textColor, // <--- 动态文字颜色
         fontSize: 15,
         fontWeight: FontWeight.w500,
+        height: 1.5,
       ),
 
-      // 气泡圆角和间距
-      messageBorderRadius: 18,
-      messageInsetsHorizontal: 16,
-      messageInsetsVertical: 12,
-
-      // 时间分割线
+      // 细节优化
+      messageBorderRadius: 16,
+      messageInsetsHorizontal: 14,
+      messageInsetsVertical: 10,
       dateDividerTextStyle: TextStyle(
-          color: Colors.white.withOpacity(0.4),
+          color: Colors.white.withOpacity(0.3),
           fontSize: 10,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5),
-
-      // 输入框区域隐藏(因为我们自定义了)
+          fontWeight: FontWeight.w500),
       inputBackgroundColor: Colors.transparent,
     );
   }
