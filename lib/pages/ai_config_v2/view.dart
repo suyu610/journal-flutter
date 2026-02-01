@@ -30,7 +30,11 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
           Positioned.fill(
             child: Padding(
               padding: EdgeInsets.only(top: 30.h, bottom: 200.h),
-              child: WebViewWidget(controller: controller.webViewController),
+              child: Obx(() => controller.isWebViewReady.value
+                  ? WebViewWidget(controller: controller.webViewController)
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    )),
             ),
           ),
 
@@ -108,43 +112,6 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
         ),
       );
     });
-  }
-
-  Widget _buildSwitchArrows() {
-    return Positioned(
-      left: 10,
-      right: 10,
-      top: 0,
-      bottom: 200.h,
-      child: Center(
-        // 垂直居中
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // 左箭头 (带一点磨砂背景，防止在浅色背景看不清)
-            _buildArrowButton(
-                Icons.arrow_back_ios_new, () => controller.switchCharacter(-1)),
-            // 右箭头
-            _buildArrowButton(
-                Icons.arrow_forward_ios, () => controller.switchCharacter(1)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildArrowButton(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.1), // 淡淡的黑底
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: Colors.white, size: 28),
-      ),
-    );
   }
 
   Widget _buildBottomPanel() {
@@ -248,6 +215,10 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                 Obx(() {
                   final char =
                       controller.characters[controller.currentIndex.value];
+                  final bgColor = char.bgColors[0]; // 提取出背景色
+                  final bool isLightColor = bgColor.computeLuminance() > 0.5;
+                  final Color textColor =
+                      isLightColor ? Colors.black87 : Colors.white;
                   return GestureDetector(
                     onTap: () => controller.saveConfig(), // 你的保存逻辑
                     child: AnimatedContainer(
@@ -256,12 +227,12 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                       height: 50.h,
                       decoration: BoxDecoration(
                           // 按钮也做成渐变，呼应背景
-                          color: char.bgColors[0],
-                          // gradient: LinearGradient(colors: [char.bgColors[0]]),
+                          color: bgColor,
                           borderRadius: BorderRadius.circular(25),
                           boxShadow: [
                             BoxShadow(
-                                color: char.bgColors[0].withOpacity(0.5),
+                                color: bgColor
+                                    .withOpacity(isLightColor ? 0.6 : 0.4),
                                 blurRadius: 12,
                                 offset: const Offset(0, 6))
                           ]),
@@ -269,8 +240,8 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                         child: Text(
                           "确认签约 ${char.name.split('·').last}", // 只要名字后半部分
                           style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16.sp,
+                              color:
+                                  textColor, // 【这里引用计算好的颜色】                              fontSize: 16.sp,
                               fontWeight: FontWeight.bold),
                         ),
                       ),

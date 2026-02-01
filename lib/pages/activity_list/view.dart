@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
-import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/components/empty_item.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';

@@ -95,18 +95,6 @@ class CharacterPresets {
       defaultRelationship: "猫主子",
       defaultPersonality: "慵懒",
       defaultOpening: "喵~（把买猫粮剩下的钱都存起来，懂？）",
-    ),
-    AICharacter(
-      id: "hijiki",
-      name: "审计黑猫·Hijiki",
-      description: "潜伏在暗处的观察者，你藏私房钱的动作逃不过它的眼睛。",
-      // 神秘的深紫/黑夜色
-      bgColors: [Color(0xFF232526), Color(0xFF414345)],
-      themeColor: Color(0xFF2C3E50),
-      defaultSalutation: "...",
-      defaultRelationship: "暗夜侦探",
-      defaultPersonality: "腹黑",
-      defaultOpening: "喵...（我看见你刚刚那笔‘不明支出’了。）",
-    ),
+    )
   ];
 }

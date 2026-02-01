@@ -88,7 +88,7 @@ class HttpRequest {
         // processStreamResponse(response.data.stream);
       } else {
         var result = Result.fromJson(response.data);
-        Log().d("$path result -> ${response.data}");
+        // Log().d("$path result -> ${response.data}");
         if (result.code == -1) {
           Log().d("token失效");
           SpUtil.removeToken();

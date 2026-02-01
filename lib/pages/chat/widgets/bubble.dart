@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'expense_message.dart'; // 假设你保留了这个文件
 
 // 定义一些常量颜色，方便统一修改
@@ -59,8 +58,6 @@ Widget buildBubble(
 
 // 消息内容构建
 Widget _buildMessage(types.Message message, controller, context) {
-  bool isUser = message.author.id == controller.user.id;
-
   // 1. 处理自定义消息 (消费记录)
   if (message.type == types.MessageType.custom &&
       message.metadata?['msgType'] == "expense") {
@@ -82,39 +79,42 @@ Widget _buildMessage(types.Message message, controller, context) {
       ),
     );
 
+    return textWidget;
     // VIP 朗读逻辑判断
     // 只有当：是VIP + 不是“正在输入” + 是对方发的 + 有历史消息时 才触发
-    bool enableTTS = Get.find<LayoutController>().user.value.vip &&
-        message.text != "对方正在输入..." &&
-        !isUser &&
-        controller.messages.length >= 1;
-    return textWidget;
 
-    if (enableTTS) {
-      return InkWell(
-        onTap: () {
-          controller.tts(textMessage.text, context);
-        },
-        // 使用 InkWell 配合透明材质，点击时不会有难看的水波纹背景块
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            textWidget,
-            // 可选：加一个小喇叭图标提示可以点击朗读（如果不想要可以删掉）
-            Padding(
-              padding: const EdgeInsets.only(top: 6.0),
-              child: Icon(
-                Icons.volume_up_rounded,
-                size: 14,
-                color: Colors.white.withOpacity(0.4),
-              ),
-            )
-          ],
-        ),
-      );
-    } else {}
+    // bool enableTTS = false;
+
+    // Get.find<LayoutController>().user.value.vip &&
+    //     message.text != "对方正在输入..." &&
+    //     !isUser &&
+    //     controller.messages.length >= 1;
+
+    // if (enableTTS) {
+    //   return InkWell(
+    //     onTap: () {
+    //       controller.tts(textMessage.text, context);
+    //     },
+    //     // 使用 InkWell 配合透明材质，点击时不会有难看的水波纹背景块
+    //     splashColor: Colors.transparent,
+    //     highlightColor: Colors.transparent,
+    //     child: Column(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         textWidget,
+    //         // 可选：加一个小喇叭图标提示可以点击朗读（如果不想要可以删掉）
+    //         Padding(
+    //           padding: const EdgeInsets.only(top: 6.0),
+    //           child: Icon(
+    //             Icons.volume_up_rounded,
+    //             size: 14,
+    //             color: Colors.white.withOpacity(0.4),
+    //           ),
+    //         )
+    //       ],
+    //     ),
+    //   );
+    // } else {}
   }
 
   return const SizedBox();

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:journal/components/bruno/src/components/toast/brn_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';

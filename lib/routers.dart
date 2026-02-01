@@ -78,7 +78,7 @@ abstract class Routers {
         name: LoginPageUrl,
         page: () => const LoginPage(),
         binding: LoginBinding()),
-    GetPage(name: ChatDetailPageUrl, page: () => ChatPage()),
+    GetPage(name: ChatDetailPageUrl, page: () => const ChatPage()),
     GetPage(name: AIConfigPageUrl, page: () => AiConfigPage()),
     GetPage(
       name: ActivityListPageUrl,

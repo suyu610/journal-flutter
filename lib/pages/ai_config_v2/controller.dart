@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/models/ai_presets.dart';
+import 'package:journal/services/local_server.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/models/ai_config_model.dart';
@@ -15,7 +16,7 @@ class AiConfigV2Controller extends GetxController {
 
   // 当前选中的角色索引
   var currentIndex = 0.obs;
-  bool isWebViewReady = false;
+  RxBool isWebViewReady = false.obs;
 
   // 两个输入框控制器
   late final TextEditingController nameController;
@@ -99,11 +100,18 @@ class AiConfigV2Controller extends GetxController {
   // 4. WebView 相关逻辑
   // =========================================================
 
-  void _initWebView() {
-    String baseUrl = "https://cdn.uuorb.com/live2d/index@9.html?roleName=";
+  void _initWebView() async {
+    // 1. 确保服务器启动
+
+    // 2. 访问本地 localhost
 
     // 默认先加载列表里的第一个，防止白屏
     String defaultId = characters[0].id;
+    LocalServer.start();
+
+    String baseUrl =
+        "http://localhost:${LocalServer.port}/index.html?roleName=$defaultId";
+    // String baseUrl = "https://cdn.uuorb.com/live2d/index@9.html?roleName=";
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -111,7 +119,7 @@ class AiConfigV2Controller extends GetxController {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) {
-            isWebViewReady = true;
+            isWebViewReady.value = true;
             String targetId = characters[currentIndex.value].id;
             if (targetId != defaultId) {
               Future.delayed(const Duration(milliseconds: 300), () {
@@ -126,7 +134,7 @@ class AiConfigV2Controller extends GetxController {
 
   void _switchRoleInWebView(String roleId) {
     print("roleId: $roleId");
-    if (!isWebViewReady) return;
+    if (!(isWebViewReady.value)) return;
     webViewController.runJavaScript("window.loadModelByName('$roleId')");
   }
 
@@ -150,7 +158,7 @@ class AiConfigV2Controller extends GetxController {
         nameController.text = config.userAppellation;
         openingController.text = config.openingStatement;
 
-        if (isWebViewReady) {
+        if (isWebViewReady.value) {
           _switchRoleInWebView(characters[index].id);
         }
       } catch (e) {

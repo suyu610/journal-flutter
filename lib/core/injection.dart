@@ -4,6 +4,7 @@ import 'package:journal/core/app_life_cycle.dart';
 import 'package:journal/core/flutter_error.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/core/page_state.dart';
+import 'package:journal/services/local_server.dart';
 import 'package:journal/util/cos.dart';
 import 'package:journal/util/screen_util.dart';
 import 'package:journal/util/sp_util.dart';
@@ -34,5 +35,7 @@ class Injection {
         universalLink: "https://journal.uuorb.com/app/");
     SpUtil.setWeChatInstalled(await Fluwx().isWeChatInstalled);
     await TencentCosService.init();
+
+    await LocalServer.start();
   }
 }

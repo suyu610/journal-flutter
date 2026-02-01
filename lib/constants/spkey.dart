@@ -14,4 +14,6 @@ class SPKey {
   static const String reminderEnabled = "reminderEnabled";
 
   static const String keyboardMode = "keyboardMode";
+
+  static const String live2dZipVersion = "live2dZipVersion";
 }

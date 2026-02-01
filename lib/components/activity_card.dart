@@ -11,8 +11,8 @@ Widget activityCard(
     {Widget? footerWidget, Widget? topRightWidget}) {
   // 1. 初始化计算逻辑
   final stats = _BudgetStats(activity);
-  print("budgetType: ${activity.budgetType}");
-  print("isMonthType: ${stats.isMonthType}");
+  // print("budgetType: ${activity.budgetType}");
+  // print("isMonthType: ${stats.isMonthType}");
   return GestureDetector(
     behavior: HitTestBehavior.translucent,
     onTap: () => Get.toNamed(Routers.CreateActivityUrl, arguments: activity),

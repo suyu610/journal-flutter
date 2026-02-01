@@ -72,4 +72,14 @@ class SpUtil {
     SharedPreferences sp = Get.find<SharedPreferences>();
     return sp.getBool(SPKey.keyboardMode) ?? true;
   }
+
+  static String getZipVersion() {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.getString(SPKey.live2dZipVersion) ?? "";
+  }
+
+  static Future<bool> setZipVersion(String version) {
+    return Get.find<SharedPreferences>()
+        .setString(SPKey.live2dZipVersion, version);
+  }
 }

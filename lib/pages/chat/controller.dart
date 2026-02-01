@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:journal/components/bruno/bruno.dart';
@@ -17,11 +16,11 @@ import 'package:journal/models/expense.dart';
 import 'package:journal/pages/activity_list/controller.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
+import 'package:journal/services/local_server.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:tdesign_flutter/tdesign_flutter.dart';
-import 'package:webview_flutter/src/webview_controller.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class ChatController extends GetxController {
@@ -224,7 +223,7 @@ class ChatController extends GetxController {
   }
 
   void praise(sentence) {
-    var uuid = DateTime.now().millisecondsSinceEpoch.toString();
+    DateTime.now().millisecondsSinceEpoch.toString();
     HttpRequest.request(
       Method.get,
       "/ai/praise/advance?sentence=$sentence&activityId=${activity.value.activityId}",
@@ -325,9 +324,10 @@ class ChatController extends GetxController {
   }
 
   void _initLive2D(UserAIConfig config) {
+    LocalServer.start();
     // 替换为你需要的角色 URL
     String url =
-        "https://cdn.uuorb.com/live2d/index@9.html?roleName=${config.characterCode}";
+        "http://localhost:${LocalServer.port}/index.html?roleName=${config.characterCode}";
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

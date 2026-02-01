@@ -6,8 +6,8 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/pages/ai_config_v2/view.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/services/local_server.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 // 保持你原有的引用
@@ -95,7 +95,8 @@ class ChatPage extends GetView<ChatController> {
                     // 根据你的模型调整高度，通常占屏幕一半多一点
                     height: 0.65.sh,
                     child: controller.isModelLoaded.value
-                        ? live2D("https://cdn.uuorb.com/live2d/index@9.html")
+                        ? live2D(
+                            "http://localhost:${LocalServer.port}/index.html")
                         : const SizedBox(),
                   )),
 

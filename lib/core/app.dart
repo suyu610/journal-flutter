@@ -57,28 +57,7 @@ Future<void> initApp(Env env) async {
   runApp(_myApp(_themeData));
 }
 
-TDThemeData _buildBlackTheme() {
-  var defaultTheme = TDThemeData.defaultData();
-  return defaultTheme.copyWithTDThemeData(
-    'black',
-    colorMap: {
-      'brandColor1': Colors.black,
-      'brandColor2': Colors.black.withOpacity(0.9),
-      'brandColor3': Colors.black.withOpacity(0.8),
-      'brandColor4': Colors.black.withOpacity(0.7),
-      'brandColor5': Colors.black.withOpacity(0.6),
-      'brandColor6': Colors.black.withOpacity(0.5),
-      'brandColor7': Colors.black.withOpacity(0.4),
-      'brandColor8': Colors.black.withOpacity(0.3),
-      'brandColor9': Colors.black.withOpacity(0.2),
-      'brandColor10': Colors.black.withOpacity(0.1),
-    },
-  );
-}
-
 Widget _myApp(_themeData) {
-  var blackTheme = _buildBlackTheme();
-
   return ScreenUtilInit(
     designSize: const Size(375, 812),
     child: GetMaterialApp(

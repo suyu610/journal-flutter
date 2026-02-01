@@ -1,3 +1,4 @@
+import 'dart:async'; // 引入 Async 用于 StreamSubscription
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -31,14 +32,94 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
 
   Offset? position;
   int remind = 0;
-  bool cancelHighlight = false;
+  bool cancelHighlight = false; // 是否处于取消发送区域
   RxString text = "".obs;
   VoiceMessageSendWidgetStatus _status = VoiceMessageSendWidgetStatus.end;
+
+  // 动画控制器
   late AnimationController controller;
   late Animation<double> animation;
 
+  // 事件订阅对象，用于销毁防止内存泄露
+  StreamSubscription? _eventSubscription;
+
   double bottom = 0;
   final stt.SpeechToText _speech = stt.SpeechToText();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // 初始化动画控制器
+    controller = AnimationController(
+      vsync: this,
+      animationBehavior: AnimationBehavior.normal,
+      duration: const Duration(milliseconds: 200),
+    );
+    animation = Tween<double>(begin: 1.0, end: 1.15).animate(controller);
+    // 注意：不再需要 addListener setState，因为我们用 AnimatedBuilder 局部刷新
+
+    // 初始化语音识别
+    // 建议：可以在这里预初始化，或者在 speaking 时初始化
+  }
+
+  // 确保在视图加载完成后再监听事件，或者直接在 initState 监听但处理逻辑加 mounted 判断
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // 防止重复订阅
+    _eventSubscription?.cancel();
+
+    _eventSubscription = eventBus
+        .on<VoiceTouchPointChange>()
+        .listen((VoiceTouchPointChange bean) {
+      if (!mounted) return;
+
+      // 在这里处理所有逻辑，而不是在 build 里
+      setState(() {
+        position = bean.position;
+        VoiceMessageSendWidgetStatus newStatus = bean.status;
+
+        // 1. 处理录音状态逻辑
+        if (newStatus == VoiceMessageSendWidgetStatus.recording) {
+          // 如果是从非录音状态切过来的，开始录音
+          if (_status != VoiceMessageSendWidgetStatus.recording) {
+            _speaking();
+          }
+
+          // 计算手指位置，决定是否触发“取消高亮”和动画
+          // 这里的 10 是阈值，根据你的 UI 调整
+          if (position != null && position!.dy <= 10) {
+            if (!cancelHighlight) {
+              cancelHighlight = true;
+              controller.forward(); // 播放变大动画
+            }
+          } else {
+            if (cancelHighlight) {
+              cancelHighlight = false;
+              controller.reverse(); // 恢复原状
+            }
+            widget.hasImpact = false;
+          }
+        }
+        // 2. 处理结束状态逻辑
+        else if (newStatus == VoiceMessageSendWidgetStatus.end) {
+          // 只有当状态真正改变时才执行停止逻辑
+          if (_status != VoiceMessageSendWidgetStatus.end) {
+            controller.reset(); // 重置动画
+            // 传入当前的 cancelHighlight 状态来决定是发送还是取消
+            _stopRecordAudio(cancelHighlight);
+            cancelHighlight = false;
+          }
+        }
+
+        // 更新状态
+        _status = newStatus;
+      });
+    });
+  }
 
   void startRecongnize() async {
     bool available = await _speech.initialize(
@@ -49,7 +130,9 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
       // ToastUtil.lightImpact();
       _speech.listen(
           onResult: (result) {
-            text.value = result.recognizedWords;
+            if (mounted) {
+              text.value = result.recognizedWords;
+            }
           },
           localeId: "zh-CN");
     }
@@ -58,72 +141,22 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
   void stopRecongnize() {
     Log().d("stopRecongnize");
     _speech.stop();
-    _speech.cancel();
-  }
-
-  @override
-  void initState() {
-    WidgetsBinding.instance.addObserver(this);
-    controller = AnimationController(
-      vsync: this,
-      animationBehavior: AnimationBehavior.normal,
-      duration: const Duration(
-        milliseconds: 200,
-      ),
-    );
-    animation = Tween<double>(begin: 1.0, end: 1.15).animate(controller)
-      ..addListener(() => setState(() {}));
-
-    eventBus.on<VoiceTouchPointChange>().listen((VoiceTouchPointChange bean) {
-      //position 空代表手指停止移动，有值代表手指正在移动
-      if (mounted) {
-        setState(() {
-          position = bean.position;
-          VoiceMessageSendWidgetStatus currentBean = bean.status;
-
-          if (currentBean == VoiceMessageSendWidgetStatus.recording) {
-            if (_status != VoiceMessageSendWidgetStatus.recording) {
-              _speaking();
-            }
-          } else {
-            _status = bean.status;
-
-            widget.hasImpact = false;
-
-            // 正常发送
-            // if (!cancelHighlight) {
-            //   cancelHighlight = false;
-            //   controller.animateBack(0);
-            //   _stopRecordAudio();
-            //   return;
-            // }
-          }
-
-          _status = bean.status;
-          if (_status == VoiceMessageSendWidgetStatus.end) {
-            controller.animateBack(0);
-            _stopRecordAudio(cancelHighlight);
-            cancelHighlight = false;
-          }
-        });
-      }
-    });
-    super.initState();
+    // _speech.cancel(); // stop 停止监听，cancel 是彻底取消
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
-      case AppLifecycleState.inactive: // 处于这种状态的应用程序应该假设它们可能在任何时候暂停。
-        break;
-      case AppLifecycleState.resumed: //从后台切换前台，界面可见
-        break;
       case AppLifecycleState.paused: // 界面不可见，后台
-        _stopRecordAudio(false); //进入后台发出消息
+        if (_status == VoiceMessageSendWidgetStatus.recording) {
+          _stopRecordAudio(false); // 进入后台强制发送（或可以改为 true 取消）
+          setState(() {
+            _status = VoiceMessageSendWidgetStatus.end;
+          });
+        }
         break;
-      case AppLifecycleState.detached: // APP结束时调用
+      default:
         break;
-      case AppLifecycleState.hidden:
     }
   }
 
@@ -133,40 +166,35 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
     startRecongnize();
   }
 
-  //手松开 或者15s到了
-  _stopRecordAudio(cancel) {
-    debugPrint('录音--结束');
+  // 手松开 或者15s到了
+  _stopRecordAudio(bool cancel) {
+    debugPrint('录音--结束, 是否取消: $cancel');
     stopRecongnize();
-
-    widget.sendVoiceMessage(cancel, text.value, 1);
+    // 只有在 mounted 时才回调，防止组件销毁后调用
+    if (mounted) {
+      widget.sendVoiceMessage(cancel, text.value, 1);
+    }
   }
 
   @override
   void dispose() {
+    // 【核心修复】必须销毁所有监听和控制器
     WidgetsBinding.instance.removeObserver(this);
-
+    _eventSubscription?.cancel(); // 销毁 EventBus 监听
+    controller.dispose(); // 销毁动画控制器
+    _speech.cancel(); // 销毁语音服务
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // 如果状态是结束，直接返回空容器（隐藏）
     if (_status == VoiceMessageSendWidgetStatus.end) {
       return Container();
     }
 
-    String title = '松开发送';
-    cancelHighlight = false;
-    controller.animateBack(0);
-
-    if (_status == VoiceMessageSendWidgetStatus.recording) {
-      if (position != null && position!.dy <= 10) {
-        title = '松开取消发送';
-        cancelHighlight = true;
-        controller.forward();
-      } else {
-        widget.hasImpact = false;
-      }
-    }
+    // 纯 UI 渲染，不含逻辑副作用
+    String title = cancelHighlight ? '松开取消发送' : '松开发送';
 
     return Container(
       width: 385.w,
@@ -174,6 +202,7 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          // 顶部声波动画
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
               decoration: BoxDecoration(
@@ -185,6 +214,8 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
           const SizedBox(
             height: 12,
           ),
+
+          // 语音转文字预览
           Obx(() => Text(
                 text.value,
                 style: const TextStyle(
@@ -196,6 +227,8 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
           const SizedBox(
             height: 64,
           ),
+
+          // 垃圾桶图标（带缩放动画）
           AnimatedBuilder(
             animation: animation,
             builder: (BuildContext context, Widget? child) {
@@ -209,9 +242,13 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
           const SizedBox(
             height: 24,
           ),
+
+          // 底部半圆区域
           ClipPath(
             clipper: VoiceSendArcClipper(),
-            child: Container(
+            child: AnimatedContainer(
+              // 底部背景颜色渐变动画
+              duration: const Duration(milliseconds: 200),
               height: _height + MediaQuery.of(context).padding.bottom,
               width: 385.w,
               decoration: BoxDecoration(
@@ -230,9 +267,6 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
                             ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter),
-                  // color: cancelHighlight
-                  //     ? const Color(0xff3C3C3E)
-                  //     : Color(0xffbbbbbb),
                   boxShadow: const [
                     BoxShadow(
                         color: Colors.black12,
@@ -265,15 +299,12 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
 
   String coverIntToMMss(int count) {
     String time = "00:${widget.maxDuration}";
-
-    int tmp = widget.maxDuration - count; //倒数 所以减一下
-
+    int tmp = widget.maxDuration - count;
     if (tmp >= 10) {
       time = "00:$tmp";
     } else {
       time = "00:0$tmp";
     }
-
     return time;
   }
 }
@@ -282,21 +313,16 @@ class VoiceSendArcClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
-
     path.moveTo(0, 35);
-
-    //上面的半圆
+    // 上面的半圆
     path.quadraticBezierTo(size.width / 2, -35, size.width, 35);
-
     path.lineTo(size.width, size.height);
-
     path.lineTo(0, size.height);
-
     return path;
   }
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
-    return true;
+    return false; // 路径不经常变，返回 false 优化性能
   }
 }
