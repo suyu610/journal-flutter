@@ -122,7 +122,7 @@ class LoginLogic extends GetxController {
               GestureDetector(
                 onTap: () {
                   Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                    "url": "https://journal.aceword.xyz/privacy.html",
+                    "url": "https://blog.uuorb.com/archives/journal-privacy",
                     "title": "隐私协议"
                   });
                 },
@@ -204,7 +204,7 @@ class LoginLogic extends GetxController {
               GestureDetector(
                 onTap: () {
                   Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                    "url": "https://journal.aceword.xyz/privacy.html",
+                    "url": "https://blog.uuorb.com/archives/journal-privacy",
                     "title": "隐私协议"
                   });
                 },
