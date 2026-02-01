@@ -29,6 +29,7 @@ class CodeLogic extends GetxController {
   /// 验证码输入完成
   void codeInputCompleted({required String code}) {
     state.code.value = code;
+    next(Get.context!);
   }
 
   /// 验证码是否输入完毕
