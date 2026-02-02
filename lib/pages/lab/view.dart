@@ -30,11 +30,13 @@ class LabPage extends GetView<LabController> {
     return const TDNavBar(
       useBorderStyle: true,
       height: 48,
-      useDefaultBack: false,
-      titleWidget: TDImage(
-        assetUrl: 'assets/images/logo_navi_bar.png',
-        width: 70,
-        height: 24,
+      useDefaultBack: true,
+      titleWidget: Text(
+        "实验室",
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

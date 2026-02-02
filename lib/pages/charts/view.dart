@@ -40,7 +40,7 @@ class ChartsPage extends GetView<ChartsController> {
     var consumptionPoints = _linePointsForDemo1(dailyData);
     var budgetPoints = _buildBudgetLinePoints(dailyData); // 新增：生成预算点
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 0),
       color: Colors.white,
       child: SingleChildScrollView(
         child: Column(
@@ -78,10 +78,10 @@ class ChartsPage extends GetView<ChartsController> {
                       isCurve: true,
                       points: consumptionPoints,
                       shaderColors: [
-                        const Color(0xff000000).withOpacity(0.3),
-                        const Color(0xff000000).withOpacity(0.01)
+                        colors[2].withAlpha(50),
+                        colors[2].withAlpha(10)
                       ],
-                      lineColor: const Color(0xff000000).withOpacity(.8),
+                      lineColor: colors[0].withOpacity(.8),
                     ),
                     // 第二条：预算线（新增的）
                     if (controller.dailyBudgetValue != 0)

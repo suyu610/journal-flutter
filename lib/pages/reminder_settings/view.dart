@@ -221,12 +221,12 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0F7FF),
+                      color: Colors.black.withAlpha(16),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
                       Icons.access_time_filled,
-                      color: const Color(0xFF4A90E2),
+                      color: Colors.black,
                       size: 20.sp,
                     ),
                   ),
