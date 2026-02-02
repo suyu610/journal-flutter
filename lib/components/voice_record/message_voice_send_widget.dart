@@ -59,9 +59,6 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
     );
     animation = Tween<double>(begin: 1.0, end: 1.15).animate(controller);
     // 注意：不再需要 addListener setState，因为我们用 AnimatedBuilder 局部刷新
-
-    // 初始化语音识别
-    // 建议：可以在这里预初始化，或者在 speaking 时初始化
   }
 
   // 确保在视图加载完成后再监听事件，或者直接在 initState 监听但处理逻辑加 mounted 判断

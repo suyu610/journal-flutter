@@ -126,7 +126,7 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
           child: Container(
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 32.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.6), // 稍微透一点背景色出来
+              color: Colors.white.withOpacity(1), // 稍微透一点背景色出来
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(32)),
               border: Border(

@@ -53,7 +53,7 @@ class _SplashPageState extends State<SplashPage>
               child: Column(
                 children: [
                   Text(
-                    '记录，重拾生活秩序',
+                    '记录，构筑生活秩序',
                     style: TextStyle(
                       fontSize: 14, // 稍微小一点，显精致
                       color: Colors.black87,

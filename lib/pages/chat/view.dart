@@ -67,7 +67,7 @@ class ChatPage extends GetView<ChatController> {
                           colors: [
                             Colors.transparent,
                             Colors.black.withOpacity(0.1),
-                            Colors.black.withOpacity(0.6),
+                            Colors.black.withOpacity(0.4),
                           ],
                           stops: const [0.5, 0.8, 1.0],
                         ),
@@ -81,35 +81,47 @@ class ChatPage extends GetView<ChatController> {
               // 1.1 氛围光 (关键：增加温馨感)
               // ==============================
               // 在人物背后加一个淡淡的暖色光晕，像是一个温暖的灵魂
+              // ==============================
+// 1.1 氛围光 (优化版：极致柔和)
+// ==============================
               Positioned(
-                top: 100.h,
+                top: 100.h, //稍微上移一点，让光更自然地散落在头部周围
                 left: 0,
                 right: 0,
-                height: 400.h,
+                // 不需要限制 height，让光自由发散
                 child: Center(
                   child: Obx(() {
                     final themeColor =
                         controller.currentCharacter.value?.themeColor ??
                             const Color(0xFFFF9A9E);
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 600),
-                      width: 300.w,
-                      height: 300.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            themeColor.withOpacity(0.12), // 使用主题色光晕
-                            Colors.transparent,
-                          ],
-                          radius: 0.7,
+                    return ImageFiltered(
+                      imageFilter: ImageFilter.blur(
+                          sigmaX: 20, sigmaY: 20), // 大数值模糊，消除一切硬边
+                      child: AnimatedContainer(
+                        duration:
+                            const Duration(milliseconds: 800), // 变色更慢一点，更柔
+                        curve: Curves.easeOutQuart,
+                        width: 280.w,
+                        height: 280.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          // 关键修改 2: 使用纯色混合模式或简单的 BoxShadow 模拟核心光
+                          // 这里的渐变用于制造光的层次
+                          gradient: RadialGradient(
+                            colors: [
+                              themeColor.withOpacity(0.8), // 中心稍微亮一点
+                              Colors.white.withOpacity(0.2), // 中间过渡
+                              Colors.transparent, // 边缘完全消失
+                            ],
+                            stops: const [0.0, 0.4, 1.0], // 控制光晕的扩散范围
+                            radius: 0.8,
+                          ),
                         ),
                       ),
                     );
                   }),
                 ),
               ),
-
               // ==============================
               // 2. Live2D 人物层
               // ==============================
@@ -173,21 +185,6 @@ class ChatPage extends GetView<ChatController> {
                       ),
                     )),
               ),
-
-              // ==============================
-              // 3. 全局磨砂层 (可选)
-              // ==============================
-              // 如果觉得背景太实，可以加一点点模糊，让人物更聚焦
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                  child: const SizedBox(),
-                ),
-              ),
-
-              // ==============================
-              // 4. 聊天列表遮罩 (底部渐变黑)
-              // ==============================
 
               // ==============================
               // 5. 聊天内容列表

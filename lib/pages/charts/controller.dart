@@ -1,23 +1,26 @@
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:journal/components/bruno/bruno.dart'; // 假设这是你的引用
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
+import 'package:journal/models/expense.dart';
 import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
-import 'dart:convert'; // 必须引入，用于 utf8 解码
+import 'dart:convert';
+
+import 'package:tdesign_flutter/tdesign_flutter.dart'; // 必须引入，用于 utf8 解码
 
 class ChartsController extends GetxController {
   RxString judgeString = "".obs;
   double dailyBudgetValue = 0.0;
-  RxList<DBDataNodeModel> charts =
-      RxList<DBDataNodeModel>.empty(growable: true);
+  RxList<ChartDataModel> charts = RxList<ChartDataModel>.empty(growable: true);
 
-  RxList<DBDataNodeModel> groupByTypeCharts =
-      RxList<DBDataNodeModel>.empty(growable: true);
+  RxList<ChartDataModel> groupByTypeCharts =
+      RxList<ChartDataModel>.empty(growable: true);
 
   RxList<Activity> allActivityList = RxList<Activity>.empty(growable: true);
   Rx<Activity> currentActivity = Rx<Activity>(Activity.empty());
@@ -116,14 +119,14 @@ class ChartsController extends GetxController {
       // 处理 Weekly Charts
       if (results[0] != null) {
         charts.value = (results[0] as List)
-            .map((e) => DBDataNodeModel.fromJson(e))
+            .map((e) => ChartDataModel.fromJson(e))
             .toList();
       }
 
       // 处理 Type Charts
       if (results[1] != null) {
         groupByTypeCharts.value = (results[1] as List)
-            .map((e) => DBDataNodeModel.fromJson(e))
+            .map((e) => ChartDataModel.fromJson(e))
             .toList();
       }
 
@@ -242,5 +245,36 @@ class ChartsController extends GetxController {
         _initData(forceRefreshActivity: false);
       }
     });
+  }
+
+  Future<List<Expense>?> getTodayExpenseItemList() async {
+    String nowDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
+
+    try {
+      var data = await HttpRequest.request(
+        Method.get,
+        "/expense/list/${_getCurrentActivityId()}/date?date=$nowDate",
+        params: {},
+      );
+
+      // 拿到数据直接转
+      if (data != null && data["data"] != null && data["data"] is List) {
+        // 【修改点 1】 使用 List<Expense>.from 来强转，这比 map.toList() 更安全
+        // 它会遍历列表并把每个元素都 cast 成 Expense，如果有元素类型不对会报错，比 dynamic 安全
+        List<Expense> result = List<Expense>.from(
+            (data["data"] as List).map((e) => Expense.fromJson(e)));
+
+        print("result type:${result.runtimeType}");
+        return result;
+      }
+
+      // 【修改点 2】 返回空列表时，必须指定泛型类型 <Expense>[]
+      // 否则默认是 List<dynamic>，这会导致类型不匹配报错
+      return <Expense>[];
+    } catch (e) {
+      print("获取今日账单失败: $e");
+      TDToast.dismissAll();
+      return null;
+    }
   }
 }

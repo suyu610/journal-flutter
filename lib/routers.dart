@@ -116,4 +116,6 @@ abstract class Routers {
   ];
 
   static const String LabPageUrl = "/lab";
+
+  static const String ReceiptPageUrl = "/receipt";
 }

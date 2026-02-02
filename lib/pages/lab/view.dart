@@ -85,6 +85,17 @@ class LabPage extends GetView<LabController> {
               Get.toNamed(Routers.AutoWriteIntroPageUrl);
             },
           ),
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
+              Icons.receipt_outlined,
+              size: 18,
+            ),
+            title: "生成小票",
+            onClick: (v) {
+              Get.toNamed(Routers.ReceiptPageUrl, arguments: {});
+            },
+          ),
         ]),
         SizedBox(height: 30.h),
         FutureBuilder(

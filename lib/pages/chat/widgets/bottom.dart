@@ -34,14 +34,12 @@ Widget buildFloatingInput(BuildContext context) {
           // 输入条胶囊
           Expanded(
             child: ClipRRect(
-              // 裁剪圆角，为了毛玻璃效果
               borderRadius: BorderRadius.circular(25),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // 毛玻璃模糊
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   height: 50.h,
                   decoration: BoxDecoration(
-                    // 半透明白，营造通透感
                     color: !isKeyboard
                         ? Colors.transparent
                         : const Color(0xFF2E2E3E).withOpacity(0.5),
@@ -154,29 +152,23 @@ Widget buildFloatingInput(BuildContext context) {
                         text: controller.textEditingController.text),
                     context);
               },
-              child: Obx(() {
-                final themeColor =
-                    controller.currentCharacter.value?.themeColor ??
-                        const Color(0xFF667EEA);
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 50.h,
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                      // 使用暖色调或者原本的科技蓝，这里配合 Hiyori 用粉蓝渐变或者纯色
-                      color: themeColor,
-                      borderRadius: BorderRadius.circular(25), // 变成圆形更好看
-                      boxShadow: [
-                        BoxShadow(
-                          color: themeColor.withOpacity(0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ]),
-                  child: const Icon(Icons.arrow_upward_rounded,
-                      color: Colors.white),
-                );
-              }),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 50.h,
+                height: 50.h,
+                decoration: BoxDecoration(
+                    color: const Color(0xFF2E2E3E).withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(25), // 变成圆形更好看
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2E2E3E).withOpacity(0.13),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ]),
+                child:
+                    const Icon(Icons.arrow_upward_rounded, color: Colors.white),
+              ),
             )
           ]
         ],
