@@ -208,7 +208,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
     return Column(
       children: [
         Container(
-            padding: const EdgeInsets.fromLTRB(6, 16, 16, 0),
+            padding: const EdgeInsets.fromLTRB(6, 8, 16, 0),
             margin: const EdgeInsets.only(bottom: 12),
             width: double.infinity,
             child: Row(
@@ -257,6 +257,9 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   }
 
   Widget _buildSingleDateCard(ExpenseDateGroup expenseDateGroup, context) {
+    // 1. 提早获取屏幕宽度，避免在循环中重复获取
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       margin: const EdgeInsets.only(bottom: 12),
@@ -271,9 +274,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ------------------------------------------------------
-          // 1. 顶部日期栏 (保持不变)
-          // ------------------------------------------------------
+          // ... (顶部日期栏保持不变) ...
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -312,14 +313,14 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
             ],
           ),
           const SizedBox(height: 6),
-          BrnBarBottomDivider(),
+          BrnBarBottomDivider(), // 修正：加上 const
 
           // ------------------------------------------------------
           // 2. 核心内容区域
           // ------------------------------------------------------
           Obx(() {
-            // [模式 A]: 详细模式 -> 展示每一笔 ActivityExpenseItem
             if (controller.isExpenseListShowMode.value) {
+              // [模式 A]: 详细模式
               return Column(
                 children: [
                   const SizedBox(height: 10),
@@ -327,55 +328,74 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
                       .map((e) => ActivityExpenseItem(e, context)),
                 ],
               );
-            }
+            } else {
+              // [模式 B]: 概括模式 (分类统计)
 
-            // [模式 B]: 概括模式 -> 只展示分类统计，不展示具体 Item
-            else {
-              // 获取分组 Map
+              // 1. 预处理数据：计算每个分类的总额，存入 List 以便排序
               var typeMap = expenseDateGroup.expensesByType;
+
+              // 将 Map 转换为 List<{name, list, total}> 的结构方便排序
+              var sortedList = typeMap.entries.map((entry) {
+                double subTotal = entry.value.fold(0.0, (prev, curr) {
+                  return curr.positive == 0 ? prev + curr.price : prev;
+                });
+                return {
+                  "typeName": entry.key,
+                  "list": entry.value,
+                  "subTotal": subTotal,
+                };
+              }).toList();
+
+              // 2. 排序：按金额从大到小排序
+              sortedList.sort((a, b) =>
+                  (b["subTotal"] as double).compareTo(a["subTotal"] as double));
+
+              double totalExpense = expenseDateGroup.totalExpense;
+              // 防止总金额为0导致除法错误
+              if (totalExpense == 0) totalExpense = 1;
 
               return Column(
                 children: [
-                  const SizedBox(height: 8), // 稍微调整间距
-                  ...typeMap.entries.map((entry) {
-                    String typeName = entry.key;
-                    List<Expense> typeList = entry.value;
+                  const SizedBox(height: 12),
+                  ...sortedList.map((data) {
+                    String typeName = data["typeName"] as String;
+                    List<Expense> typeList = data["list"] as List<Expense>;
+                    double subTotal = data["subTotal"] as double;
+                    double maxBarWidth = screenWidth - 160.0;
 
-                    // 计算该类型的子总计
-                    double subTotal = typeList.fold(0.0, (prev, curr) {
-                      return curr.positive == 0 ? prev + curr.price : prev;
-                    });
-
-                    // 构建简洁的统计行
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12), // 行间距
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      margin: const EdgeInsets.only(bottom: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // 左侧：类型名称
                           Row(
                             children: [
-                              // 可选：如果每个类型有图标，可以在这里加 Icon
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
+                                // 核心逻辑：计算宽度
+                                width: (subTotal / totalExpense * screenWidth)
+                                    .clamp(65.0, maxBarWidth),
+                                padding: const EdgeInsets.only(
+                                    top: 4, bottom: 4, left: 6, right: 6),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF5F5F5), // 浅灰背景
+                                  color: const Color(0xFFF5F5F5),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
+                                alignment: Alignment.centerLeft, // 确保文字靠左
                                 child: Text(
                                   typeName,
+                                  maxLines: 1, // 防止换行破坏高度
+                                  overflow: TextOverflow.ellipsis, // 宽度不够时显示省略号
                                   style: const TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 12,
                                     color: Colors.black87,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 8),
+                              // 笔数显示
                               Text(
-                                "${typeList.length}笔", // 可选：显示笔数
+                                "${typeList.length}笔",
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.black38,
@@ -397,7 +417,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
                         ],
                       ),
                     );
-                  }),
+                  }), // 记得转回 List
                   const SizedBox(height: 4),
                 ],
               );
@@ -407,7 +427,5 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
       ),
     );
   }
-  // 用户头像
-
   // 账本卡片头部
 }

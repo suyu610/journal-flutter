@@ -106,7 +106,7 @@ class ProfilePage extends GetView<ProfileController> {
           TDCell(
             arrow: true,
             leftIconWidget: const Icon(
-              Icons.wysiwyg_outlined,
+              Icons.checkroom_outlined,
               size: 18,
             ),
             title: "实验室",

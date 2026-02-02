@@ -64,10 +64,8 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           visible: controller.isOwner.value ||
               controller.activity.value.activityId == "",
           child: TDButton(
-            // padding:
             margin: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
             height: 44,
-
             isBlock: true,
             theme: TDButtonTheme.primary,
             text: controller.activity.value.activityId == "" ? "创建" : "保存",

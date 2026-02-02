@@ -52,7 +52,7 @@ class BrnDefaultConfigUtils {
     /// 主题色相关
     ///
     /// 主题色
-    brandPrimary: const Color(0xFF0048d4),
+    brandPrimary: Colors.blueGrey[900],
 
     /// 主题色按下效果
     brandPrimaryTap: const Color(0x190984F9),

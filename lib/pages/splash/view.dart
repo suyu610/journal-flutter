@@ -17,7 +17,7 @@ class _SplashPageState extends State<SplashPage>
 
     // 3秒后跳转到主页
     Future.delayed(const Duration(seconds: 1), () {
-      Get.offAllNamed(Routers.LayoutPageUrl);
+      Get.offAndToNamed(Routers.LayoutPageUrl);
     });
   }
 

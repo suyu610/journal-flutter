@@ -90,7 +90,7 @@ Widget _myApp(_themeData) {
           extensions: [_themeData]),
       initialRoute: SpUtil.getToken() == ""
           ? Routers.LoginPageUrl
-          : Routers.LayoutPageUrl,
+          : Routers.SplashPageUrl,
       initialBinding: InitialBinding(),
       onInit: () {
         SpUtil.setFirstOpenApp(true);

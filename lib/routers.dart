@@ -102,9 +102,12 @@ abstract class Routers {
         page: () => const ReminderSettingsPage(),
         binding: ReminderSettingsBinding()),
     GetPage(
-        name: LayoutPageUrl,
-        page: () => const LayoutPage(),
-        binding: LayoutBinding()),
+      name: LayoutPageUrl,
+      page: () => const LayoutPage(),
+      binding: LayoutBinding(),
+      transition: Transition.cupertino, // 加上这一行：设置淡入效果
+      transitionDuration: const Duration(milliseconds: 300), // 设置动画时长
+    ),
     GetPage(
       name: LocalServicePageUrl,
       page: () => const LocalServicePage(),

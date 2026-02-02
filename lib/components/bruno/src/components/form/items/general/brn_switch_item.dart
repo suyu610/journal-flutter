@@ -181,7 +181,10 @@ class BrnSwitchFormItemState extends State<BrnSwitchFormItem> {
                     trackOutlineColor:
                         const WidgetStatePropertyAll(Colors.transparent),
                     activeColor: Colors.white,
-                    activeTrackColor: const Color(0xff0048d4),
+                    activeTrackColor: BrnThemeConfigurator.instance
+                        .getConfig()
+                        .commonConfig
+                        .brandPrimary,
                     //
                     inactiveThumbColor: Colors.white,
                     // trackColor: WidgetStatePropertyAll(Colors.black),
