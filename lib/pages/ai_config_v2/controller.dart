@@ -101,16 +101,10 @@ class AiConfigV2Controller extends GetxController {
   // =========================================================
 
   void _initWebView() async {
-    // 1. 确保服务器启动
-
-    // 2. 访问本地 localhost
-
     // 默认先加载列表里的第一个，防止白屏
     String defaultId = characters[0].id;
     LocalServer.start();
-
     String baseUrl = "${LocalServer.baseUrl}/index.html?roleName=$defaultId";
-    // String baseUrl = "https://cdn.uuorb.com/live2d/index@9.html?roleName=";
 
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

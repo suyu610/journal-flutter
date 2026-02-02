@@ -62,24 +62,23 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
 
   // NavBar
   PreferredSizeWidget _navibar(BuildContext context) {
-    return const TDNavBar(
-      useBorderStyle: true,
-      height: 48,
-      useDefaultBack: false,
-      titleWidget: TDImage(
-        assetUrl: 'assets/images/logo_navi_bar.png',
-        width: 70,
-        height: 24,
-      ),
-      // rightBarItems: [
-      //   TDNavBarItem(
-      //       icon: TDIcons.usergroup_add,
-      //       iconSize: 24,
-      //       action: () {
-      //         Get.toNamed(Routers.CreateActivityUrl);
-      //       }),
-      // ],
-    );
+    return TDNavBar(
+        useBorderStyle: true,
+        height: 48,
+        useDefaultBack: false,
+        titleWidget: Text(
+          "当前账本",
+          style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
+        )
+        // rightBarItems: [
+        //   TDNavBarItem(
+        //       icon: TDIcons.usergroup_add,
+        //       iconSize: 24,
+        //       action: () {
+        //         Get.toNamed(Routers.CreateActivityUrl);
+        //       }),
+        // ],
+        );
   }
 
   // 浮动按钮

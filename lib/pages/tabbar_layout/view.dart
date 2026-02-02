@@ -47,7 +47,7 @@ class _LayoutPageState extends State<LayoutPage>
 
   Widget _buildBottomTabBar(BuildContext context, LayoutController controller) {
     return Obx(() => TDBottomTabBar(
-          TDBottomTabBarBasicType.iconText,
+          TDBottomTabBarBasicType.icon,
           useVerticalDivider: false,
           currentIndex: controller.currentIndex.value,
           barHeight: 60,
@@ -55,7 +55,6 @@ class _LayoutPageState extends State<LayoutPage>
           navigationTabs: controller.user.value.vip
               ? [
                   TDBottomTabBarTabConfig(
-                    tabText: '首页',
                     selectedIcon: const Icon(
                       Icons.home_outlined,
                     ),
@@ -64,7 +63,6 @@ class _LayoutPageState extends State<LayoutPage>
                     onTap: () => controller.jumpToPage(0),
                   ),
                   TDBottomTabBarTabConfig(
-                    tabText: '账本',
                     selectedIcon: const Icon(
                       Icons.folder_outlined,
                     ),
@@ -73,7 +71,6 @@ class _LayoutPageState extends State<LayoutPage>
                     onTap: () => controller.jumpToPage(1),
                   ),
                   TDBottomTabBarTabConfig(
-                    tabText: '图表',
                     selectedIcon: const Icon(
                       Icons.analytics_outlined,
                     ),
@@ -82,7 +79,6 @@ class _LayoutPageState extends State<LayoutPage>
                     onTap: () => controller.jumpToPage(2),
                   ),
                   TDBottomTabBarTabConfig(
-                    tabText: '我的',
                     selectedIcon: const Icon(
                       Icons.person_outline,
                     ),
@@ -93,7 +89,6 @@ class _LayoutPageState extends State<LayoutPage>
                 ]
               : [
                   TDBottomTabBarTabConfig(
-                    tabText: '首页',
                     selectedIcon: const Icon(
                       Icons.home_outlined,
                     ),
@@ -102,7 +97,6 @@ class _LayoutPageState extends State<LayoutPage>
                     onTap: () => controller.jumpToPage(0),
                   ),
                   TDBottomTabBarTabConfig(
-                    tabText: '账本',
                     selectedIcon: const Icon(
                       Icons.folder_outlined,
                     ),
@@ -111,7 +105,6 @@ class _LayoutPageState extends State<LayoutPage>
                     onTap: () => controller.jumpToPage(1),
                   ),
                   TDBottomTabBarTabConfig(
-                    tabText: '我的',
                     selectedIcon: const Icon(
                       Icons.person_outline,
                     ),

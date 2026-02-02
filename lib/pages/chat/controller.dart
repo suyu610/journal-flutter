@@ -342,7 +342,7 @@ class ChatController extends GetxController {
     // 替换为你需要的角色 URL
     String url =
         "${LocalServer.baseUrl}/index.html?roleName=${config.characterCode}";
-
+    LocalServer.start();
     webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent) // 背景透明
