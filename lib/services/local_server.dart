@@ -41,7 +41,7 @@ class LocalServer {
       final rawPath = await _prepareAssets();
       final docPath = await _findRealWebRoot(rawPath);
       final indexFile = File('$docPath/index.html');
-      if (!await File('$docPath/index.html').exists()) {
+      if (!await indexFile.exists()) {
         print("❌ 致命错误：修正路径后仍未找到 index.html。正在打印目录结构...");
         await _debugPrintDir(rawPath); // 打印出来看看究竟有什么
         throw Exception("index.html 文件缺失，请查看上方日志中的目录结构");
@@ -118,8 +118,8 @@ class LocalServer {
     final String savedZipVersion = SpUtil.getZipVersion();
 
     // 检查是否需要解压：
-    bool needUnzip = true;
-    //!webDir.existsSync() || currentAppVersion != savedZipVersion;
+    bool needUnzip =
+        !webDir.existsSync() || currentAppVersion != savedZipVersion;
 
     if (!needUnzip) {
       print("资源已存在且版本一致，跳过解压。");

@@ -1,7 +1,7 @@
 name: journal
 description: "A new Flutter project."
 publish_to: "none"
-version: 2.0.0+1
+version: 2.0.1+2
 fluwx:
   app_id: "wx30e85737940da4af"
   debug_logging: true 
@@ -67,7 +67,11 @@ dependencies:
   shelf: ^1.4.2
   shelf_static: ^1.1.3
   path_provider: ^2.0.0
-  archive: ^3.3.0        # 用于解压 Zip
+  archive: ^3.3.0       
+  fl_heatmap: ^0.4.6
+  flame: ^1.35.0
+  flame_forge2d: ^0.19.2 # 专门处理物理碰撞
+  sensors_plus: ^7.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

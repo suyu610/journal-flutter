@@ -150,8 +150,7 @@ class LoginLogic extends GetxController {
                       next(context);
                     },
                     style: ButtonStyle(
-                      backgroundColor:
-                          WidgetStateProperty.all(const Color(0xff0052D9)),
+                      backgroundColor: WidgetStateProperty.all(Colors.black),
                       // white
                       foregroundColor: WidgetStateProperty.all(Colors.white),
                       // 设置按钮的大小
@@ -235,7 +234,7 @@ class LoginLogic extends GetxController {
                     },
                     style: ButtonStyle(
                       backgroundColor:
-                          WidgetStateProperty.all(const Color(0xff0052D9)),
+                          WidgetStateProperty.all(const Color(0xff000000)),
                       // white
                       foregroundColor: WidgetStateProperty.all(Colors.white),
                       // 设置按钮的大小

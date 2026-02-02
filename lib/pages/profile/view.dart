@@ -75,17 +75,6 @@ class ProfilePage extends GetView<ProfileController> {
               Get.toNamed(Routers.ReminderSettingsPageUrl);
             },
           ),
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
-              Icons.fact_check_outlined,
-              size: 18,
-            ),
-            title: "自动记账",
-            onClick: (v) {
-              Get.toNamed(Routers.AutoWriteIntroPageUrl);
-            },
-          ),
         ]),
         const SizedBox(height: 10),
         TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
@@ -117,6 +106,17 @@ class ProfilePage extends GetView<ProfileController> {
           TDCell(
             arrow: true,
             leftIconWidget: const Icon(
+              Icons.wysiwyg_outlined,
+              size: 18,
+            ),
+            title: "实验室",
+            onClick: (v) {
+              Get.toNamed(Routers.LabPageUrl, arguments: {});
+            },
+          ),
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
               Icons.exit_to_app_outlined,
               size: 18,
             ),
@@ -137,7 +137,7 @@ class ProfilePage extends GetView<ProfileController> {
             },
           ),
         ]),
-        SizedBox(height: 80.h),
+        SizedBox(height: 30.h),
         FutureBuilder(
           future: appVersion(),
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {

@@ -49,7 +49,8 @@ class ExpenseListPage extends GetView<ExpenseListController> {
         Container(
             color: const Color(0xfff3f3f3),
             // height: 620.h,
-            padding: const EdgeInsets.only(left: 8.0, right: 8, bottom: 0),
+            padding: const EdgeInsets.only(left: 18.0, right: 18, bottom: 0),
+
             // padding: const EdgeInsets.only(bottom: 15.0),
             child: buildMainView(activity, context)),
         // const Align(
@@ -127,7 +128,7 @@ class ExpenseListPage extends GetView<ExpenseListController> {
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: const BoxDecoration(
           boxShadow: [
-            BoxShadow(color: Color.fromARGB(12, 0, 0, 0), blurRadius: 8)
+            // BoxShadow(color: Color.fromARGB(12, 0, 0, 0), blurRadius: 8)
           ],
           color: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(8))),

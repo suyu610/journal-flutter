@@ -335,7 +335,7 @@ class _BudgetAnalysis extends StatelessWidget {
                       fontSize: 12,
                       fontFamily: 'SourceCodePro',
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF0052D9)))
+                      color: Color(0xff000000)))
             ],
           ),
           const SizedBox(height: 8),

@@ -15,6 +15,8 @@ class CurrentActivityController extends GetxController {
   ScrollController scrollController = ScrollController();
   Rx<Activity> currentActivity = Activity.empty().obs;
   RxList<ExpenseDateGroup> expenseDateGroupList = <ExpenseDateGroup>[].obs;
+  RxList<ExpenseDateGroup> expenseDateGroupListByType =
+      <ExpenseDateGroup>[].obs;
 
   RxInt pageNum = 1.obs;
   RxBool hasNextPage = true.obs;
@@ -35,41 +37,45 @@ class CurrentActivityController extends GetxController {
         Log().d("无");
       } else {
         Paging pageInfo = Paging.fromJson(data as Map<String, dynamic>);
-        // Log().d(pageInfo.total.toString());
         hasNextPage.value = pageInfo.hasNextPage;
 
         List<Expense> expenseList =
             (pageInfo.list).map((e) => Expense.fromJson(e)).toList();
-        Map<String, List<Expense>> expenseMap = {};
+
+        // 1. 将新获取的一页数据，先按日期归类成 Map
+        Map<String, List<Expense>> newPageMap = {};
         expenseList.forEach((element) {
           String date = element.expenseTime.substring(0, 10);
-          if (expenseMap[date] == null) {
-            expenseMap[date] = [];
+          if (newPageMap[date] == null) {
+            newPageMap[date] = [];
           }
-          expenseMap[date]!.add(element);
+          newPageMap[date]!.add(element);
         });
-        // 处理已存在的
-        expenseDateGroupList.forEach((element) {
-          if (expenseMap.containsKey(element.date)) {
-            element.expenses.addAll(expenseMap[element.date]!);
+
+        // 2. 处理【已有】的日期组 (Merge)
+        // 遍历现有的 UI 列表，如果新数据里有这一天，就追加进去
+        expenseDateGroupList.forEach((group) {
+          if (newPageMap.containsKey(group.date)) {
+            group.expenses.addAll(newPageMap[group.date]!);
+            // 只要 expenses 变了，expensesByType 自动就会变，因为它是 getter
           }
         });
 
-        // 提取 expenseDateGroupList 中的 date 形成list
+        // 3. 处理【新增】的日期组 (Add)
+        // 找出 UI 列表里没有，但新数据里有的日期
         Set<String> existDateSet =
             expenseDateGroupList.map((e) => e.date).toSet();
+        Set<String> newPageDateSet =
+            newPageMap.entries.map((e) => e.key).toSet();
 
-        // 相减
-        Set<String> expenseDateSet =
-            expenseMap.entries.map((e) => e.key).toSet();
-
-        expenseDateSet.difference(existDateSet).forEach((element) {
-          expenseDateGroupList
-              .add(ExpenseDateGroup(element, expenseMap[element]!));
+        newPageDateSet.difference(existDateSet).forEach((date) {
+          expenseDateGroupList.add(ExpenseDateGroup(date, newPageMap[date]!));
         });
 
-        // 计算总金额
+        // 排序（可选）：为了保证日期顺序，通常建议在这里对 expenseDateGroupList 按日期排个序
+        // expenseDateGroupList.sort((a, b) => b.date.compareTo(a.date));
 
+        // 4. 重新计算每天的总金额
         expenseDateGroupList.forEach((element) {
           double totalExpense = 0.0;
           element.expenses.forEach((expense) {
@@ -79,6 +85,7 @@ class CurrentActivityController extends GetxController {
           });
           element.totalExpense = totalExpense;
         });
+
         update(["current_activity"]);
       }
     }, fail: (code, msg) {
@@ -155,6 +162,11 @@ class CurrentActivityController extends GetxController {
         initData();
       }
     });
+  }
+
+  RxBool isExpenseListShowMode = true.obs;
+  void switchExpenseListShowMode() {
+    isExpenseListShowMode.value = !isExpenseListShowMode.value;
   }
 
   // @override

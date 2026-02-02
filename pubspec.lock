@@ -401,6 +401,30 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.1.1"
+  fl_heatmap:
+    dependency: "direct main"
+    description:
+      name: fl_heatmap
+      sha256: cbf60d737fb2ab216f99e155f197441a07e760aaacb18ecf528095aace99dbf6
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.4.6"
+  flame:
+    dependency: "direct main"
+    description:
+      name: flame
+      sha256: "6a98c1697bfe4669c604e4459cb01ca96559f464d3523f6af90a8956bf2080ee"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.35.0"
+  flame_forge2d:
+    dependency: "direct main"
+    description:
+      name: flame_forge2d
+      sha256: f6a6287b23ac9e103ee5ebf8e0c5a981322077c8003d3eb73b7291ebdd8c9cda
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.19.2+3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -549,6 +573,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "5.7.5"
+  forge2d:
+    dependency: transitive
+    description:
+      name: forge2d
+      sha256: "0f63d177f2e137a5007b879fda4076d0b81de065fcd72056c6fc896c82758bb7"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.14.2+1"
   get:
     dependency: "direct main"
     description:
@@ -893,6 +925,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.0"
+  ordered_set:
+    dependency: transitive
+    description:
+      name: ordered_set
+      sha256: d6c1d053a533e84931a388cbf03f1ad21a0543bf06c7a281859d3ffacd8e15f2
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "8.0.0"
   package_config:
     dependency: transitive
     description:
@@ -1117,6 +1157,22 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.1"
+  sensors_plus:
+    dependency: "direct main"
+    description:
+      name: sensors_plus
+      sha256: "56e8cd4260d9ed8e00ecd8da5d9fdc8a1b2ec12345a750dfa51ff83fcf12e3fa"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "7.0.0"
+  sensors_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: sensors_plus_platform_interface
+      sha256: "58815d2f5e46c0c41c40fb39375d3f127306f7742efe3b891c0b1c87e2b5cd5d"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.1"
   shared_preferences:
     dependency: "direct main"
     description:

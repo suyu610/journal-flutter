@@ -10,10 +10,14 @@ import 'package:journal/pages/expense_category/view.dart';
 import 'package:journal/pages/expense_list/index.dart';
 import 'package:journal/pages/invite/index.dart';
 import 'package:journal/pages/join_activity/view.dart';
+import 'package:journal/pages/lab/bottle/view.dart';
+import 'package:journal/pages/lab/view.dart';
+import 'package:journal/pages/local_server/view.dart';
 import 'package:journal/pages/login/binding.dart';
 import 'package:journal/pages/login/index.dart';
 import 'package:journal/pages/login/sms_code/binding.dart';
 import 'package:journal/pages/login/sms_code/view.dart';
+import 'package:journal/pages/splash/view.dart';
 import 'package:journal/pages/tabbar_layout/binding.dart';
 import 'package:journal/pages/tabbar_layout/view.dart';
 import 'package:journal/pages/webview/webview.dart';
@@ -21,6 +25,8 @@ import 'package:journal/pages/reminder_settings/view.dart';
 import 'package:journal/pages/reminder_settings/index.dart';
 
 abstract class Routers {
+  static const String LocalServicePageUrl = "/local_service";
+
   static const String JoinActivityPageUrl = "/join_activity";
   static const String WebViewPageUrl = "/webview";
   // 自动记账说明页
@@ -47,7 +53,7 @@ abstract class Routers {
   static const String LayoutPageUrl = "/layout";
 
   static const String SplashPageUrl = "/splash";
-
+  static const String MoneyJarPageUrl = "/money_jar";
   // 登录页
   static const String LoginPageUrl = "/login";
   static const String CodePageUrl = "/code";
@@ -59,6 +65,8 @@ abstract class Routers {
   static const String ReminderSettingsPageUrl = "/reminder_settings";
 
   static final List<GetPage> routePages = [
+    GetPage(name: MoneyJarPageUrl, page: () => const MoneyJarApp()),
+    GetPage(name: SplashPageUrl, page: () => const SplashPage()),
     GetPage(name: AIConfigPageV2Url, page: () => const AiConfigV2Page()),
     GetPage(
         name: AutoWriteIntroPageUrl, page: () => const AutowriteintroPage()),
@@ -96,6 +104,13 @@ abstract class Routers {
     GetPage(
         name: LayoutPageUrl,
         page: () => const LayoutPage(),
-        binding: LayoutBinding())
+        binding: LayoutBinding()),
+    GetPage(
+      name: LocalServicePageUrl,
+      page: () => const LocalServicePage(),
+    ),
+    GetPage(name: LabPageUrl, page: () => LabPage()),
   ];
+
+  static const String LabPageUrl = "/lab";
 }

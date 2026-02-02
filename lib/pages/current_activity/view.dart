@@ -9,6 +9,7 @@ import 'package:journal/components/custom_floating_action_button_location.dart';
 import 'package:journal/components/empty_item.dart';
 import 'package:journal/components/expense_item.dart';
 import 'package:journal/models/activity.dart';
+import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
@@ -57,7 +58,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
           KeyboardUtils.hide();
           controller.initData();
         });
-
   }
 
   // NavBar
@@ -191,14 +191,71 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
 
   // 当前账本详情
   _buildActivityDetail(Activity activity, context) {
-    List<ExpenseDateGroup> groupList = controller.expenseDateGroupList;
-
+    TextStyle activeTextStyle = const TextStyle(
+      color: Colors.black,
+      fontSize: 14,
+      fontFamily: 'SourceCodePro',
+      fontWeight: FontWeight.w600,
+      height: 0,
+    );
+    TextStyle inactiveTextStyle = const TextStyle(
+      color: Colors.black54,
+      fontSize: 12,
+      fontFamily: 'SourceCodePro',
+      fontWeight: FontWeight.w400,
+      height: 0,
+    );
     return Column(
-      children: groupList.map((e) => _buildSingleDateCard(e, context)).toList(),
+      children: [
+        Container(
+            padding: const EdgeInsets.fromLTRB(6, 16, 16, 0),
+            margin: const EdgeInsets.only(bottom: 12),
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("账单列表", style: activeTextStyle),
+                GestureDetector(
+                  onTap: () {
+                    controller.switchExpenseListShowMode();
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Obx(() => Text(
+                            "详细",
+                            style: controller.isExpenseListShowMode.value
+                                ? activeTextStyle
+                                : inactiveTextStyle,
+                          )),
+                      const Text(" / "),
+                      Obx(() => Text(
+                            "概括",
+                            style: !controller.isExpenseListShowMode.value
+                                ? activeTextStyle
+                                : inactiveTextStyle,
+                          )),
+                    ],
+                  ),
+                ),
+              ],
+            )),
+        Obx(() {
+          // 2. 渲染列表
+          // 注意：这里需要再次包裹一个 Column，因为 Obx 必须返回一个 Widget
+          // 如果不想多一层 Column，你的父级布局需要调整，但通常这样写最安全
+          return Column(
+            children: controller.expenseDateGroupList
+                .map((e) => _buildSingleDateCard(e, context))
+                .toList(),
+          );
+        }),
+      ],
     );
   }
 
-  // 单个日期卡片
   Widget _buildSingleDateCard(ExpenseDateGroup expenseDateGroup, context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -214,6 +271,9 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ------------------------------------------------------
+          // 1. 顶部日期栏 (保持不变)
+          // ------------------------------------------------------
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -229,52 +289,124 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
               ),
               Row(
                 children: [
-                  const Text(
-                    "支出",
-                    style: TextStyle(
-                      color: Color(0xFF666666),
-                      fontSize: 12,
-                      fontFamily: 'SourceCodePro',
-                      fontWeight: FontWeight.w400,
-                      height: 0,
-                    ),
-                  ),
+                  const Text("支出",
+                      style: TextStyle(
+                          color: Color(0xFF666666),
+                          fontSize: 12,
+                          fontFamily: 'SourceCodePro')),
                   const SizedBox(width: 6),
-                  Text(
-                    expenseDateGroup.totalExpense.toStringAsFixed(2),
-                    style: const TextStyle(
-                      color: Color(0xFF666666),
-                      fontSize: 14,
-                      fontFamily: 'SourceCodePro',
-                      fontWeight: FontWeight.w600,
-                      height: 0,
-                    ),
-                  ),
+                  Text(expenseDateGroup.totalExpense.toStringAsFixed(2),
+                      style: const TextStyle(
+                          color: Color(0xFF666666),
+                          fontSize: 14,
+                          fontFamily: 'SourceCodePro',
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(width: 4),
-                  const Text(
-                    "元",
-                    style: TextStyle(
-                      color: Color(0xFF666666),
-                      fontSize: 12,
-                      fontFamily: 'SourceCodePro',
-                      fontWeight: FontWeight.w400,
-                      height: 0,
-                    ),
-                  )
+                  const Text("元",
+                      style: TextStyle(
+                          color: Color(0xFF666666),
+                          fontSize: 12,
+                          fontFamily: 'SourceCodePro'))
                 ],
               ),
             ],
           ),
           const SizedBox(height: 6),
           BrnBarBottomDivider(),
-          const SizedBox(height: 10),
-          ...expenseDateGroup.expenses
-              .map((e) => ActivityExpenseItem(e, context)),
+
+          // ------------------------------------------------------
+          // 2. 核心内容区域
+          // ------------------------------------------------------
+          Obx(() {
+            // [模式 A]: 详细模式 -> 展示每一笔 ActivityExpenseItem
+            if (controller.isExpenseListShowMode.value) {
+              return Column(
+                children: [
+                  const SizedBox(height: 10),
+                  ...expenseDateGroup.expenses
+                      .map((e) => ActivityExpenseItem(e, context)),
+                ],
+              );
+            }
+
+            // [模式 B]: 概括模式 -> 只展示分类统计，不展示具体 Item
+            else {
+              // 获取分组 Map
+              var typeMap = expenseDateGroup.expensesByType;
+
+              return Column(
+                children: [
+                  const SizedBox(height: 8), // 稍微调整间距
+                  ...typeMap.entries.map((entry) {
+                    String typeName = entry.key;
+                    List<Expense> typeList = entry.value;
+
+                    // 计算该类型的子总计
+                    double subTotal = typeList.fold(0.0, (prev, curr) {
+                      return curr.positive == 0 ? prev + curr.price : prev;
+                    });
+
+                    // 构建简洁的统计行
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12), // 行间距
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // 左侧：类型名称
+                          Row(
+                            children: [
+                              // 可选：如果每个类型有图标，可以在这里加 Icon
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F5F5), // 浅灰背景
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  typeName,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "${typeList.length}笔", // 可选：显示笔数
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black38,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // 右侧：该类型金额
+                          Text(
+                            "¥${subTotal.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                              fontFamily: 'SourceCodePro',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 4),
+                ],
+              );
+            }
+          }),
         ],
       ),
     );
   }
-
   // 用户头像
 
   // 账本卡片头部

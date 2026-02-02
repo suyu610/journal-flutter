@@ -51,7 +51,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
         ),
         position: TabBarPosition.top,
         alignment: TabBarAlignment.end,
-        indicatorColor: const Color(0xff0052D9),
+        indicatorColor: const Color(0xff000000),
         labelColor: Colors.black,
         unselectedLabelColor: Colors.black,
       ),
@@ -76,7 +76,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: ShapeDecoration(
-                              color: const Color(0xFF0052D9).withAlpha(10),
+                              color: const Color(0xff000000).withAlpha(10),
                               shape: RoundedRectangleBorder(
                                 side: const BorderSide(
                                     width: 0.80, color: Colors.white),
@@ -86,7 +86,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
                             child: Icon(
                               getIconByType(e['labelName']),
                               size: 22,
-                              color: const Color(0xFF0052D9),
+                              color: const Color(0xff000000),
                             ),
                           ),
                           const SizedBox(
@@ -126,7 +126,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: ShapeDecoration(
-                              color: const Color(0xFF0052D9).withAlpha(10),
+                              color: const Color(0xff000000).withAlpha(10),
                               shape: RoundedRectangleBorder(
                                 side: const BorderSide(
                                     width: 0.80, color: Colors.white),
@@ -136,7 +136,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
                             child: Icon(
                               getIconByType(e['labelName']),
                               size: 22,
-                              color: const Color(0xFF0052D9),
+                              color: const Color(0xff000000),
                             ),
                           ),
                           const SizedBox(
