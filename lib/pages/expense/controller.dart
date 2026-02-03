@@ -15,15 +15,19 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 class ExpensePageController extends GetxController {
   var expensePriceTextEditController = TextEditingController();
   var expenseLabelTextEditController = TextEditingController();
+  var expenseOriginalPriceTextEditController = TextEditingController();
 
   ExpensePageController();
   Rx<Expense> expense = Expense.empty().obs;
+
   _initData() {
     if (Get.arguments != null) {
       expense.value = Get.arguments;
       Log().d(expense.value.type.toString());
       expensePriceTextEditController.text = expense.value.price.toString();
       expenseLabelTextEditController.text = expense.value.label.toString();
+      expenseOriginalPriceTextEditController.text =
+          expense.value.originalPrice.toString();
     } else {
       expense.value = Expense.empty();
     }
@@ -87,6 +91,14 @@ class ExpensePageController extends GetxController {
 
   void modifyExpenseLabel(String v) {
     expense.value.label = v;
+  }
+
+  void modifyExpenseOriginalPrice(String value) {
+    if (value.isEmpty) {
+      expense.value.originalPrice = null;
+      return;
+    }
+    expense.value.originalPrice = num.parse(value);
   }
 
   Future<bool> updateExpense(context) async {

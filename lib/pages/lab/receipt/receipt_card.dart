@@ -185,22 +185,21 @@ class PaperChads extends StatelessWidget {
 }
 
 // ==========================================
-// 3. 小票卡片主体 (ReceiptCard)
+// 3. 小票卡片主体 (ReceiptCard) - 已修改
 // ==========================================
+// ... 前面的 Imports 和 PrintingReceiptAnim 保持不变 ...
+
 class ReceiptCard extends StatelessWidget {
   final List<Expense> items;
-  final double totalAmount;
   final double budget;
   final String date;
-  final String nickname; // 顾客昵称
-
-  final int? randomSeed; // 用于固定随机歪斜 (可选)
+  final String nickname;
+  final int? randomSeed;
 
   const ReceiptCard({
     Key? key,
-    required this.nickname, // 顾客昵称
+    required this.nickname,
     required this.items,
-    required this.totalAmount,
     required this.budget,
     required this.date,
     this.randomSeed,
@@ -208,23 +207,44 @@ class ReceiptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 基础字体样式 (模拟热敏打印机)
-    final receiptStyle = TextStyle(
-      fontFamily: 'Courier', // 务必使用等宽字体
+    // ================== 1. 逻辑计算优化 ==================
+    // 纯支出
+    double totalExpense = items
+        .where((item) => item.positive != 1)
+        .fold(0.0, (sum, item) => sum + item.price);
+
+    // 纯收入
+    double totalIncome = items
+        .where((item) => item.positive == 1)
+        .fold(0.0, (sum, item) => sum + item.price);
+
+    // 总节省
+    double totalSavings = items.fold(0.0, (sum, item) {
+      if (item.originalPrice != null && item.originalPrice! > item.price) {
+        return sum + (item.originalPrice! - item.price);
+      }
+      return sum;
+    });
+
+    // 是否超支 (仅当设置了预算且支出大于预算时)
+    bool hasBudget = budget > 0;
+    bool isOverBudget = hasBudget && (totalExpense > budget);
+    double budgetLeft = hasBudget ? (budget - totalExpense) : 0;
+
+    // 样式定义
+    final baseStyle = TextStyle(
+      fontFamily: 'Courier',
       fontSize: 14,
       color: Colors.grey[850],
       fontWeight: FontWeight.w600,
       height: 1.4,
     );
 
-    // --- 生成受控的随机变换 (歪歪扭扭) ---
+    // 随机变换矩阵 (保持不变)
     final random =
         math.Random(randomSeed ?? DateTime.now().millisecondsSinceEpoch);
-    // 旋转 (-1.5 ~ 1.5度)
     double rotateAngle = (random.nextDouble() - 0.5) * 0.03;
-    // 切变 (拉伸变形)
     double skewY = (random.nextDouble() - 0.5) * 0.02;
-
     Matrix4 transformMatrix = Matrix4.identity()
       ..rotateZ(rotateAngle)
       ..setEntry(1, 0, skewY);
@@ -234,9 +254,8 @@ class ReceiptCard extends StatelessWidget {
       alignment: Alignment.center,
       child: Center(
         child: Container(
-          width: 300.w, // 固定宽度，模仿小票规格
+          width: 300.w,
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-          // 阴影
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -248,155 +267,124 @@ class ReceiptCard extends StatelessWidget {
             ],
           ),
           child: PhysicalShape(
-            clipper: ReceiptClipper(),
-
-            // 2. 纸张颜色 (必须在这里设置，不要在 child Container 里设置)
+            clipper: ReceiptClipper(), // 你的 Clipper
             color: const Color(0xFFF8F5F2),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              // 纸张微渐变背景
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo
+                  // --- Header ---
                   Icon(Icons.receipt_long, size: 32, color: Colors.grey[800]),
-                  // Image.asset("assets/images/logo.png", height: 32),
                   const SizedBox(height: 8),
                   Text("今日小票",
-                      style:
-                          receiptStyle.copyWith(fontSize: 10, letterSpacing: 3),
+                      style: baseStyle.copyWith(fontSize: 10, letterSpacing: 3),
                       textAlign: TextAlign.center),
                   const SizedBox(height: 20),
-
-                  // Header
                   _buildDashedLine(),
                   const SizedBox(height: 8),
                   _buildRow("日期", date,
-                      receiptStyle.copyWith(fontWeight: FontWeight.normal)),
+                      baseStyle.copyWith(fontWeight: FontWeight.normal)),
                   _buildRow("顾客", nickname,
-                      receiptStyle.copyWith(fontWeight: FontWeight.normal)),
+                      baseStyle.copyWith(fontWeight: FontWeight.normal)),
                   const SizedBox(height: 8),
                   _buildDashedLine(),
 
-                  // List
+                  // --- List (区域 A) ---
                   const SizedBox(height: 12),
                   ...items.map((item) => Padding(
                         padding: const EdgeInsets.only(bottom: 6),
                         child: _buildRow(
-                            item.label,
-                            item.price.toStringAsFixed(2),
-                            receiptStyle.copyWith(fontSize: 15)),
+                          item.label,
+                          item.price.toStringAsFixed(2),
+                          baseStyle.copyWith(fontSize: 15),
+                          positive: item.positive,
+                          // 只有当有划线价且大于现价时才显示
+                          deleteValue: (item.originalPrice != null &&
+                                  item.originalPrice! > item.price)
+                              ? item.originalPrice?.toStringAsFixed(2)
+                              : null,
+                        ),
                       )),
 
-                  // 占位
+                  // 最小高度占位
                   if (items.length < 3)
-                    SizedBox(height: (3 - items.length) * 20.0),
+                    SizedBox(height: (3 - items.length) * 24.0),
 
                   const SizedBox(height: 12),
                   _buildDashedLine(),
 
-                  // Total
+                  // --- Summary (区域 B：结算区) ---
+                  // 这里只负责“算钱”，不要放预算逻辑，保持干净
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("总计",
-                          style: receiptStyle.copyWith(
-                              fontSize: 16, fontWeight: FontWeight.w500)),
-                      Text("¥${totalAmount.toStringAsFixed(2)}",
-                          style: receiptStyle.copyWith(
-                              fontSize: 22, fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                  if (budget > 0)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("目标",
-                            style: receiptStyle.copyWith(
-                                fontSize: 16, fontWeight: FontWeight.w500)),
-                        Text("¥${budget.toStringAsFixed(2)}",
-                            style: receiptStyle.copyWith(
-                                fontSize: 22, fontWeight: FontWeight.w500)),
-                      ],
+
+                  // 1. 如果有优惠，先展示“节省” (这也是一般小票的逻辑)
+                  if (totalSavings > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text("今日节省: ",
+                              style: baseStyle.copyWith(
+                                  fontSize: 12, color: Colors.grey[600])),
+                          Text("¥${totalSavings.toStringAsFixed(2)}",
+                              style: baseStyle.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.redAccent)),
+                        ],
+                      ),
                     ),
-                  // 超出或者未超出目标
-                  if (totalAmount > budget && budget > 0)
+
+                  // 2. 总支出 (大号字体)
+                  if (totalExpense > 0)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("超出",
-                            style: receiptStyle.copyWith(
-                                fontSize: 16, fontWeight: FontWeight.w500)),
-                        Text("¥${(totalAmount - budget).toStringAsFixed(2)}",
-                            style: receiptStyle.copyWith(
-                                fontSize: 22, fontWeight: FontWeight.w500)),
+                        Text("总支出",
+                            style: baseStyle.copyWith(
+                                fontWeight: FontWeight.bold)),
+                        Text("-¥${totalExpense.toStringAsFixed(2)}",
+                            style: baseStyle.copyWith(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
                       ],
                     ),
 
-                  if (totalAmount <= budget && budget > 0)
+                  // 3. 总收入 (如果有)
+                  if (totalIncome > 0)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("节省",
-                            style: receiptStyle.copyWith(
-                                fontSize: 16, fontWeight: FontWeight.w500)),
-                        Text("¥${(budget - totalAmount).toStringAsFixed(2)}",
-                            style: receiptStyle.copyWith(
-                                fontSize: 22, fontWeight: FontWeight.w500)),
+                        Text("总收入",
+                            style: baseStyle.copyWith(
+                                fontWeight: FontWeight.normal)),
+                        Text("+¥${totalIncome.toStringAsFixed(2)}",
+                            style: baseStyle.copyWith(
+                                fontSize: 16, color: Colors.green[700])),
                       ],
                     ),
 
                   const SizedBox(height: 25),
 
-                  // Footer Slogan
-                  Text(
-                    "记录，构筑生活秩序",
-                    textAlign: TextAlign.center,
-                    style: receiptStyle.copyWith(
-                        fontSize: 10, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // 模拟条形码
-                  // 模拟条形码 (优化视觉版)
-                  SizedBox(
-                    height: 40, //稍微高一点
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // 1. 左侧起始符 (模拟真实条形码的 Guard Bar)
-                        _buildBar(2, true),
-                        _buildBar(1, false),
-                        _buildBar(2, true),
-                        _buildBar(1, false),
-
-                        // 2. 中间随机数据区 (更密集的线条)
-                        ...List.generate(45, (index) {
-                          // 让线条粗细变化更丰富 (1, 2, 3 像素)
-                          // 并且引入一点点间隙变化
-                          double width = (random.nextInt(3) + 1).toDouble();
-                          bool isSpace = random.nextInt(10) > 7; // 20% 的概率是宽间隙
-
-                          return Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: isSpace ? 1.5 : 0.5),
-                            width: width,
-                            color: Colors.black87, // 条形码通常是纯黑
-                          );
-                        }),
-
-                        // 3. 右侧结束符
-                        _buildBar(1, false),
-                        _buildBar(2, true),
-                        _buildBar(1, false),
-                        _buildBar(2, true),
-                      ],
+                  // --- Footer (区域 C：状态/预算区) ---
+                  // 这里才展示“预算”相关的判断，用颜色块区分情绪
+                  if (hasBudget)
+                    _buildBudgetCard(
+                        isOverBudget: isOverBudget,
+                        budgetLeft: budgetLeft,
+                        overAmount: totalExpense - budget,
+                        savings: totalSavings)
+                  else
+                    // 如果没有预算，展示一个通用的“记录”语录或者净收支
+                    Center(
+                      child: Text("记录，构筑生活秩序",
+                          style: baseStyle.copyWith(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                              fontStyle: FontStyle.italic)),
                     ),
-                  ),
-                  const SizedBox(height: 10), // 底部留白给锯齿
                 ],
               ),
             ),
@@ -406,19 +394,151 @@ class ReceiptCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String value, TextStyle style) {
+  // 新增：提取出来的底部状态卡片，逻辑更清晰
+  Widget _buildBudgetCard({
+    required bool isOverBudget,
+    required double budgetLeft,
+    required double overAmount,
+    required double savings,
+  }) {
+    // 样式 A: 预算充足 (黑色高级感)
+    if (!isOverBudget) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A), // 近乎全黑
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.black, width: 1),
+        ),
+        child: Row(
+          children: [
+            // 左侧：预算剩余
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("预算剩余",
+                      style: TextStyle(color: Colors.white54, fontSize: 10)),
+                  const SizedBox(height: 2),
+                  Text("¥${budgetLeft.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'monospace')),
+                ],
+              ),
+            ),
+            // 右侧装饰：显示节省 (如果有)
+            if (savings > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Column(
+                  children: [
+                    const Text("额外节省",
+                        style: TextStyle(color: Colors.white54, fontSize: 8)),
+                    Text("¥${savings.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                            color: Colors.greenAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+    // 样式 B: 超支警报 (红色)
+    else {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFEBEE), // 浅红背景
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.red[200]!), // 红色边框
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("预算超支警告",
+                    style: TextStyle(
+                        color: Colors.red[900],
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                Text("- ¥${overAmount.toStringAsFixed(2)}",
+                    style: TextStyle(
+                        color: Colors.red[700],
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'monospace')),
+              ],
+            ),
+            Icon(Icons.warning_amber_rounded, color: Colors.red[300], size: 28),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildRow(String label, String value, TextStyle style,
+      {String? deleteValue, int positive = 0}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end, // 底部对齐
+      crossAxisAlignment: CrossAxisAlignment.baseline, // 基线对齐，防止字体大小不同导致的抖动
+      textBaseline: TextBaseline.alphabetic,
       children: [
-        Text(label, style: style),
-        // 中间可以用点点填充 (可选优化)
+        // 左侧：名称 + 虚线
         Expanded(
-            child: Text(" . " * 20,
-                maxLines: 1,
-                overflow: TextOverflow.clip,
-                style: TextStyle(color: Colors.grey[300]))),
-        Text(value, style: style),
+          child: Row(
+            children: [
+              Text(label, style: style),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(left: 4, right: 8),
+                  height: 1,
+                  // 虚线颜色淡一点，不要抢戏
+                  color: Colors.grey[200],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 右侧：价格逻辑
+        if (deleteValue != null && deleteValue != "0.00")
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              // 划线价：灰色，小字体
+              Text(deleteValue,
+                  style: style.copyWith(
+                      color: Colors.grey[400],
+                      fontSize: 12,
+                      decorationThickness: .8,
+                      decorationColor: Colors.grey[400],
+                      decoration: TextDecoration.lineThrough)),
+              const SizedBox(width: 6),
+              // 实付价：原样式
+              Text(value,
+                  style: style.copyWith(
+                      color: positive == 1 ? Colors.green[700] : Colors.black)),
+            ],
+          )
+        else
+          Text(positive == 1 ? "+$value" : value,
+              style: style.copyWith(
+                  color: positive == 1 ? Colors.green[700] : Colors.black)),
       ],
     );
   }
@@ -435,7 +555,7 @@ class ReceiptCard extends StatelessWidget {
               width: dashWidth,
               height: 1,
               child: DecoratedBox(
-                  decoration: BoxDecoration(color: Colors.grey[400])),
+                  decoration: BoxDecoration(color: Colors.grey[100])), // 颜色调淡
             );
           }),
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -478,12 +598,4 @@ class ReceiptClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-Widget _buildBar(double width, bool isDark) {
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 0.5),
-    width: width,
-    color: isDark ? Colors.black87 : Colors.transparent,
-  );
 }

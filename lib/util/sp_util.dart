@@ -82,4 +82,31 @@ class SpUtil {
     return Get.find<SharedPreferences>()
         .setString(SPKey.live2dZipVersion, version);
   }
+
+  void saveTabOrder(List<String> list) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    sp.setStringList(SPKey.tabOrder, list);
+  }
+
+  /// 获取tabbar顺序
+  List<String> getTabOrder() {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.getStringList(SPKey.tabOrder) ?? [];
+  }
+
+  static const String keyDisabledTabs = 'key_disabled_tabs';
+
+  // 保存被禁用的 Tab ID
+  Future<bool> saveDisabledTabs(List<String> ids) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+
+    return sp.setStringList(keyDisabledTabs, ids);
+  }
+
+  // 获取被禁用的 Tab ID
+  List<String> getDisabledTabs() {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+
+    return sp.getStringList(keyDisabledTabs) ?? [];
+  }
 }

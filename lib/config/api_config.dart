@@ -4,5 +4,5 @@ class HttpUrl {
   static String homeBaseUrl = "http://192.168.5.94:5666/api";
   static String prodBaseUrl = "https://journal.uuorb.com/api";
 
-  static String baseUrl = localBaseUrl;
+  static String baseUrl = prodBaseUrl;
 }

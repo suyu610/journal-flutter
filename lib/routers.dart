@@ -20,12 +20,15 @@ import 'package:journal/pages/login/sms_code/view.dart';
 import 'package:journal/pages/splash/view.dart';
 import 'package:journal/pages/tabbar_layout/binding.dart';
 import 'package:journal/pages/tabbar_layout/view.dart';
+import 'package:journal/pages/tabbar_layout/tabbar_setting_page.dart';
 import 'package:journal/pages/webview/webview.dart';
 import 'package:journal/pages/reminder_settings/view.dart';
 import 'package:journal/pages/reminder_settings/index.dart';
 
 abstract class Routers {
   static const String LocalServicePageUrl = "/local_service";
+  // tabbar设置页
+  static const String TabBarSettingPageUrl = "/tabbar_setting";
 
   static const String JoinActivityPageUrl = "/join_activity";
   static const String WebViewPageUrl = "/webview";
@@ -65,6 +68,8 @@ abstract class Routers {
   static const String ReminderSettingsPageUrl = "/reminder_settings";
 
   static final List<GetPage> routePages = [
+    // tabbar设置页
+    GetPage(name: TabBarSettingPageUrl, page: () => const TabBarSettingPage()),
     GetPage(name: MoneyJarPageUrl, page: () => const MoneyJarApp()),
     GetPage(name: SplashPageUrl, page: () => const SplashPage()),
     GetPage(name: AIConfigPageV2Url, page: () => const AiConfigV2Page()),

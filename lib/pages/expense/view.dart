@@ -55,6 +55,17 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             controller.modifyExpensePrice(v);
           },
         ),
+        BrnTextInputFormItem(
+          title: "原金额（划线价）",
+          controller: controller.expenseOriginalPriceTextEditController,
+          inputType: BrnInputType.decimal,
+          onChanged: (value) {
+            controller.modifyExpenseOriginalPrice(value);
+          },
+          onSubmitted: (v) {
+            controller.modifyExpenseOriginalPrice(v);
+          },
+        ),
         BrnBarBottomDivider(),
         // 账单备注
         BrnTextInputFormItem(

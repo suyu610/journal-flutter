@@ -74,6 +74,18 @@ class LabPage extends GetView<LabController> {
               Get.toNamed(Routers.LocalServicePageUrl, arguments: {});
             },
           ),
+          // tabbar设置页
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
+              Icons.settings_outlined,
+              size: 18,
+            ),
+            title: "底部功能排序",
+            onClick: (v) {
+              Get.toNamed(Routers.TabBarSettingPageUrl, arguments: {});
+            },
+          ),
           TDCell(
             arrow: true,
             leftIconWidget: const Icon(
@@ -83,17 +95,6 @@ class LabPage extends GetView<LabController> {
             title: "自动记账",
             onClick: (v) {
               Get.toNamed(Routers.AutoWriteIntroPageUrl);
-            },
-          ),
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
-              Icons.receipt_outlined,
-              size: 18,
-            ),
-            title: "生成小票",
-            onClick: (v) {
-              Get.toNamed(Routers.ReceiptPageUrl, arguments: {});
             },
           ),
         ]),

@@ -318,8 +318,9 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
           // 2. 核心内容区域
           // ------------------------------------------------------
           Obx(() {
+            // [模式 A]: 详细模式
+
             if (controller.isExpenseListShowMode.value) {
-              // [模式 A]: 详细模式
               return Column(
                 children: [
                   const SizedBox(height: 10),

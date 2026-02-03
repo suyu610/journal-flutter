@@ -69,7 +69,7 @@ class ChartsPage extends GetView<ChartsController> {
   Widget _buildMainContent(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 22.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
@@ -428,9 +428,7 @@ class ChartsPage extends GetView<ChartsController> {
                 return;
               }
               TDToast.dismissAll();
-              // 计算总价
-              final totalAmount =
-                  expenseItems.fold(0.0, (sum, item) => sum + item.price);
+
               List<String> nicknameList = expenseItems
                   .map((e) => e.userNickname ?? '')
                   .toSet()
@@ -453,8 +451,9 @@ class ChartsPage extends GetView<ChartsController> {
                             nickname: nicknameList.join(' | '),
                             budget: controller.dailyBudgetValue,
                             items: expenseItems,
-                            totalAmount: totalAmount,
-                            date: DateTime.now().toString().substring(0, 16),
+
+                            // yyyy-mm-dd
+                            date: DateTime.now().toString().substring(0, 10),
                           ),
                         ),
 

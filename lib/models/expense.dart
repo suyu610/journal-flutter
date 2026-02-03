@@ -7,6 +7,8 @@ class Expense {
   String expenseId;
   String type;
   num price;
+  // 划线价
+  num? originalPrice; // 新增：划线价（原价）
   String label;
   String userId;
   String expenseTime;
@@ -21,6 +23,11 @@ class Expense {
   // 使用 List<String>? 允许为空，或者使用 @JsonKey(defaultValue: [])
   List<String>? fileList;
 
+// 计算属性：是否有折扣
+  bool get hasDiscount => originalPrice != null && originalPrice! > price;
+
+  // 计算属性：省了多少钱
+  num get savedAmount => hasDiscount ? (originalPrice! - price) : 0;
   @override
   toString() {
     return 'Expense{expenseId: $expenseId, type: $type, price: $price, label: $label, userId: $userId, createTime: $createTime, updateTime: $updateTime, userNickname: $userNickname, userAvatar: $userAvatar, activityId: $activityId, positive: $positive, fileList: $fileList}';
@@ -35,6 +42,7 @@ class Expense {
     required this.userId,
     required this.createTime,
     this.userNickname,
+    this.originalPrice,
     this.userAvatar,
     required this.activityId,
     required this.positive,
@@ -50,6 +58,7 @@ class Expense {
 
   static Expense empty() {
     return Expense(
+        originalPrice: null,
         expenseTime: "",
         activityId: '',
         expenseId: '',

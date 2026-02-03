@@ -81,6 +81,20 @@ Widget ActivityExpenseItem(Expense e, context) {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    // 折扣信息
+                    if (e.hasDiscount)
+                      Text(
+                        '${e.positive == 0 ? '-' : ''}${e.originalPrice}',
+                        style: const TextStyle(
+                          color: Color(0xFF000000),
+                          fontSize: 14,
+                          decoration: TextDecoration.lineThrough,
+                          decorationColor: Colors.black54,
+                          fontFamily: 'SourceCodePro',
+                          fontWeight: FontWeight.w400,
+                          height: 0,
+                        ),
+                      ),
                     Text(
                       '${e.positive == 0 ? '-' : ''}${e.price}',
                       style: const TextStyle(
