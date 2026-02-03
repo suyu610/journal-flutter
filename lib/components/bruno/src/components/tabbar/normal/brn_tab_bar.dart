@@ -104,7 +104,8 @@ class BrnTabBar extends StatefulWidget {
 
   BrnTabBarConfig? themeData;
 
-  BrnTabBar({super.key, 
+  BrnTabBar({
+    super.key,
     required this.tabs,
     this.mode = BrnTabBarBadgeMode.average,
     this.isScroll = false,
@@ -141,16 +142,16 @@ class BrnTabBar extends StatefulWidget {
         .tabBarConfig
         .merge(themeData);
     themeData = themeData!.merge(BrnTabBarConfig(
-          backgroundColor: backgroundcolor,
-          tabHeight: tabHeight,
-          indicatorHeight: indicatorWeight,
-          indicatorWidth: indicatorWidth,
-          labelStyle: BrnTextStyle.withStyle(labelStyle),
-          unselectedLabelStyle: BrnTextStyle.withStyle(unselectedLabelStyle),
-          tagSpacing: tagSpacing,
-          preLineTagCount: preLineTagCount,
-          tagHeight: tagHeight,
-        ));
+      backgroundColor: backgroundcolor,
+      tabHeight: tabHeight,
+      indicatorHeight: indicatorWeight,
+      indicatorWidth: indicatorWidth,
+      labelStyle: BrnTextStyle.withStyle(labelStyle),
+      unselectedLabelStyle: BrnTextStyle.withStyle(unselectedLabelStyle),
+      tagSpacing: tagSpacing,
+      preLineTagCount: preLineTagCount,
+      tagHeight: tagHeight,
+    ));
   }
 
   @override

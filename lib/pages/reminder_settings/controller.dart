@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/services/notification_service.dart';
+import 'package:journal/util/dialog_util.dart';
 
 class ReminderSettingsController extends GetxController {
   final NotificationService service = NotificationService.to;
@@ -48,28 +49,14 @@ class ReminderSettingsController extends GetxController {
   }
 
   void removeTime(String time, BuildContext context) {
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (BuildContext buildContext, Animation<double> animation,
-          Animation<double> secondaryAnimation) {
-        return AlertDialog(
-          title: const Text('确认删除'),
-          content: Text('确定要删除 $time 的提醒吗？'),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                service.removeReminderTime(time);
-                BrnToast.show('已删除提醒', context);
-                Get.back();
-              },
-              child: const Text('确定'),
-            ),
-          ],
-        );
+    PremiumGlassDialog.show(
+      context,
+      title: "确认删除",
+      content: "确定要删除 $time 的提醒吗？",
+      onConfirm: () {
+        service.removeReminderTime(time);
+        BrnToast.show('已删除提醒', context);
+        Get.back();
       },
     );
   }

@@ -5,13 +5,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/bruno/bruno.dart';
-import 'package:journal/components/custom_floating_action_button_location.dart';
 import 'package:journal/components/empty_item.dart';
 import 'package:journal/components/expense_item.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
-import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
 import 'package:journal/util/keyboard_util.dart';
 import 'package:journal/util/toast_util.dart';
@@ -31,9 +29,9 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         return Scaffold(
           appBar: _navibar(context),
           body: _buildView(context),
-          floatingActionButton: _buildFloatingActionButton(),
-          floatingActionButtonLocation: CustomFloatingActionButtonLocation(
-              FloatingActionButtonLocation.endContained, 0, -24.h),
+          // floatingActionButton: _buildFloatingActionButton(),
+          // floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+          //     FloatingActionButtonLocation.endContained, 0, -24.h),
         );
       },
     );
@@ -79,65 +77,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         //       }),
         // ],
         );
-  }
-
-  // 浮动按钮
-  Widget _buildFloatingActionButton() {
-    return GestureDetector(
-      onTap: () {
-        if (controller.currentActivity.value.activityId == "") {
-          Get.toNamed(Routers.CreateActivityUrl);
-        } else {
-          Get.toNamed(Routers.ChatDetailPageUrl,
-              arguments: controller.currentActivity.value);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        clipBehavior: Clip.antiAlias,
-        decoration: ShapeDecoration(
-          color: const Color(0xFF000000),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          shadows: const [
-            BoxShadow(
-              color: Color(0x19000000),
-              blurRadius: 5,
-              offset: Offset(0, 5),
-              spreadRadius: -3,
-            ),
-            BoxShadow(
-              color: Color(0x0F000000),
-              blurRadius: 10,
-              offset: Offset(0, 8),
-              spreadRadius: 1,
-            ),
-            BoxShadow(
-              color: Color(0x0C000000),
-              blurRadius: 14,
-              offset: Offset(0, 3),
-              spreadRadius: 2,
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-                width: 24,
-                height: 24,
-                child: const Icon(
-                  Icons.add,
-                  size: 18,
-                  color: Colors.white,
-                )),
-          ],
-        ),
-      ),
-    );
   }
 
   // 当前账本卡片
@@ -207,7 +146,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
     return Column(
       children: [
         Container(
-            padding: const EdgeInsets.fromLTRB(6, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(6, 8, 6, 0),
             margin: const EdgeInsets.only(bottom: 12),
             width: double.infinity,
             child: Row(

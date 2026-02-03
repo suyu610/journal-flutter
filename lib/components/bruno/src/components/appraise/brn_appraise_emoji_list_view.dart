@@ -20,7 +20,10 @@ class BrnAppraiseEmojiListView extends StatefulWidget {
 
   /// create BrnAppraiseEmojiListView
   BrnAppraiseEmojiListView(
-      {super.key, this.indexes = const [0, 1, 2, 3, 4], this.titles, this.onTap})
+      {super.key,
+      this.indexes = const [0, 1, 2, 3, 4],
+      this.titles,
+      this.onTap})
       : assert(indexes.isNotEmpty) {
     titles ??= BrnIntl.currentResource.appriseLevel;
     assert(titles != null && titles!.length == 5);

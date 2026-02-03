@@ -134,8 +134,9 @@ class BrnFormUtil {
 
   static Widget getRequireIcon(bool isRequire) {
     return Container(
-      padding:
-          isRequire ? const EdgeInsets.only(right: 2) : const EdgeInsets.only(right: 0),
+      padding: isRequire
+          ? const EdgeInsets.only(right: 2)
+          : const EdgeInsets.only(right: 0),
       child: isRequire
           ? BrunoTools.getAssetSizeImage(BrnAsset.iconRequireRed, 8, 8,
               color: const Color(0xFFFA3F3F))

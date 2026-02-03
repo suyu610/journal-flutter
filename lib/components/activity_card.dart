@@ -235,7 +235,7 @@ class _FinanceOverview extends StatelessWidget {
                   Text(
                     expense.toStringAsFixed(2),
                     style: const TextStyle(
-                        fontSize: 36,
+                        fontSize: 32,
                         fontFamily: 'SourceCodePro',
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF1D1D1D)),

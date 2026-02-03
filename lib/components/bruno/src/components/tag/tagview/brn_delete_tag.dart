@@ -186,7 +186,8 @@ class DeleteTagItemWidget extends StatelessWidget {
   final BrnTagConfig? themeData;
 
   const DeleteTagItemWidget(this.index, this.title, this.didDeleted,
-      {super.key, this.deleteIconSize,
+      {super.key,
+      this.deleteIconSize,
       this.style,
       this.shape,
       this.backgroundColor,

@@ -46,8 +46,8 @@ class ExpansionElementWidget extends StatefulWidget {
         .getConfig(configId: themeData!.configId)
         .formItemConfig
         .merge(themeData);
-    themeData = themeData!
-        .merge(BrnFormItemConfig(backgroundColor: backgroundColor));
+    themeData =
+        themeData!.merge(BrnFormItemConfig(backgroundColor: backgroundColor));
   }
 
   /// The primary content of the list item.

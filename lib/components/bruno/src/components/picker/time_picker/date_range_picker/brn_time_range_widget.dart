@@ -77,12 +77,8 @@ class BrnTimeRangeWidget extends StatefulWidget {
   }
 
   @override
-  State<StatefulWidget> createState() => _TimePickerWidgetState(
-      minDateTime,
-      maxDateTime,
-      initialStartDateTime,
-      initialEndDateTime,
-      minuteDivider);
+  State<StatefulWidget> createState() => _TimePickerWidgetState(minDateTime,
+      maxDateTime, initialStartDateTime, initialEndDateTime, minuteDivider);
 }
 
 class _TimePickerWidgetState extends State<BrnTimeRangeWidget> {
@@ -315,7 +311,7 @@ class _TimePickerWidgetState extends State<BrnTimeRangeWidget> {
       child: Container(
         height: widget.themeData!.pickerHeight,
         decoration: BoxDecoration(
-            border:const Border(left: BorderSide.none, right: BorderSide.none),
+            border: const Border(left: BorderSide.none, right: BorderSide.none),
             color: widget.themeData!.backgroundColor),
         child: BrnPicker.builder(
           backgroundColor: widget.themeData!.backgroundColor,

@@ -112,8 +112,8 @@ class BrnTextSelectFormItem extends StatefulWidget {
         .getConfig(configId: themeData!.configId)
         .formItemConfig
         .merge(themeData);
-    themeData = themeData!
-        .merge(BrnFormItemConfig(backgroundColor: backgroundColor));
+    themeData =
+        themeData!.merge(BrnFormItemConfig(backgroundColor: backgroundColor));
   }
 
   BrnTextSelectFormItem.autoLayout(
@@ -143,8 +143,8 @@ class BrnTextSelectFormItem extends StatefulWidget {
         .getConfig(configId: themeData!.configId)
         .formItemConfig
         .merge(themeData);
-    themeData = themeData!
-        .merge(BrnFormItemConfig(backgroundColor: backgroundColor));
+    themeData =
+        themeData!.merge(BrnFormItemConfig(backgroundColor: backgroundColor));
   }
 
   @override
@@ -161,11 +161,10 @@ class BrnTextSelectFormItemState extends State<BrnTextSelectFormItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-    decoration: BoxDecoration(
-      color: widget.themeData!.backgroundColor,
+      decoration: BoxDecoration(
+        color: widget.themeData!.backgroundColor,
         borderRadius: BorderRadius.circular(4),
       ),
-      
       padding: BrnFormUtil.itemEdgeInsets(widget.themeData!),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

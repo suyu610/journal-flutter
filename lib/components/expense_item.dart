@@ -84,9 +84,11 @@ Widget ActivityExpenseItem(Expense e, context) {
                     // 折扣信息
                     if (e.hasDiscount)
                       Text(
-                        '${e.positive == 0 ? '-' : ''}${e.originalPrice}',
-                        style: const TextStyle(
-                          color: Color(0xFF000000),
+                        '${e.positive == 0 ? '-' : '+'}${e.originalPrice}',
+                        style: TextStyle(
+                          color: e.positive == 0
+                              ? const Color(0xFF000000)
+                              : Colors.blueGrey[900],
                           fontSize: 14,
                           decoration: TextDecoration.lineThrough,
                           decorationColor: Colors.black54,
@@ -96,9 +98,11 @@ Widget ActivityExpenseItem(Expense e, context) {
                         ),
                       ),
                     Text(
-                      '${e.positive == 0 ? '-' : ''}${e.price}',
-                      style: const TextStyle(
-                        color: Color(0xFF000000),
+                      '${e.positive == 0 ? '-' : '+'}${e.price}',
+                      style: TextStyle(
+                        color: e.positive == 0
+                            ? const Color(0xFF000000)
+                            : const Color(0xFF00A870),
                         fontSize: 16,
                         fontFamily: 'SourceCodePro',
                         fontWeight: FontWeight.w600,

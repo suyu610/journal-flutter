@@ -88,7 +88,8 @@ class BrnCommonActionSheet extends StatelessWidget {
   /// 主题定制
   BrnActionSheetConfig? themeData;
 
-  BrnCommonActionSheet({super.key, 
+  BrnCommonActionSheet({
+    super.key,
     required this.actions,
     this.title,
     this.titleWidget,

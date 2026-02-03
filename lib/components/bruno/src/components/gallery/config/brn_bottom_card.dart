@@ -145,7 +145,8 @@ class _BrnPhotoBottomCardState extends State<BrnPhotoBottomCard>
         Container(
           height: 53,
           child: Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 12, left: 20, right: 20),
+            padding:
+                const EdgeInsets.only(top: 16, bottom: 12, left: 20, right: 20),
             child: Text(
               widget.name ?? "",
               style: widget.themeData!.titleStyle.generateTextStyle(),

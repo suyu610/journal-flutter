@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:journal/pages/activity_list/index.dart';
-import 'package:journal/pages/ai_config/view.dart';
 import 'package:journal/pages/ai_config_v2/index.dart';
 import 'package:journal/pages/auto_write_intro/index.dart';
 import 'package:journal/pages/chat/view.dart';
@@ -92,7 +91,7 @@ abstract class Routers {
         page: () => const LoginPage(),
         binding: LoginBinding()),
     GetPage(name: ChatDetailPageUrl, page: () => const ChatPage()),
-    GetPage(name: AIConfigPageUrl, page: () => AiConfigPage()),
+
     GetPage(
       name: ActivityListPageUrl,
       page: () => const ActivityListPage(),

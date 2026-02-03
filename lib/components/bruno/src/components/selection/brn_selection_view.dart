@@ -79,7 +79,7 @@ typedef OnDefaultParamsPrepared = void Function(
 
 /// 默认筛选参数转换器，对传入的筛选数据做处理，返回 Map 参数对象。
 const BrnSelectionConverterDelegate _defaultConverter =
-     DefaultSelectionConverter();
+    DefaultSelectionConverter();
 
 /// 筛选组件
 // ignore: must_be_immutable

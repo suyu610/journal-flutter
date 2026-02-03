@@ -56,7 +56,8 @@ class BrnSelectTagsWithInputPicker extends Dialog {
   final SelectTagWithInputValueGetter<BrnTagInputItemBean> onTagValueGetter;
 
   const BrnSelectTagsWithInputPicker(
-      {super.key, this.maxLength = 200,
+      {super.key,
+      this.maxLength = 200,
       this.hintText,
       this.title = "",
       this.confirm,
@@ -241,7 +242,8 @@ class _BrnSelectTagsWithInputPickerWidgetState
   Widget _headerArea(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 20, bottom: 20),
+      padding:
+          const EdgeInsets.only(left: 20.0, right: 20.0, top: 20, bottom: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
@@ -418,7 +420,8 @@ class _BrnSelectTagsWithInputPickerWidgetState
       height: 72,
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 16),
+        padding:
+            const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 16),
         child: GestureDetector(
           onTap: () {
             if (!isCommitBtnEnable()) return;

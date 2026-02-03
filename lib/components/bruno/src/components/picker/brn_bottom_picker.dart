@@ -106,10 +106,10 @@ class BrnBottomPickerWidgetState extends State<BrnBottomPickerWidget>
   void initState() {
     super.initState();
     //用于动画
-    _controller =
-        AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
-    _animation =
-        Tween(end: Offset.zero, begin: const Offset(0.0, 1.0)).animate(_controller);
+    _controller = AnimationController(
+        duration: const Duration(milliseconds: 300), vsync: this);
+    _animation = Tween(end: Offset.zero, begin: const Offset(0.0, 1.0))
+        .animate(_controller);
     _controller.forward();
   }
 

@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class MediaHelper {
   /// 检查权限并选择图片
@@ -42,14 +42,11 @@ class MediaHelper {
   }
 
   static void _showPermissionDialog(BuildContext context) {
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (_, __, ___) => TDAlertDialog(
-        buttonStyle: TDDialogButtonStyle.text,
-        title: "权限提示",
-        content: "希望读取你的相册，用于上传图片",
-        rightBtnAction: () => openAppSettings(),
-      ),
+    PremiumGlassDialog.show(
+      context,
+      title: "权限提示",
+      content: "希望读取你的相册，用于上传图片",
+      onConfirm: () => openAppSettings(),
     );
   }
 }

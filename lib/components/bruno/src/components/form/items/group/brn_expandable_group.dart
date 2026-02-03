@@ -165,8 +165,8 @@ class _BrnExpansionElementState extends State<BrnExpandableGroup>
               _handleTap();
             },
             child: Container(
-              padding:
-                  const EdgeInsets.only(left: 20, top: 14, bottom: 14, right: 20),
+              padding: const EdgeInsets.only(
+                  left: 20, top: 14, bottom: 14, right: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,

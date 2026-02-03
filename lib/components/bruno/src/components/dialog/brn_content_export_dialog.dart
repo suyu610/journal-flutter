@@ -136,8 +136,8 @@ class BrnContentExportWidget extends StatelessWidget {
                       //背景
                       color:
                           submitBgColor ?? themeData!.commonConfig.brandPrimary,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(6.0)), //设置四周圆角 角度
+                      borderRadius: const BorderRadius.all(
+                          Radius.circular(6.0)), //设置四周圆角 角度
                     ),
                     alignment: Alignment.center,
                     height: 48,

@@ -70,10 +70,7 @@ class BrnDateRangeWidget extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _DatePickerWidgetState(
-      minDateTime,
-      maxDateTime,
-      initialStartDateTime,
-      initialEndDateTime);
+      minDateTime, maxDateTime, initialStartDateTime, initialEndDateTime);
 }
 
 class _DatePickerWidgetState extends State<BrnDateRangeWidget> {

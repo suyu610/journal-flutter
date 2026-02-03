@@ -8,6 +8,7 @@ import 'package:journal/models/activity.dart';
 import 'package:journal/models/user.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class CreateActivityController extends GetxController {
@@ -155,34 +156,24 @@ class CreateActivityController extends GetxController {
   }
 
   void exitActivity(context) {
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (BuildContext buildContext, Animation<double> animation,
-          Animation<double> secondaryAnimation) {
-        return TDAlertDialog(
-          buttonStyle: TDDialogButtonStyle.text,
-          title: "确认退出账本吗？",
-          rightBtnAction: () {
-            HttpRequest.request(
-              Method.post,
-              "/activity/exit/${activity.value.activityId}",
-              success: (d) {
-                Get.back();
-                Get.back();
-                eventBus.fire(const NeedRefreshData(
-                    refreshChartsList: true,
-                    refreshActivityList: true,
-                    refreshCurrentActivity: true));
-              },
-              fail: (code, msg) {
-                Log().d(msg.toString());
-                BrnToast.show(msg, context);
-              },
-            );
-          },
-        );
-      },
-    );
+    PremiumGlassDialog.show(context, title: "确认退出账本吗？", onConfirm: () {
+      HttpRequest.request(
+        Method.post,
+        "/activity/exit/${activity.value.activityId}",
+        success: (d) {
+          Get.back();
+          Get.back();
+          eventBus.fire(const NeedRefreshData(
+              refreshChartsList: true,
+              refreshActivityList: true,
+              refreshCurrentActivity: true));
+        },
+        fail: (code, msg) {
+          Log().d(msg.toString());
+          BrnToast.show(msg, context);
+        },
+      );
+    });
   }
 
   void updateBudgetType(String newValue) {

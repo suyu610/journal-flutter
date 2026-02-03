@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
@@ -84,23 +85,19 @@ class CreateActivityPage extends GetView<CreateActivityController> {
               lineColor: Colors.black,
               textColor: Colors.black,
               onTap: () {
-                BrnMiddleInputDialog(
+                PremiumGlassDialog.show(context,
                     title: "确认删除此账本？",
-                    message:
+                    content:
                         "请输入账本名【${controller.activity.value.activityName}】，以继续删除",
                     textInputAction: TextInputAction.done,
-                    confirmText: "删除",
-                    onCancel: () {
-                      Get.back();
-                    },
-                    onConfirm: (v) {
-                      if (v != controller.activity.value.activityName) {
-                        BrnToast.showInCenter(text: "账本名不匹配", context: context);
-                        return;
-                      } else {
-                        controller.deleteActivity(context);
-                      }
-                    }).show(context);
+                    confirmText: "删除", onConfirmWithInput: (v) {
+                  if (v != controller.activity.value.activityName) {
+                    BrnToast.showInCenter(text: "账本名不匹配", context: context);
+                    return;
+                  } else {
+                    controller.deleteActivity(context);
+                  }
+                });
               },
             ),
           ),

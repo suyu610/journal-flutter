@@ -125,8 +125,7 @@ class BrnRichInfoGrid extends StatelessWidget {
               ],
             );
           },
-          itemCount:
-              (null != pairInfoList) ? pairInfoList!.length : 0,
+          itemCount: (null != pairInfoList) ? pairInfoList!.length : 0,
         );
         return gridView;
       },

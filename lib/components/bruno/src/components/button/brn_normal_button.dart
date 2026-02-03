@@ -163,7 +163,7 @@ class BrnNormalButton extends StatelessWidget {
     this.textStyle,
     this.constraints = const BoxConstraints.tightFor(),
     this.borderRadius = const BorderRadius.all(Radius.circular(_BRadius)),
-  })  : decoration = _OutlineBoxDecorationCreator.createOutlineBoxDecoration(
+  }) : decoration = _OutlineBoxDecorationCreator.createOutlineBoxDecoration(
             isEnable: isEnable,
             disableBackgroundColor: disableBackgroundColor,
             disableLineColor: disableLineColor,

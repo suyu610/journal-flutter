@@ -312,7 +312,7 @@ class _BrnGalleryDetailPageState extends State<BrnGalleryDetailPage>
     if (_allConfig.isEmpty) return const Row();
     return NotificationListener(
       child: GestureDetector(
-        onTap: (){
+        onTap: () {
           print("....");
         },
         child: Container(

@@ -205,7 +205,8 @@ class _CustomCalendarViewState extends State<BrnCalendarView> {
                         DateTime(_currentDate.year, _currentDate.month, 0);
                     _setListOfMonthDate(_currentDate);
                   } else if (_displayMode == DisplayMode.week) {
-                    _currentDate = _currentDate.subtract(const Duration(days: 7));
+                    _currentDate =
+                        _currentDate.subtract(const Duration(days: 7));
                     _setListOfWeekDate(_currentDate);
                   }
                 });
@@ -262,7 +263,8 @@ class _CustomCalendarViewState extends State<BrnCalendarView> {
                 child: isNextIconEnable
                     ? BrunoTools.getAssetImage(BrnAsset.iconCalendarNextMonth)
                     : BrunoTools.getAssetImageWithColor(
-                        BrnAsset.iconCalendarNextMonth, const Color(0xFFCCCCCC)),
+                        BrnAsset.iconCalendarNextMonth,
+                        const Color(0xFFCCCCCC)),
               ),
             )
           ],

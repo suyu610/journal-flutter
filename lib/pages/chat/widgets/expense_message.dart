@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/src/components/dialog/brn_dialog.dart';
+
 import 'package:journal/core/log.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/icons.dart';
 import 'package:journal/util/toast_util.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -157,11 +158,8 @@ Widget buildExpenseMessage(types.Message message, controller, context) {
               bgColor: const Color(0xFFFF5252).withOpacity(0.1), // 半透红底
               onTap: () {
                 ToastUtil.lightImpact();
-                BrnDialogManager.showConfirmDialog(context,
-                    title: "删除提示",
-                    cancel: '取消',
-                    confirm: '确认',
-                    message: "确认删除这条账单吗？", onConfirm: () {
+                PremiumGlassDialog.show(Get.context!,
+                    title: "删除提示", content: "确认删除这条账单吗？", onConfirm: () {
                   controller.deleteExpense(item['expenseId']);
                 }, onCancel: () {
                   Get.back();

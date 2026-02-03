@@ -197,8 +197,8 @@ class MultiSelectPickerWidgetState extends State<MultiSelect> {
                       widget.customWidget != null
                           ? Container(
                               child: widget.customWidget,
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 20, top: 12),
+                              padding: const EdgeInsets.only(
+                                  left: 20, right: 20, top: 12),
                             )
                           : const SizedBox.shrink(),
                     ],

@@ -230,7 +230,8 @@ class _SearchTextState extends State<BrnSearchText> {
                             border: OutlineInputBorder(
                                 borderRadius: widget.borderRadius,
                                 borderSide: BorderSide.none),
-                            contentPadding: const EdgeInsets.only(left: 8, right: 6),
+                            contentPadding:
+                                const EdgeInsets.only(left: 8, right: 6),
                             // 填充颜色属性，填充装饰容器的颜色。
                             fillColor: widget.innerColor,
                             // 是密集属性，输入子项是否是密集形式的一部分（即使用较少的垂直空间）。

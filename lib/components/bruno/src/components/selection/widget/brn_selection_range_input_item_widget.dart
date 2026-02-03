@@ -115,9 +115,7 @@ class _BrnSelectionRangeItemWidgetState
               margin: const EdgeInsets.only(bottom: 5),
               alignment: Alignment.centerLeft,
               child: Text(
-                "${widget.item.title.isNotEmpty
-                        ? widget.item.title
-                        : BrnIntl.of(context).localizedResource.customRange}(${widget.item.extMap['unit']?.toString() ?? ''})",
+                "${widget.item.title.isNotEmpty ? widget.item.title : BrnIntl.of(context).localizedResource.customRange}(${widget.item.extMap['unit']?.toString() ?? ''})",
                 textAlign: TextAlign.left,
                 style: widget.themeData.rangeTitleTextStyle.generateTextStyle(),
               ),

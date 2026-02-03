@@ -5,9 +5,11 @@ import 'package:journal/models/app_tab_item.dart';
 import 'package:journal/models/user.dart';
 import 'package:journal/pages/activity_list/view.dart';
 import 'package:journal/pages/charts/view.dart';
+import 'package:journal/pages/chat/view.dart';
 import 'package:journal/pages/current_activity/view.dart';
 import 'package:journal/pages/profile/view.dart';
 import 'package:journal/request/request.dart';
+import 'package:journal/routers.dart';
 import 'package:journal/util/sp_util.dart';
 
 class LayoutController extends GetxController {
@@ -29,8 +31,30 @@ class LayoutController extends GetxController {
           avatarUrl: 'https://cdn.uuorb.com/blog/suyu_LOGO_Full.png')
       .obs;
 
-  void jumpToPage(int index) {
+  RxBool hideTabbar = false.obs;
+
+  void jumpToPage(int index, AppTabItem tab) {
+    // 1. 如果是“聊天”这种功能性按钮
+    if (tab.id == 'chat') {
+      // 检查逻辑
+      if (user.value.currentActivityId == "") {
+        Get.toNamed(Routers.CreateActivityUrl);
+      } else {
+        // 这里的 ChatDetailPageUrl 应该是一个新路由页面（Scaffold）
+        Get.toNamed(Routers.ChatDetailPageUrl);
+      }
+
+      // 【关键点】
+      // 这里不需要 update currentIndex，也不需要 pageController.jumpToPage
+      // 这样底部栏会保持在点击之前的状态（例如 Index 0），
+      // 既解决了“无法再次点击”的问题，也让 iOS 左滑退出逻辑正常工作。
+      return;
+    }
+
+    // 2. 如果是普通 Tab (首页、列表、个人中心)
+    // 切换 PageView
     pageController.jumpToPage(index);
+    // 更新选中状态
     currentIndex.value = index;
   }
 
@@ -47,6 +71,8 @@ class LayoutController extends GetxController {
           label: '活动列表',
           icon: Icons.folder_outlined,
           page: const ActivityListPage()),
+      AppTabItem(
+          id: 'chat', label: '聊天', icon: Icons.add, page: const ChatPage()),
       AppTabItem(
           id: 'analytics',
           label: '数据统计',
@@ -119,7 +145,9 @@ class LayoutController extends GetxController {
     // 如果当前选中的索引超出了新列表的范围，重置为 0
     if (currentIndex.value >= activeTabs.length) {
       currentIndex.value = 0;
-      if (pageController.hasClients) pageController.jumpToPage(0);
+      if (pageController.hasClients) {
+        pageController.jumpToPage(0);
+      }
     }
   }
 

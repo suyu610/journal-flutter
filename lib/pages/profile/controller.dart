@@ -11,9 +11,9 @@ import 'package:journal/pages/ai_config/index.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/util/cos.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/media_util.dart';
 import 'package:journal/util/sp_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ProfileController extends GetxController {
   var nicknameTextEditController = TextEditingController();
@@ -151,37 +151,21 @@ class ProfileController extends GetxController {
   }
 
   void logout(context) {
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (BuildContext buildContext, Animation<double> animation,
-          Animation<double> secondaryAnimation) {
-        return TDAlertDialog(
-          buttonStyle: TDDialogButtonStyle.text,
-          title: "确认退出登录？",
-          rightBtnAction: () {
-            SpUtil.removeToken();
-            Get.offAllNamed('/login');
-          },
-        );
+    PremiumGlassDialog.show(
+      context,
+      title: "确认退出登录？",
+      content: "确定要退出当前账号吗？退出后无法收到新消息通知。",
+      onConfirm: () {
+        SpUtil.removeToken();
+        Get.offAllNamed('/login');
       },
     );
   }
 
   void deleteAccount(BuildContext context) {
-    // dialog
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (BuildContext buildContext, Animation<double> animation,
-          Animation<double> secondaryAnimation) {
-        return TDAlertDialog(
-          buttonStyle: TDDialogButtonStyle.text,
-          title: "确认注销账号？",
-          rightBtnAction: () {
-            SpUtil.removeToken();
-            Get.offAllNamed('/login');
-          },
-        );
-      },
-    );
+    PremiumGlassDialog.show(context, title: "确认注销账号？", onConfirm: () {
+      SpUtil.removeToken();
+      Get.offAllNamed('/login');
+    });
   }
 }

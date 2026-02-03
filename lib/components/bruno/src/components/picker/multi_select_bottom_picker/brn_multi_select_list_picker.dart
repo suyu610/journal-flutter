@@ -177,7 +177,7 @@ class MultiSelectDialogWidgetState<T extends BrnMultiSelectBottomPickerItem>
             ),
             index != widget.items.length - 1
                 ? Padding(
-                    padding:const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                     child: BrnLine())
                 : const SizedBox.shrink()
           ],

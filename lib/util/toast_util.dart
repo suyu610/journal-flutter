@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
+import 'package:journal/util/dialog_util.dart';
 
 class ToastUtil {
   static void lightImpact() {
@@ -80,8 +80,7 @@ class ToastUtil {
               ),
               Text(
                 title,
-                style: const TextStyle(
-                     color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               )
             ],
           ),
@@ -93,24 +92,11 @@ class ToastUtil {
 
   static void showUpgradeDialog(
       String version, currentVersion, void Function() upgradeFromAppStore) {
-    showGeneralDialog(
-        context: Get.context!,
-        pageBuilder: (BuildContext buildContext, Animation<double> animation,
-            Animation<double> secondaryAnimation) {
-          return TDAlertDialog(
-            buttonStyle: TDDialogButtonStyle.text,
-
-            title: "检测到新版本\n$version",
-            content: "修复若干bug，建议更新",
-            rightBtn: TDDialogButtonOptions(
-                title: "立即更新",
-                action: () => upgradeFromAppStore(),
-                type: TDButtonType.fill,
-                theme: TDButtonTheme.primary),
-            // rightBtnAction: () async {
-            //   upgradeFromAppStore();
-            // },
-          );
-        });
+    PremiumGlassDialog.show(
+      Get.context!,
+      title: "检测到新版本\n$version",
+      content: "修复若干bug，建议更新",
+      onConfirm: () => upgradeFromAppStore(),
+    );
   }
 }

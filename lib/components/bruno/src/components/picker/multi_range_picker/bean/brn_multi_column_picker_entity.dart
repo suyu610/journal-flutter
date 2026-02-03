@@ -64,8 +64,9 @@ class BrnPickerEntity {
     }
     entity.extMap = map['ext'] ?? {};
 //    entity.children = map['children'] ?? [];
-    entity.children = [...(map['children'] as List? ?? [])
-        .map((o) => BrnPickerEntity.fromMap(o))];
+    entity.children = [
+      ...(map['children'] as List? ?? []).map((o) => BrnPickerEntity.fromMap(o))
+    ];
     return entity;
   }
 

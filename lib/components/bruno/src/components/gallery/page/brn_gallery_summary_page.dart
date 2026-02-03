@@ -104,7 +104,8 @@ class _BrnGallerySummaryPageState extends State<BrnGallerySummaryPage> {
       columnViews.add(Container(
         height: 53,
         child: Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 12, left: 20, right: 20),
+          padding:
+              const EdgeInsets.only(top: 16, bottom: 12, left: 20, right: 20),
           child: Text(
             '${groupConfig.title}(${groupConfig.configList?.length ?? 0})',
             style: const TextStyle(

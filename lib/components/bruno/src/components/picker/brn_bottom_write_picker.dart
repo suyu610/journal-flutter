@@ -47,7 +47,8 @@ class BrnBottomWritePicker extends StatefulWidget {
   final TextEditingController? textEditingController;
 
   const BrnBottomWritePicker(
-      {super.key, this.maxLength = 200,
+      {super.key,
+      this.maxLength = 200,
       this.hintText,
       this.leftTag,
       this.title = "",

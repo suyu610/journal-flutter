@@ -91,8 +91,8 @@ class BrnStarsFormItem extends StatefulWidget {
         .getConfig(configId: themeData!.configId)
         .formItemConfig
         .merge(themeData);
-    themeData = themeData!
-        .merge(BrnFormItemConfig(backgroundColor: backgroundColor));
+    themeData =
+        themeData!.merge(BrnFormItemConfig(backgroundColor: backgroundColor));
   }
 
   @override

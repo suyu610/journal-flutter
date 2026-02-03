@@ -30,7 +30,7 @@ class ChatPage extends GetView<ChatController> {
           resizeToAvoidBottomInset: false, // 基础底色：深邃夜空蓝，防止加载时闪白屏
           backgroundColor: const Color(0xFF1A1A2E),
           extendBodyBehindAppBar: true,
-          appBar: _buildTransparentAppBar(),
+          appBar: _buildTransparentAppBar(context),
           body: Stack(
             children: [
               // ==============================
@@ -238,7 +238,7 @@ class ChatPage extends GetView<ChatController> {
               // 7. 底部浮动输入框
               // ==============================
               Positioned(
-                bottom: 0,
+                bottom: 20,
                 left: 0,
                 right: 0,
                 child: buildFloatingInput(context),
@@ -253,7 +253,7 @@ class ChatPage extends GetView<ChatController> {
   // --------------------------------------------------------------------------
   // 组件：透明 AppBar (带状态指示)
   // --------------------------------------------------------------------------
-  AppBar _buildTransparentAppBar() {
+  AppBar _buildTransparentAppBar(context) {
     return AppBar(
       backgroundColor: Colors.transparent,
       forceMaterialTransparency: true,
@@ -271,14 +271,17 @@ class ChatPage extends GetView<ChatController> {
       // ),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-        onPressed: () => Get.back(),
+        onPressed: () {
+          print("推出聊天页面");
+          Get.back();
+        },
       ),
       actions: [
         IconButton(
           icon: const Icon(Icons.more_horiz, color: Colors.white),
           onPressed: () {
             Get.toNamed(Routers.CreateActivityUrl,
-                arguments: controller.activity.value);
+                arguments: controller.currentActivity.value);
           },
         )
       ],

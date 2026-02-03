@@ -629,7 +629,8 @@ class BrnAlignPairInfo extends StatelessWidget with PairInfoPart {
   final BrnPairInfoTableConfig? themeData;
 
   BrnAlignPairInfo(
-      {super.key, this.children,
+      {super.key,
+      this.children,
       this.defaultVerticalAlignment = TableCellVerticalAlignment.baseline,
       this.rowDistance,
       this.backgroundColor,

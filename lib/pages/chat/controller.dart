@@ -13,14 +13,13 @@ import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/ai_config_model.dart';
 import 'package:journal/models/expense.dart';
-import 'package:journal/pages/activity_list/controller.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/services/local_server.dart';
+import 'package:journal/services/widget_service.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:just_audio/just_audio.dart';
-
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:journal/models/ai_presets.dart';
@@ -59,6 +58,7 @@ class ChatController extends GetxController {
   final isModelLoaded = false.obs;
 
   Rx<Activity> activity = Activity.empty().obs;
+
   late TextEditingController textEditingController;
   RxBool keyboardMode = true.obs;
   types.User user = const types.User(
@@ -293,6 +293,40 @@ class ChatController extends GetxController {
   }
 
   void onTap() {}
+  Rx<Activity> currentActivity = Activity.empty().obs;
+
+  void initCurrentActivity() {
+    HttpRequest.request(
+      Method.get,
+      "/activity/current",
+      success: (data) async {
+        if (data == null) {
+          Log().d("无当前账本");
+          currentActivity.value = Activity.empty();
+        } else {
+          currentActivity.value =
+              Activity.fromJson(data as Map<String, dynamic>);
+          activity.value = currentActivity.value;
+          // 3. 同步给小组件
+          await WidgetSyncService.updateWidget(
+            budgetType: currentActivity.value.budgetType ?? "total",
+            todayExpense:
+                (currentActivity.value.todayExpense ?? 0.0).toDouble(),
+            weekExpense: (currentActivity.value.weekExpense ?? 0.0).toDouble(),
+            monthExpense:
+                (currentActivity.value.monthExpense ?? 0.0).toDouble(),
+            totalExpense:
+                (currentActivity.value.totalExpense ?? 0.0).toDouble(),
+            budgetAmount: (currentActivity.value.budget ?? 0.0).toDouble(),
+          );
+        }
+        update(["current_activity"]);
+      },
+      fail: (code, msg) {
+        Log().d("获取当前账本失败:$msg");
+      },
+    );
+  }
 
   @override
   void onInit() {
@@ -315,14 +349,7 @@ class ChatController extends GetxController {
 
     // 这个地方得设计下
     if (Get.arguments == null) {
-      Activity? activatedActivity = Get.find<ActivityListController>()
-          .activityList
-          .firstWhereOrNull((activity) => activity.activated);
-      if (activatedActivity != null) {
-        activity.value = activatedActivity;
-      } else {
-        activity.value = Get.find<ActivityListController>().activityList.first;
-      }
+      initCurrentActivity();
     } else {
       activity.value = Get.arguments;
     }
@@ -414,33 +441,22 @@ class ChatController extends GetxController {
 
   // 播放音频
   void tts(String text, BuildContext context) {
-    showGeneralDialog(
-        context: context,
-        pageBuilder: (BuildContext buildContext, Animation<double> animation,
-            Animation<double> secondaryAnimation) {
-          return TDAlertDialog(
-            buttonStyle: TDDialogButtonStyle.text,
-            title: "播放语音？",
-            rightBtn: TDDialogButtonOptions(
-                title: "播放",
-                action: () {
-                  Get.back();
-                  BrnLoadingDialog.show(context);
-                  HttpRequest.request(Method.get,
-                      "/ai/tts?sentence=$text&activityId=${activity.value.activityId}",
-                      fail: (code, msg) {}, success: (data) async {
-                    BrnLoadingDialog.dismiss(context);
-                    final player = AudioPlayer();
-                    // 1. 解码 Base64
-                    Uint8List bytes = base64Decode(data as String);
+    PremiumGlassDialog.show(context, title: "播放语音？", onConfirm: () {
+      Get.back();
+      BrnLoadingDialog.show(context);
+      HttpRequest.request(Method.get,
+          "/ai/tts?sentence=$text&activityId=${activity.value.activityId}",
+          fail: (code, msg) {}, success: (data) async {
+        BrnLoadingDialog.dismiss(context);
+        final player = AudioPlayer();
+        // 1. 解码 Base64
+        Uint8List bytes = base64Decode(data as String);
 
-                    // 2. 使用自定义 Source 加载
-                    await player.setAudioSource(MyBufferSource(bytes));
-                    player.play(); // 2. 加载并播放
-                  });
-                }),
-          );
-        });
+        // 2. 使用自定义 Source 加载
+        await player.setAudioSource(MyBufferSource(bytes));
+        player.play(); // 2. 加载并播放
+      });
+    });
   }
 }
 

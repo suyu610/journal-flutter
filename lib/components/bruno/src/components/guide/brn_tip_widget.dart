@@ -237,7 +237,8 @@ class BrnTipInfoWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Text(info.message,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF999999), height: 1.3),
+          style: const TextStyle(
+              fontSize: 14, color: Color(0xFF999999), height: 1.3),
           maxLines: 3),
     );
   }
@@ -264,8 +265,8 @@ class BrnTipInfoWidget extends StatelessWidget {
                         },
                         child: Text(
                           '${BrnIntl.of(context).localizedResource.skip} (${currentStepIndex + 1}/$stepCount)',
-                          style:
-                              const TextStyle(color: Color(0xFF999999), fontSize: 14),
+                          style: const TextStyle(
+                              color: Color(0xFF999999), fontSize: 14),
                         ),
                       ),
                     ))
@@ -297,7 +298,8 @@ class BrnTipInfoWidget extends StatelessWidget {
                               (stepCount == currentStepIndex + 1
                                   ? BrnIntl.of(context).localizedResource.known
                                   : BrnIntl.of(context).localizedResource.next),
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14),
                         ),
                       ),
                     ),
@@ -331,8 +333,8 @@ class BrnTipInfoWidget extends StatelessWidget {
                         },
                         child: Text(
                           '${BrnIntl.of(context).localizedResource.skip} (${currentStepIndex + 1}/$stepCount)',
-                          style:
-                              const TextStyle(color: Color(0xFF999999), fontSize: 14),
+                          style: const TextStyle(
+                              color: Color(0xFF999999), fontSize: 14),
                         ),
                       ),
                     ))

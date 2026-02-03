@@ -37,7 +37,8 @@ class BrnScrollableTextDialog extends Dialog {
   final bool isShowOperateWidget;
 
   const BrnScrollableTextDialog(
-      {super.key, this.title,
+      {super.key,
+      this.title,
       this.isClose = true,
       required this.contentText,
       this.textColor = const Color(0xFF666666),
@@ -96,7 +97,8 @@ class BrnScrollableText extends StatelessWidget {
   final bool isShowOperateWidget;
 
   const BrnScrollableText(
-      {super.key, this.title,
+      {super.key,
+      this.title,
       this.isClose = true,
       required this.contentText,
       this.textColor,

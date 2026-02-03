@@ -71,7 +71,8 @@ class BrnSelectionCommonItemWidget extends StatelessWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+        padding:
+            const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
         color: getItemBGColor(),
         child: Align(
           alignment: Alignment.centerLeft,
