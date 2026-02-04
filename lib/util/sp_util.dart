@@ -109,4 +109,14 @@ class SpUtil {
 
     return sp.getStringList(keyDisabledTabs) ?? [];
   }
+
+  static String? getString(String key) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.getString(key);
+  }
+
+  static Future<bool> putString(String key, String value) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.setString(key, value);
+  }
 }

@@ -50,7 +50,7 @@ class LocalServer {
       var handler = createStaticHandler(
         docPath,
         defaultDocument: 'index.html',
-        listDirectories: false, // 安全起见，禁止列出目录
+        listDirectories: false,
       );
 
       // 3. 核心修改：使用 port: 0，让系统自动分配一个未被占用的端口

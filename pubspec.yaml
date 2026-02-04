@@ -72,6 +72,7 @@ dependencies:
   flame: ^1.35.0
   flame_forge2d: ^0.19.2 # 专门处理物理碰撞
   sensors_plus: ^7.0.0
+  in_app_review: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

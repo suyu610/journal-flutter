@@ -13,6 +13,7 @@ import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/ai_config_model.dart';
 import 'package:journal/models/expense.dart';
+import 'package:journal/pages/profile/controller.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/services/local_server.dart';
@@ -215,6 +216,9 @@ class ChatController extends GetxController {
           }
 
           update(["chat"]);
+
+          // 检查是否需要显示评分弹窗
+          _checkAndShowRatingPrompt();
 
           // 3. 刷新数据
           eventBus.fire(const NeedRefreshData(
@@ -457,6 +461,17 @@ class ChatController extends GetxController {
         player.play(); // 2. 加载并播放
       });
     });
+  }
+
+  void _checkAndShowRatingPrompt() {
+    try {
+      ProfileController profileController = Get.find<ProfileController>();
+      if (profileController.shouldShowRatingPrompt()) {
+        profileController.showRatingDialog(Get.context!);
+      }
+    } catch (e) {
+      Log().d("ProfileController not found: $e");
+    }
   }
 }
 

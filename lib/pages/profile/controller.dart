@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/user.dart';
@@ -167,5 +168,154 @@ class ProfileController extends GetxController {
       SpUtil.removeToken();
       Get.offAllNamed('/login');
     });
+  }
+
+  void showRatingDialog(BuildContext context) {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 0,
+        backgroundColor: Colors.transparent, // 背景透明，由 Container 接管
+        child: Container(
+          width: 300,
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. 顶部大图标装饰
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF7E6), // 淡金色背景
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.thumb_up_alt_rounded, // 或者 use Icons.star_rounded
+                  size: 36,
+                  color: Color(0xFFFFC107), // 琥珀色
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 2. 标题与文案
+              const Text(
+                "喜欢 好享记账 吗？",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "您的支持是我们最大的动力。\n如果觉得好用，请花几秒钟给我们一个好评吧！",
+                textAlign: TextAlign.center,
+                style:
+                    TextStyle(fontSize: 14, color: Colors.black54, height: 1.5),
+              ),
+
+              const SizedBox(height: 24),
+
+              // 3. 装饰性的五星 (心理暗示)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                    5,
+                    (index) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(Icons.star_rounded,
+                              color: const Color(0xFFFFD700).withOpacity(0.8),
+                              size: 28),
+                        )),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 4. 按钮组
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        foregroundColor: Colors.grey,
+                        splashFactory: NoSplash.splashFactory, // 去掉水波纹显得更克制
+                      ),
+                      child: const Text("下次再说", style: TextStyle(fontSize: 15)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        _openAppStoreRating(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black87, // 高级黑
+                        foregroundColor: Colors.white,
+                        elevation: 0, // 扁平化
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text("去评分",
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true, // 点击背景可关闭
+      transitionDuration: const Duration(milliseconds: 200), // 动画时长
+      transitionCurve: Curves.easeOut, // 动画曲线
+    );
+  }
+
+  void _openAppStoreRating(BuildContext context) async {
+    final InAppReview inAppReview = InAppReview.instance;
+
+    if (await inAppReview.isAvailable()) {
+      inAppReview.openStoreListing(
+        appStoreId: '6736673372',
+      );
+      _saveLastRatingTime();
+    } else {
+      if (context.mounted) {
+        BrnToast.show("无法打开应用商店", context);
+      }
+    }
+  }
+
+  void _saveLastRatingTime() {
+    DateTime now = DateTime.now();
+    SpUtil.putString("last_rating_time", now.toIso8601String());
+  }
+
+  bool shouldShowRatingPrompt() {
+    String? lastRatingTime = SpUtil.getString("last_rating_time");
+    if (lastRatingTime == null) return true;
+
+    DateTime lastTime = DateTime.parse(lastRatingTime);
+    DateTime now = DateTime.now();
+    Duration difference = now.difference(lastTime);
+
+    return difference.inDays >= 90;
   }
 }
