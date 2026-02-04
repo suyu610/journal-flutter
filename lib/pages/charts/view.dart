@@ -74,9 +74,11 @@ class ChartsPage extends GetView<ChartsController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 16.h), // 顶部留白
+            Obx(() => SizedBox(
+                height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
             _buildAIAnalysisSection(), // AI 分析
-            SizedBox(height: controller.isAnalyzing.value ? 16.h : 0.h),
+            Obx(() => SizedBox(
+                height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
             _buildTrendChartCard(context), // 趋势图卡片
             SizedBox(height: 16.h),
             _buildCategoryChartCard(context), // 分类图卡片

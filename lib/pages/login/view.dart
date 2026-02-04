@@ -62,7 +62,9 @@ class LoginPage extends StatelessWidget {
                       ? Icons.check_circle
                       : Icons.circle_outlined,
                   size: 18.r,
-                  color: logic.state.isAgree.value ? Colors.blue : Colors.grey,
+                  color: logic.state.isAgree.value
+                      ? Colors.blueGrey[900]!
+                      : Colors.grey,
                 )),
           ),
           SizedBox(width: 5.w),
@@ -108,9 +110,13 @@ class LoginPage extends StatelessWidget {
       () => TDButton(
         isBlock: true,
         height: 40.h,
-        theme: logic.state.phoneNum.value.isPhoneNumber
-            ? TDButtonTheme.primary
-            : TDButtonTheme.defaultTheme,
+        theme: logic.isEmailMode.value
+            ? logic.state.phoneNum.value.isEmail
+                ? TDButtonTheme.primary
+                : TDButtonTheme.defaultTheme
+            : logic.state.phoneNum.value.isPhoneNumber
+                ? TDButtonTheme.primary
+                : TDButtonTheme.defaultTheme,
         margin: EdgeInsets.only(top: 30.w, bottom: 30.w),
         onTap: () {
           logic.next(context);
@@ -129,36 +135,42 @@ class LoginPage extends StatelessWidget {
 
   Widget _buildPhoneInput() {
     final logic = Get.find<LoginLogic>();
-    return TDInput(
-      controller: logic.controller,
-      inputAction: TextInputAction.done,
-      inputType: TextInputType.number,
-      leftInfoWidth: 30.w,
-      leftLabelSpace: 0,
-      leftLabel: "+86",
-      maxLength: 11,
-      hintText: "请输入手机号",
-      autofocus: false,
-      hintTextStyle: const TextStyle(
-        color: Color.fromARGB(255, 174, 173, 173),
-      ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-      ],
-      onChanged: (value) {
-        logic.state.phoneNum.value = value;
-      },
-    );
+    return Obx(() => TDInput(
+          controller: logic.controller,
+          inputAction: TextInputAction.done,
+          inputType: logic.isEmailMode.value
+              ? TextInputType.emailAddress
+              : TextInputType.number,
+          leftInfoWidth: 30.w,
+          leftLabelSpace: 0,
+          leftLabel: logic.isEmailMode.value ? "邮箱" : "+86",
+          maxLength: logic.isEmailMode.value ? 50 : 11,
+          hintText: logic.isEmailMode.value ? "请输入邮箱" : "请输入手机号",
+          autofocus: false,
+          hintTextStyle: const TextStyle(
+            color: Color.fromARGB(255, 174, 173, 173),
+          ),
+          inputFormatters: [
+            if (logic.isEmailMode.value)
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@.]')),
+            if (!logic.isEmailMode.value)
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+          ],
+          onChanged: (value) {
+            logic.state.phoneNum.value = value;
+          },
+        ));
   }
 
   Widget _buildRegTipText() {
-    return Text(
-      "未注册的手机号登陆成功后将自动注册",
-      style: TextStyle(
-        fontSize: 14.sp,
-        color: const Color(0xff848484),
-      ),
-    );
+    final logic = Get.find<LoginLogic>();
+    return Obx(() => Text(
+          "未注册的${logic.isEmailMode.value ? "邮箱" : "手机号"}登陆成功后将自动注册",
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: const Color(0xff848484),
+          ),
+        ));
   }
 
   Widget _buildWelcomeText() {
@@ -190,32 +202,130 @@ class LoginPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 30.w),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Platform.isIOS
-                    ? AppleAuthButton(
+            Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // 邮箱登录
+                    logic.isEmailMode.value
+                        ? CustomAuthButton(
+                            onPressed: () async {
+                              logic.toggleEmailMode();
+                            },
+                            style: AuthButtonStyle(
+                              borderRadius: 999,
+                              height: 45.h,
+                              width: 45.h,
+                              padding: EdgeInsets.zero,
+                              margin: EdgeInsets.zero,
+                              buttonType: AuthButtonType.icon,
+                              iconType: AuthIconType.secondary,
+                              iconColor: Colors.black87,
+                              buttonColor: Colors.black87,
+                              textStyle: const TextStyle(
+                                color: Colors.black,
+                              ),
+                              shadowColor:
+                                  const Color.fromARGB(50, 223, 220, 220),
+                              progressIndicatorColor: Colors.black,
+                              progressIndicatorStrokeWidth: 2.0,
+                              progressIndicatorValue: 1.0,
+                              progressIndicatorType: AuthIndicatorType.circular,
+                              visualDensity: VisualDensity.standard,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            authIcon: AuthIcon(
+                                iconSize: 20,
+                                iconPath: "assets/icons/phone.png"))
+                        : EmailAuthButton(
+                            onPressed: () async {
+                              logic.toggleEmailMode();
+                            },
+                            text: "通过邮箱登录",
+                            style: AuthButtonStyle(
+                              iconSize: 16,
+                              height: 45.h,
+                              width: 45.h,
+                              borderRadius: 999,
+                              buttonType: AuthButtonType.icon,
+                              iconType: AuthIconType.secondary,
+                              iconColor: Colors.white,
+                              buttonColor: Colors.black,
+                              iconBackground: Colors.black,
+                              textStyle: const TextStyle(
+                                color: Colors.white,
+                              ),
+                              shadowColor:
+                                  const Color.fromARGB(50, 223, 220, 220),
+                              progressIndicatorColor: Colors.black,
+                              progressIndicatorStrokeWidth: 2.0,
+                              progressIndicatorValue: 1.0,
+                              progressIndicatorType: AuthIndicatorType.circular,
+                              visualDensity: VisualDensity.standard,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            )),
+                    SizedBox(
+                      width: Platform.isIOS ? 60.w : 0,
+                    ),
+                    // Apple登录
+                    Platform.isIOS
+                        ? AppleAuthButton(
+                            onPressed: () async {
+                              try {
+                                logic.loginWithApple(context);
+                              } catch (e) {
+                                print(e);
+                                TDToast.dismissLoading();
+                              }
+                            },
+                            text: "通过Apple登录",
+                            style: AuthButtonStyle(
+                              iconSize: 16,
+                              height: 45.h,
+                              width: 45.h,
+                              borderRadius: 999,
+                              buttonType: AuthButtonType.icon,
+                              iconType: AuthIconType.secondary,
+                              iconColor: Colors.white,
+                              buttonColor: Colors.black,
+                              iconBackground: Colors.black,
+                              textStyle: const TextStyle(
+                                color: Colors.white,
+                              ),
+                              shadowColor:
+                                  const Color.fromARGB(50, 223, 220, 220),
+                              progressIndicatorColor: Colors.black,
+                              progressIndicatorStrokeWidth: 2.0,
+                              progressIndicatorValue: 1.0,
+                              progressIndicatorType: AuthIndicatorType.circular,
+                              visualDensity: VisualDensity.standard,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          )
+                        : const SizedBox(),
+                    SizedBox(
+                      width: Platform.isIOS && SpUtil.getWeChatInstalled()
+                          ? 60.w
+                          : 0,
+                    ),
+                    // 微信登录
+                    Visibility(
+                      visible: SpUtil.getWeChatInstalled(),
+                      child: CustomAuthButton(
                         onPressed: () async {
-                          try {
-                            logic.loginWithApple(context);
-                          } catch (e) {
-                            print(e);
-                            TDToast.dismissLoading();
-                          }
+                          logic.loginWithWechat(context);
                         },
-                        text: "通过Apple登录",
                         style: AuthButtonStyle(
-                          iconSize: 16,
+                          borderRadius: 999,
                           height: 45.h,
                           width: 45.h,
-                          borderRadius: 999,
+                          padding: EdgeInsets.zero,
+                          margin: EdgeInsets.zero,
                           buttonType: AuthButtonType.icon,
                           iconType: AuthIconType.secondary,
-                          iconColor: Colors.white,
-                          buttonColor: Colors.black,
-                          iconBackground: Colors.black,
+                          iconColor: Colors.black87,
+                          buttonColor: const Color(0xff5dce87),
                           textStyle: const TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                           shadowColor: const Color.fromARGB(50, 223, 220, 220),
                           progressIndicatorColor: Colors.black,
@@ -225,48 +335,14 @@ class LoginPage extends StatelessWidget {
                           visualDensity: VisualDensity.standard,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                      )
-                    : const SizedBox(),
-                SizedBox(
-                  width:
-                      Platform.isIOS && SpUtil.getWeChatInstalled() ? 60.w : 0,
-                ),
-                // 微信登录
-                Visibility(
-                  visible: SpUtil.getWeChatInstalled(),
-                  child: CustomAuthButton(
-                    onPressed: () async {
-                      logic.loginWithWechat(context);
-                    },
-                    style: AuthButtonStyle(
-                      borderRadius: 999,
-                      height: 45.h,
-                      width: 45.h,
-                      padding: EdgeInsets.zero,
-                      margin: EdgeInsets.zero,
-                      buttonType: AuthButtonType.icon,
-                      iconType: AuthIconType.secondary,
-                      iconColor: Colors.black87,
-                      buttonColor: const Color(0xff5dce87),
-                      textStyle: const TextStyle(
-                        color: Colors.black,
+                        authIcon: AuthIcon(
+                          iconSize: 20,
+                          iconPath: "assets/icons/wechat.png",
+                        ),
                       ),
-                      shadowColor: const Color.fromARGB(50, 223, 220, 220),
-                      progressIndicatorColor: Colors.black,
-                      progressIndicatorStrokeWidth: 2.0,
-                      progressIndicatorValue: 1.0,
-                      progressIndicatorType: AuthIndicatorType.circular,
-                      visualDensity: VisualDensity.standard,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    authIcon: AuthIcon(
-                      iconSize: 20,
-                      iconPath: "assets/icons/wechat.png",
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                  ],
+                )),
             SizedBox(height: 50.w),
             TextButton(
                 onPressed: () async {

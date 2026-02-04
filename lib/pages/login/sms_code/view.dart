@@ -29,7 +29,7 @@ class CodePage extends StatelessWidget {
           ),
           SizedBox(height: 20.w),
           Text(
-            "输入短信验证码",
+            "请输入验证码",
             style: TextStyle(
               fontSize: 30.sp,
               fontWeight: FontWeight.w600,
@@ -37,13 +37,13 @@ class CodePage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 10.w),
-          Text(
-            "已向您的手机 ${logic.phoneNum} 发送验证码",
-            style: TextStyle(
-              fontSize: 15.sp,
-              color: Colors.grey,
-            ),
-          ),
+          Obx(() => Text(
+                "已向您的${logic.phoneNum.isEmail ? "邮箱" : "手机号"} ${logic.phoneNum} 发送验证码",
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  color: Colors.grey,
+                ),
+              )),
           SizedBox(height: 30.h),
           VerificationCode(
             autoFocused: true,

@@ -20,6 +20,10 @@ class CodeLogic extends GetxController {
   String get phoneNum {
     final loginLogic = Get.find<LoginLogic>();
     var phone = loginLogic.state.phoneNum.value;
+    if (phone.isNotEmpty && phone.isEmail) {
+      return phone;
+    }
+
     if (phone.isNotEmpty && phone.length == 11) {
       return phone.substring(phone.length - 4);
     }
@@ -40,13 +44,24 @@ class CodeLogic extends GetxController {
   // 获取验证码
   void _sendCode() {
     final loginLogic = Get.find<LoginLogic>();
-    HttpRequest.request(
-      Method.post,
-      "/user/login/smsCode?telephone=${loginLogic.state.phoneNum.value}",
-    ).then((e) {
-      Log().d(e.toString());
-      _startTimer();
-    });
+    // 判断是邮箱登录还是手机号登录
+    if (loginLogic.isEmailMode.value) {
+      HttpRequest.request(
+        Method.post,
+        "/user/login/emailCode?email=${loginLogic.state.phoneNum.value}",
+      ).then((e) {
+        Log().d(e.toString());
+        _startTimer();
+      });
+    } else {
+      HttpRequest.request(
+        Method.post,
+        "/user/login/smsCode?telephone=${loginLogic.state.phoneNum.value}",
+      ).then((e) {
+        Log().d(e.toString());
+        _startTimer();
+      });
+    }
   }
 
   @override

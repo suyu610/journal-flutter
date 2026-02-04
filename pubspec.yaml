@@ -1,7 +1,7 @@
 name: journal
 description: "A new Flutter project."
 publish_to: "none"
-version: 2.0.3+4
+version: 2.0.4+5
 fluwx:
   app_id: "wx30e85737940da4af"
   debug_logging: true 

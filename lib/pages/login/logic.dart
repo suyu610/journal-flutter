@@ -22,7 +22,7 @@ class LoginLogic extends GetxController {
   final TextEditingController controller = TextEditingController();
   SliderController sliderController = SliderController();
   Fluwx fluwx = Fluwx();
-
+  RxBool isEmailMode = false.obs;
   @override
   void dispose() {
     super.dispose();
@@ -81,7 +81,7 @@ class LoginLogic extends GetxController {
             fit: BoxFit.fitWidth,
           ),
           borderImager: 1,
-          colorBar: const Color(0xff000000),
+          colorBar: Colors.blueGrey[900]!,
           colorCaptChar: Colors.white, //,
         ),
       ),
@@ -94,11 +94,17 @@ class LoginLogic extends GetxController {
     if (state.phoneNum.value.isEmpty) {
       return;
     }
-
-    //手机号不符合要求
-    if (!RegexUtil.isMobileSimple(state.phoneNum.value)) {
-      TDToast.showFail('请检查手机号', context: context);
-      return;
+    if (isEmailMode.value) {
+      if (!RegexUtil.isEmail(state.phoneNum.value)) {
+        TDToast.showFail('请检查邮箱', context: context);
+        return;
+      }
+    } else {
+      //手机号不符合要求
+      if (!RegexUtil.isMobileSimple(state.phoneNum.value)) {
+        TDToast.showFail('请检查手机号', context: context);
+        return;
+      }
     }
 
     if (!state.isAgree.value) {
@@ -146,7 +152,6 @@ class LoginLogic extends GetxController {
                       state.isAgree.value = true;
                       Navigator.of(context).pop();
                       FocusScope.of(Get.context!).requestFocus(FocusNode());
-
                       next(context);
                     },
                     style: ButtonStyle(
@@ -324,5 +329,9 @@ class LoginLogic extends GetxController {
         target: CustomerServiceChat(
             corpId: 'ww9d9a8a9c7211e1f8',
             url: 'https://work.weixin.qq.com/kfid/kfc001bab61abbb134c'));
+  }
+
+  void toggleEmailMode() {
+    isEmailMode.value = !isEmailMode.value;
   }
 }
