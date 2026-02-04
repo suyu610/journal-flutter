@@ -165,6 +165,7 @@ class AiConfigV2Controller extends GetxController {
     var selectedPreset = currentCharacter;
 
     UserAIConfig newConfig = UserAIConfig(
+      customName: selectedPreset.name,
       characterCode: selectedPreset.id,
       userAppellation: nameController.text,
       openingStatement: openingController.text,

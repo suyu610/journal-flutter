@@ -121,7 +121,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
     );
   }
 
-  PreferredSizeWidget _buildappbar() => BrnAppBar(
+  PreferredSizeWidget _buildAppbar() => BrnAppBar(
         themeData: BrnAppBarConfig.light(),
         automaticallyImplyLeading: true,
         showDefaultBottom: true,
@@ -141,7 +141,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
       autoRemove: true,
       builder: (_) {
         return Scaffold(
-          appBar: _buildappbar(),
+          appBar: _buildAppbar(),
           body: SafeArea(
             child: _buildView(context),
           ),

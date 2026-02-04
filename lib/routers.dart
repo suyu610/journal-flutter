@@ -3,6 +3,7 @@ import 'package:journal/pages/activity_list/index.dart';
 import 'package:journal/pages/ai_config_v2/index.dart';
 import 'package:journal/pages/auto_write_intro/index.dart';
 import 'package:journal/pages/chat/view.dart';
+import 'package:journal/pages/classification_rules/view.dart';
 import 'package:journal/pages/create_activity/view.dart';
 import 'package:journal/pages/expense/view.dart';
 import 'package:journal/pages/expense_category/view.dart';
@@ -117,9 +118,14 @@ abstract class Routers {
       page: () => const LocalServicePage(),
     ),
     GetPage(name: LabPageUrl, page: () => LabPage()),
+    GetPage(
+        name: ClassificationRulesPageUrl,
+        page: () => const ClassificationRulesPage()),
   ];
 
   static const String LabPageUrl = "/lab";
 
   static const String ReceiptPageUrl = "/receipt";
+
+  static const String ClassificationRulesPageUrl = "/classification_rules";
 }

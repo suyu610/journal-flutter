@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:journal/components/bruno/bruno.dart'; // 假设这是你的引用
@@ -8,6 +10,7 @@ import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/pages/charts/view.dart';
+import 'package:journal/pages/lab/receipt/receipt_card.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'dart:convert';
@@ -276,5 +279,50 @@ class ChartsController extends GetxController {
       TDToast.dismissAll();
       return null;
     }
+  }
+
+  // 抽离打印逻辑代码，保持 build 整洁
+  void handlePrintAction(BuildContext context) async {
+    TDToast.showLoading(context: context);
+    List<Expense> expenseItems = await getTodayExpenseItemList() ?? [];
+    Log().d("expenseItems: $expenseItems");
+    if (expenseItems.isEmpty) {
+      if (context.mounted) {
+        TDToast.dismissAll();
+        TDToast.showFail("暂无数据", context: context);
+      }
+      return;
+    }
+    TDToast.dismissAll();
+
+    List<String> nicknameList =
+        expenseItems.map((e) => e.userNickname ?? '').toSet().toList();
+    Get.dialog(Material(
+      type: MaterialType.transparency,
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              PrintingReceiptAnim(
+                onPrintFinished: () {},
+                child: ReceiptCard(
+                  nickname: nicknameList.join(' | '),
+                  budget: dailyBudgetValue,
+                  items: expenseItems,
+                  date: DateTime.now().toString().substring(0, 10),
+                ),
+              ),
+              SizedBox(height: 30.h),
+              IconButton(
+                onPressed: () => Get.back(),
+                icon: const Icon(Icons.cancel, color: Colors.white, size: 36),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ));
   }
 }

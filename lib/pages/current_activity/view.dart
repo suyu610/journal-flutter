@@ -5,8 +5,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/custom_floating_action_button_location.dart';
 import 'package:journal/components/empty_item.dart';
 import 'package:journal/components/expense_item.dart';
+import 'package:journal/config/theme_config.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
@@ -26,13 +28,18 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
       id: "current_activity",
       autoRemove: false,
       builder: (_) {
-        return Scaffold(
-          appBar: _navibar(context),
-          body: _buildView(context),
-          // floatingActionButton: _buildFloatingActionButton(),
-          // floatingActionButtonLocation: CustomFloatingActionButtonLocation(
-          //     FloatingActionButtonLocation.endContained, 0, -24.h),
-        );
+        return Obx(() => Scaffold(
+              backgroundColor: backgroundColor,
+              appBar: _navibar(context),
+              body: _buildView(context),
+              floatingActionButtonAnimator:
+                  FloatingActionButtonAnimator.scaling,
+              floatingActionButton: _buildFloatingActionButton(),
+              floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+                  FloatingActionButtonLocation.endContained,
+                  0,
+                  controller.shouldShowAddButton.value ? -24.h : 999.h),
+            ));
       },
     );
   }
@@ -83,15 +90,14 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   Widget _buildCurrentActivityCard(Activity activity, context) {
     return Container(
       width: 385.w,
-      padding: const EdgeInsets.only(left: 12, right: 12),
       child: EasyRefresh(
         onRefresh: () async {
           // 在这里调用刷新数据的方法
           ToastUtil.heavyImpact();
-
           await controller.initData();
         },
         child: ListView(
+          padding: const EdgeInsets.only(left: 12, right: 12),
           controller: controller.scrollController,
           children: [
             SizedBox(
@@ -258,7 +264,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
           // ------------------------------------------------------
           Obx(() {
             // [模式 A]: 详细模式
-
             if (controller.isExpenseListShowMode.value) {
               return Column(
                 children: [
@@ -366,5 +371,26 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
       ),
     );
   }
-  // 账本卡片头部
+
+  // 回到顶部
+  Widget? _buildFloatingActionButton() {
+    return FloatingActionButton(
+      mini: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(999),
+      ),
+      onPressed: () {
+        controller.scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+      },
+      backgroundColor: Colors.blueGrey[900],
+      child: const Icon(
+        Icons.arrow_upward,
+        color: Colors.white,
+      ),
+    );
+  }
 }

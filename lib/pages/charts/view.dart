@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
-import 'package:journal/models/expense.dart';
-import 'package:journal/pages/lab/receipt/receipt_card.dart';
+import 'package:journal/config/theme_config.dart';
 
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -38,9 +37,6 @@ class ChartsPage extends GetView<ChartsController> {
     const Color(0xFFCFD8DC), // BlueGrey 100
   ];
 
-  // 背景色：使用稍微偏冷一点的灰白，显得更干净
-  static const Color _backgroundColor = Color(0xFFF5F7FA);
-
   @override
   Widget build(BuildContext context) {
     final GlobalKey actionKey = GlobalKey();
@@ -51,7 +47,7 @@ class ChartsPage extends GetView<ChartsController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          backgroundColor: _backgroundColor, // 设置 Scaffold 背景
+          backgroundColor: backgroundColor,
           appBar: _buildNavBar(context, actionKey),
           body: SafeArea(
             child: _shouldShowEmptyState()
@@ -70,7 +66,7 @@ class ChartsPage extends GetView<ChartsController> {
   // 主内容区域
   Widget _buildMainContent(BuildContext context) {
     return Container(
-      color: _backgroundColor,
+      color: backgroundColor,
       // 增加整体左右间距，让卡片不要贴边
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: SingleChildScrollView(
@@ -406,8 +402,8 @@ class ChartsPage extends GetView<ChartsController> {
 
   PreferredSizeWidget _buildNavBar(BuildContext context, GlobalKey key) {
     return TDNavBar(
-      useBorderStyle: false, // 去掉边框线，更现代
-      backgroundColor: _backgroundColor, // 导航栏背景与页面一致
+      useBorderStyle: false,
+      backgroundColor: backgroundColor,
       height: 48,
       useDefaultBack: false,
       leftBarItems: [
@@ -422,12 +418,11 @@ class ChartsPage extends GetView<ChartsController> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // 给标题加个加粗样式
                           Text(
                             controller.currentActivity.value.activityName,
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w800,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                               color: Colors.black,
                             ),
                           ),
@@ -449,57 +444,11 @@ class ChartsPage extends GetView<ChartsController> {
           icon: Icons.print_outlined,
           iconColor: Colors.black87,
           action: () async {
-            // 打印逻辑保持不变 ...
-            _handlePrintAction(context);
+            controller.handlePrintAction(context);
           },
         )
       ],
     );
-  }
-
-  // 抽离打印逻辑代码，保持 build 整洁
-  void _handlePrintAction(BuildContext context) async {
-    TDToast.showLoading(context: context);
-    List<Expense> expenseItems =
-        await controller.getTodayExpenseItemList() ?? [];
-    if (expenseItems.isEmpty) {
-      if (context.mounted) {
-        TDToast.dismissAll();
-        TDToast.showFail("暂无数据", context: context);
-      }
-      return;
-    }
-    TDToast.dismissAll();
-
-    List<String> nicknameList =
-        expenseItems.map((e) => e.userNickname ?? '').toSet().toList();
-    Get.dialog(Material(
-      type: MaterialType.transparency,
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              PrintingReceiptAnim(
-                onPrintFinished: () {},
-                child: ReceiptCard(
-                  nickname: nicknameList.join(' | '),
-                  budget: controller.dailyBudgetValue,
-                  items: expenseItems,
-                  date: DateTime.now().toString().substring(0, 10),
-                ),
-              ),
-              SizedBox(height: 30.h),
-              IconButton(
-                onPressed: () => Get.back(),
-                icon: const Icon(Icons.cancel, color: Colors.white, size: 36),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ));
   }
 
   void _showActivityPicker(BuildContext context, GlobalKey key) {
@@ -524,7 +473,7 @@ class ChartsPage extends GetView<ChartsController> {
 
   Widget _buildEmptyState() {
     return Container(
-      color: _backgroundColor,
+      color: backgroundColor,
       child: Center(
         child: GestureDetector(
           onTap: () {

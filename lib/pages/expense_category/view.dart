@@ -18,14 +18,14 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
       id: "expense_category",
       builder: (_) {
         return Scaffold(
-          appBar: _buildappbar(),
+          appBar: _buildAppbar(),
           body: _buildView(),
         );
       },
     );
   }
 
-  PreferredSizeWidget _buildappbar() => BrnAppBar(
+  PreferredSizeWidget _buildAppbar() => BrnAppBar(
         themeData: BrnAppBarConfig.light(),
         showDefaultBottom: true,
         showLeadingDivider: true,

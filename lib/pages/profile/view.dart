@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/config/theme_config.dart';
 import 'package:journal/routers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
@@ -19,6 +20,7 @@ class ProfilePage extends GetView<ProfileController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
+          backgroundColor: backgroundColor,
           appBar: _navibar(context),
           body: SafeArea(
             child: _buildView(context),
@@ -75,6 +77,28 @@ class ProfilePage extends GetView<ProfileController> {
               Get.toNamed(Routers.ReminderSettingsPageUrl);
             },
           ),
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
+              Icons.rule_folder_outlined,
+              size: 18,
+            ),
+            title: "自定义分类规则",
+            onClick: (v) {
+              Get.toNamed(Routers.ClassificationRulesPageUrl);
+            },
+          ),
+          TDCell(
+            arrow: true,
+            leftIconWidget: const Icon(
+              Icons.checkroom_outlined,
+              size: 18,
+            ),
+            title: "实验室",
+            onClick: (v) {
+              Get.toNamed(Routers.LabPageUrl, arguments: {});
+            },
+          ),
         ]),
         const SizedBox(height: 10),
         TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
@@ -101,17 +125,6 @@ class ProfilePage extends GetView<ProfileController> {
                 "url": "https://blog.uuorb.com/archives/journal-privacy",
                 "title": "隐私协议"
               });
-            },
-          ),
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
-              Icons.checkroom_outlined,
-              size: 18,
-            ),
-            title: "实验室",
-            onClick: (v) {
-              Get.toNamed(Routers.LabPageUrl, arguments: {});
             },
           ),
           TDCell(

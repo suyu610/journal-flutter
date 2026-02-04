@@ -29,6 +29,7 @@ class LocalServer {
     if (_initCompleter != null && !_initCompleter!.isCompleted) {
       return _initCompleter!.future;
     }
+    _server?.idleTimeout = null;
 
     // 2. 如果服务已经运行，直接返回 URL
     if (_server != null) {

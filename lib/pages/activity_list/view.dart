@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/empty_item.dart';
+import 'package:journal/config/theme_config.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/routers.dart';
@@ -23,8 +24,8 @@ class ActivityListPage extends GetView<ActivityListController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          backgroundColor: const Color(0xfff3f3f3),
-          appBar: _buildappbar(context),
+          backgroundColor: backgroundColor,
+          appBar: _buildAppbar(context),
           body: _buildView(context),
           // floatingActionButton: _buildFloatingActionButton(),
           // floatingActionButtonLocation: CustomFloatingActionButtonLocation(
@@ -198,7 +199,7 @@ class ActivityListPage extends GetView<ActivityListController> {
     );
   }
 
-  PreferredSizeWidget _buildappbar(context) => TDNavBar(
+  PreferredSizeWidget _buildAppbar(context) => TDNavBar(
       useBorderStyle: true,
       height: 48,
       useDefaultBack: false,
