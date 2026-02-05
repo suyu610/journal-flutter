@@ -418,28 +418,6 @@ class ProfilePage extends GetView<ProfileController> {
         controller.modifyNickname(v, context);
       }
     });
-    return;
-    showGeneralDialog(
-        context: context,
-        pageBuilder: (BuildContext buildContext, Animation<double> animation,
-            Animation<double> secondaryAnimation) {
-          return TDInputDialog(
-            title: "修改昵称",
-            textEditingController: controller.nicknameTextEditController,
-            rightBtn: TDDialogButtonOptions(
-                action: () {
-                  if (controller.nicknameTextEditController.text.isEmpty) {
-                    Get.back();
-                  } else {
-                    controller.modifyNickname(
-                        controller.nicknameTextEditController.text, context);
-                  }
-                },
-                type: TDButtonType.fill,
-                title: '确认',
-                theme: TDButtonTheme.primary),
-          );
-        });
   }
 
   static Future<String> appVersion() async {

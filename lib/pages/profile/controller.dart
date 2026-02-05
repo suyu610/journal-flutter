@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -11,14 +10,12 @@ import 'package:journal/core/log.dart';
 import 'package:journal/models/user.dart';
 import 'package:journal/pages/ai_config/index.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
-import 'package:journal/pages/tabbar_layout/view.dart';
 import 'package:journal/request/request.dart';
 
 import 'package:journal/util/cos.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/media_util.dart';
 import 'package:journal/util/sp_util.dart';
-import 'package:journal/util/toast_util.dart';
 
 class ProfileController extends GetxController {
   var nicknameTextEditController = TextEditingController();

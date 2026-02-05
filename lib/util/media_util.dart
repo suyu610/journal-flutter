@@ -26,18 +26,53 @@ class MediaHelper {
     return result != null ? File(result.path) : null;
   }
 
+// 建议改名为 requestPermission，因为它包含请求动作
   static Future<bool> _checkPermission() async {
+    PermissionStatus status;
+
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      // Android 13 (API 33) 及以上使用 photos 权限
+
       if (androidInfo.version.sdkInt >= 33) {
-        return await Permission.photos.request().isGranted;
+        // Android 13+: 同时请求图片和视频权限
+        // 只要图片或视频任意一个被授权/部分授权，通常就可以视为通过
+        Map<Permission, PermissionStatus> statuses = await [
+          Permission.photos,
+          Permission.videos,
+        ].request();
+
+        // 判断逻辑：图片 OR 视频 只要有一个是 granted 或 limited 即可
+        // 注意：Android 14 的 limited 状态在这里很重要
+        bool photoGranted = statuses[Permission.photos]!.isGranted ||
+            statuses[Permission.photos]!.isLimited;
+        bool videoGranted = statuses[Permission.videos]!.isGranted ||
+            statuses[Permission.videos]!.isLimited;
+
+        return photoGranted || videoGranted;
       } else {
-        return await Permission.storage.request().isGranted;
+        // Android < 13: 使用旧的存储权限
+        status = await Permission.storage.request();
       }
     } else if (Platform.isIOS) {
-      return await Permission.photos.request().isGranted;
+      // iOS: 通常只需要 photos 权限即可访问相册（含视频）
+      status = await Permission.photos.request();
+    } else {
+      return false;
     }
+
+    // 处理结果
+    if (status.isGranted || status.isLimited) {
+      return true;
+    }
+
+    // 处理“永久拒绝”的情况：引导用户去设置
+    if (status.isPermanentlyDenied) {
+      // 这里可以弹出一个对话框，询问用户是否去设置开启
+      // bool openSetting = await showDialog...
+      // if (openSetting) await openAppSettings();
+      print("权限被永久拒绝，请去设置开启");
+    }
+
     return false;
   }
 

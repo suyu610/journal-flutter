@@ -16,7 +16,6 @@ class ReminderSettingsController extends GetxController {
           if (context.mounted) {
             BrnToast.show('请开启通知权限', context);
           }
-
           return;
         }
       }

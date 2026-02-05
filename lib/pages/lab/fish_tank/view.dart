@@ -321,11 +321,8 @@ class LightBeamComponent extends PositionComponent with HasGameRef {
   late Paint _paint;
   double _time = 0;
   final double _swaySpeed;
-  final double _swayAmount;
 
-  LightBeamComponent()
-      : _swaySpeed = 0.5 + Random().nextDouble(),
-        _swayAmount = 0.1 + Random().nextDouble() * 0.2;
+  LightBeamComponent() : _swaySpeed = 0.5 + Random().nextDouble();
 
   @override
   Future<void> onLoad() async {

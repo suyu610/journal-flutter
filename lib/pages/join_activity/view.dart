@@ -96,7 +96,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
               SizedBox(width: 12.w),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           GestureDetector(
             onTap: () => controller.readClipboard(context),
             child: Container(
@@ -106,7 +106,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
                 color: Colors.blueGrey[900],
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Icon(Icons.content_paste_rounded,
+              child: const Icon(Icons.content_paste_rounded,
                   size: 24, color: Colors.white),
             ),
           )

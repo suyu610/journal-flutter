@@ -269,21 +269,6 @@ class LoginPage extends StatelessWidget {
           // icon: Icon(isEmailMode ? Icons.phone_android : Icons.email, color: ...),
           ),
     );
-
-    AppleAuthButton(
-      onPressed: () {
-        try {
-          logic.loginWithApple(context);
-        } catch (e) {
-          print(e);
-          TDToast.dismissLoading();
-        }
-      },
-      style: _getCircleButtonStyle(
-        bgColor: Colors.black, // Apple 官方推荐黑色
-        iconColor: Colors.white,
-      ),
-    );
   }
 
   // 3. 微信登录按钮

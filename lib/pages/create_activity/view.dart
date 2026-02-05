@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/util/dialog_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 

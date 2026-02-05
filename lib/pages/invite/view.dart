@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // 用于复制功能
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/src/components/navbar/brn_appbar.dart';
-import 'package:journal/models/user.dart'; // 假设这是你的User模型路径
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
