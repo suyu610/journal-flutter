@@ -40,6 +40,8 @@ PODS:
   - QCloudCOSXML/Default (6.5.1):
     - QCloudCore (= 6.5.1)
   - QCloudTrack/Beacon (6.5.1)
+  - rive_common (0.0.1):
+    - Flutter
   - sensors_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
@@ -79,6 +81,7 @@ DEPENDENCIES:
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - rive_common (from `.symlinks/plugins/rive_common/ios`)
   - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
@@ -123,6 +126,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/package_info_plus/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  rive_common:
+    :path: ".symlinks/plugins/rive_common/ios"
   sensors_plus:
     :path: ".symlinks/plugins/sensors_plus/ios"
   shared_preferences_foundation:
@@ -161,6 +166,7 @@ SPEC CHECKSUMS:
   QCloudCore: 6f8c67b96448472d2c6a92b9cfe1bdb5abbb1798
   QCloudCOSXML: 92f50a787b4e8d9a7cb6ea8e626775256b4840a7
   QCloudTrack: 20b79388365b4c8ed150019c82a56f1569f237f8
+  rive_common: dd421daaf9ae69f0125aa761dd96abd278399952
   sensors_plus: 6a11ed0c2e1d0bd0b20b4029d3bad27d96e0c65b
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
@@ -171,6 +177,6 @@ SPEC CHECKSUMS:
   video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 
-PODFILE CHECKSUM: 2d4f8d0fcb5ea0ca658df475a2667660005eb2ef
+PODFILE CHECKSUM: 3489701e1d014c0d87b8d20e8b932be52cbad44a
 
 COCOAPODS: 1.16.2

@@ -13,6 +13,7 @@ import 'package:journal/util/media_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ExpensePageController extends GetxController {
+  var expensePriceFocusNode = FocusNode();
   var expensePriceTextEditController = TextEditingController();
   var expenseLabelTextEditController = TextEditingController();
   var expenseOriginalPriceTextEditController = TextEditingController();
@@ -22,15 +23,24 @@ class ExpensePageController extends GetxController {
 
   _initData() {
     if (Get.arguments != null) {
-      expense.value = Get.arguments;
-      Log().d(expense.value.type.toString());
-      expensePriceTextEditController.text = expense.value.price.toString();
-      expenseLabelTextEditController.text = expense.value.label.toString();
-      expenseOriginalPriceTextEditController.text =
-          expense.value.originalPrice.toString();
+      // 判断type
+      if (Get.arguments.runtimeType != Expense) {
+        expense.value = Expense.empty();
+        expense.value.activityId = Get.arguments["activityId"];
+        // 日期 yyyy-mm-dd hh:mm:ss
+        expense.value.expenseTime = DateTime.now().toString().substring(0, 19);
+      } else {
+        expense.value = Get.arguments;
+        expensePriceTextEditController.text = expense.value.price.toString();
+        expenseLabelTextEditController.text = expense.value.label.toString();
+        expenseOriginalPriceTextEditController.text =
+            expense.value.originalPrice.toString();
+      }
     } else {
       expense.value = Expense.empty();
     }
+
+    expensePriceFocusNode.requestFocus();
 
     update(["expense_item"]);
   }

@@ -11,6 +11,8 @@ import 'package:journal/pages/expense_list/index.dart';
 import 'package:journal/pages/invite/index.dart';
 import 'package:journal/pages/join_activity/view.dart';
 import 'package:journal/pages/lab/bottle/view.dart';
+import 'package:journal/pages/lab/fish_tank/view.dart';
+import 'package:journal/pages/lab/tree/view.dart';
 import 'package:journal/pages/lab/view.dart';
 import 'package:journal/pages/local_server/view.dart';
 import 'package:journal/pages/login/binding.dart';
@@ -56,6 +58,7 @@ abstract class Routers {
   static const String LayoutPageUrl = "/layout";
 
   static const String SplashPageUrl = "/splash";
+  static const String FishTankFlamePageUrl = "/fish_tank";
   static const String MoneyJarPageUrl = "/money_jar";
   // 登录页
   static const String LoginPageUrl = "/login";
@@ -68,7 +71,7 @@ abstract class Routers {
   static const String ReminderSettingsPageUrl = "/reminder_settings";
 
   static final List<GetPage> routePages = [
-    // tabbar设置页
+    GetPage(name: FishTankFlamePageUrl, page: () => FishTankFlamePage()),
     GetPage(name: TabBarSettingPageUrl, page: () => const TabBarSettingPage()),
     GetPage(name: MoneyJarPageUrl, page: () => const MoneyJarApp()),
     GetPage(name: SplashPageUrl, page: () => const SplashPage()),
@@ -92,7 +95,6 @@ abstract class Routers {
         page: () => const LoginPage(),
         binding: LoginBinding()),
     GetPage(name: ChatDetailPageUrl, page: () => const ChatPage()),
-
     GetPage(
       name: ActivityListPageUrl,
       page: () => const ActivityListPage(),
@@ -121,6 +123,7 @@ abstract class Routers {
     GetPage(
         name: ClassificationRulesPageUrl,
         page: () => const ClassificationRulesPage()),
+    GetPage(name: GrowingTreeUrl, page: () => const ForestPage()),
   ];
 
   static const String LabPageUrl = "/lab";
@@ -128,4 +131,6 @@ abstract class Routers {
   static const String ReceiptPageUrl = "/receipt";
 
   static const String ClassificationRulesPageUrl = "/classification_rules";
+
+  static const String GrowingTreeUrl = "/growing_tree";
 }

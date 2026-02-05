@@ -11,48 +11,42 @@ Widget activityCard(
     {Widget? footerWidget, Widget? topRightWidget}) {
   // 1. 初始化计算逻辑
   final stats = _BudgetStats(activity);
-  // print("budgetType: ${activity.budgetType}");
-  // print("isMonthType: ${stats.isMonthType}");
-  return GestureDetector(
-    behavior: HitTestBehavior.translucent,
-    onTap: () => Get.toNamed(Routers.CreateActivityUrl, arguments: activity),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 2. 头部信息
-          _Header(
-              activity: activity,
-              topRightWidget: topRightWidget,
-              context: context),
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 2. 头部信息
+        _Header(
+            activity: activity,
+            topRightWidget: topRightWidget,
+            context: context),
 
-          const SizedBox(height: 16),
-          const Divider(height: 1, color: Color(0xFFF5F5F5)),
-          const SizedBox(height: 16),
+        const SizedBox(height: 16),
+        const Divider(height: 1, color: Color(0xFFF5F5F5)),
+        const SizedBox(height: 16),
 
-          // 3. 核心财务数据 (结余已改为 remainingBudget)
-          _FinanceOverview(activity: activity, onRefresh: refreshFunc),
+        // 3. 核心财务数据 (结余已改为 remainingBudget)
+        _FinanceOverview(activity: activity, onRefresh: refreshFunc),
 
-          // 4. 预算分析模块 (日周重点展示)
-          if (stats.hasBudget) ...[
-            const SizedBox(height: 20),
-            _BudgetAnalysis(stats: stats, activity: activity),
-          ],
-
-          // 5. 底部扩展区域
-          if (footerWidget != null) ...[
-            const SizedBox(height: 14),
-            footerWidget,
-          ]
+        // 4. 预算分析模块 (日周重点展示)
+        if (stats.hasBudget) ...[
+          const SizedBox(height: 20),
+          _BudgetAnalysis(stats: stats, activity: activity),
         ],
-      ),
+
+        // 5. 底部扩展区域
+        if (footerWidget != null) ...[
+          const SizedBox(height: 14),
+          footerWidget,
+        ]
+      ],
     ),
   );
 }
@@ -126,62 +120,84 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(99),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                activity.activityName.length > 1
-                    ? activity.activityName.substring(0, 1)
-                    : (activity.activityName.isNotEmpty
-                        ? activity.activityName
-                        : ""),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  activity.activityName,
-                  style: const TextStyle(
-                      color: Color(0xFF1D1D1D),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => Get.toNamed(Routers.CreateActivityUrl, arguments: activity),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(99),
                 ),
-                const SizedBox(height: 4),
-                if (activity.activated)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                    decoration: BoxDecoration(
-                        color: const Color(0xFFF2F3F5),
-                        borderRadius: BorderRadius.circular(4)),
-                    child: const Text(
-                      "当前账本",
-                      style: TextStyle(color: Color(0xFF666666), fontSize: 10),
-                    ),
+                alignment: Alignment.center,
+                child: Text(
+                  activity.activityName.length > 1
+                      ? activity.activityName.substring(0, 1)
+                      : (activity.activityName.isNotEmpty
+                          ? activity.activityName
+                          : ""),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    activity.activityName,
+                    style: const TextStyle(
+                        color: Color(0xFF1D1D1D),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500),
                   ),
-              ],
-            ),
-          ],
-        ),
-        topRightWidget ?? buildOperationAvatar(activity, context),
-      ],
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                            color: const Color(0xFFF2F3F5),
+                            borderRadius: BorderRadius.circular(4)),
+                        child: const Text(
+                          "编辑",
+                          style:
+                              TextStyle(color: Color(0xFF666666), fontSize: 10),
+                        ),
+                      ),
+                      if (activity.activated)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                              color: const Color(0xFFF2F3F5),
+                              borderRadius: BorderRadius.circular(4)),
+                          child: const Text(
+                            "当前账本",
+                            style: TextStyle(
+                                color: Color(0xFF666666), fontSize: 10),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          topRightWidget ?? buildOperationAvatar(activity, context),
+        ],
+      ),
     );
   }
 }

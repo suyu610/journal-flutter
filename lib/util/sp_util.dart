@@ -119,4 +119,31 @@ class SpUtil {
     SharedPreferences sp = Get.find<SharedPreferences>();
     return sp.setString(key, value);
   }
+
+  // 给所有引导相关的 Key 加一个统一前缀，避免冲突
+  static const String _guidePrefix = 'guide_shown_';
+
+  /// 通用检查：某个引导是否显示过
+  /// [featureId] 是你自己定义的唯一标识，比如 'home_add_btn', 'profile_avatar'
+  static bool hasShownGuide(String featureId) {
+    String key = '$_guidePrefix$featureId';
+    return Get.find<SharedPreferences>().getBool(key) ?? false;
+  }
+
+  /// 通用标记：标记某个引导已显示
+  static Future<bool> setGuideShown(String featureId) {
+    String key = '$_guidePrefix$featureId';
+    return Get.find<SharedPreferences>().setBool(key, true);
+  }
+
+  /// 开发调试用：重置所有引导（方便你测试）
+  static Future<void> clearAllGuides() async {
+    final sp = Get.find<SharedPreferences>();
+    final keys = sp.getKeys();
+    for (String key in keys) {
+      if (key.startsWith(_guidePrefix)) {
+        await sp.remove(key);
+      }
+    }
+  }
 }

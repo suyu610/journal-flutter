@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:journal/models/app_tab_item.dart';
+import 'package:showcaseview/showcaseview.dart'; // 1. 引入库
 
 class CustomBottomBar extends StatelessWidget {
   final List<AppTabItem> tabs;
   final int currentIndex;
   final Function(int index, AppTabItem tab) onTap;
+  final Function(int index, AppTabItem tab)? onLongPress;
+
+  // 2. 新增参数：接收 GlobalKey
+  final GlobalKey? specialButtonKey;
 
   const CustomBottomBar({
     Key? key,
     required this.tabs,
     required this.currentIndex,
     required this.onTap,
+    this.onLongPress,
+    this.specialButtonKey, // 3. 构造函数加入
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // 获取底部安全区域高度
     final double paddingBottom = MediaQuery.of(context).padding.bottom;
-    // 基础高度 60 + 安全区
     final double height = 60 + paddingBottom;
 
     return Container(
@@ -47,7 +52,6 @@ class CustomBottomBar extends StatelessWidget {
               }),
             ),
           ),
-          // 填充底部安全区，防止背景色断层
           SizedBox(height: paddingBottom),
         ],
       ),
@@ -55,55 +59,77 @@ class CustomBottomBar extends StatelessWidget {
   }
 
   Widget _buildTabItem(BuildContext context, int index, AppTabItem tab) {
-    // 1. 判断是否是特殊样式的 Tab (比如聊天/发布)
     bool isSpecialTab = tab.id == 'chat';
-
-    // 2. 判断是否选中 (特殊 Tab 永远不算“选中”，因为它只是一个按钮)
     bool isSelected = !isSpecialTab && currentIndex == index;
 
+    // 4. 构建具体内容
+    Widget iconWidget = isSpecialTab
+        ? _buildSpecialIcon(tab.icon)
+        : _buildNormalItem(tab, isSelected);
+
+    // 5.如果是特殊按钮，并且传入了Key，就包裹 Showcase
+    if (isSpecialTab && specialButtonKey != null) {
+      iconWidget = Showcase(
+        key: specialButtonKey!,
+        title: '👋 试试长按', // 加个Emoji显得更生动
+        description: '长按中间按钮\n即可快速开启手动记账',
+
+        // 呼吸感
+        targetPadding: const EdgeInsets.all(6),
+        targetBorderRadius: BorderRadius.circular(24),
+
+        // 【关键：纯白卡片】
+        tooltipBackgroundColor: Colors.white,
+        tooltipBorderRadius: BorderRadius.circular(16),
+
+        // 【关键：标题用你的主色调】
+        titleTextStyle: TextStyle(
+          color: Colors.blueGrey[900], // 呼应你的按钮颜色
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
+        descTextStyle: const TextStyle(
+          color: Colors.grey, // 正文用灰色
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          height: 1.4,
+        ),
+
+        // 【高级感细节】调整气泡内部间距
+        tooltipPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+
+        child: iconWidget,
+      );
+    }
+
     return GestureDetector(
-      behavior: HitTestBehavior.opaque, // 扩大点击区域
-      onTap: () {
-        // 触发回调
-        onTap(index, tab);
-      },
+      behavior: HitTestBehavior.opaque,
+      onLongPress: () => onLongPress?.call(index, tab),
+      onTap: () => onTap(index, tab),
       child: Container(
         alignment: Alignment.center,
-        child: isSpecialTab
-            ? _buildSpecialIcon(tab.icon) // 特殊样式
-            : _buildNormalItem(tab, isSelected), // 普通样式
+        child: iconWidget,
       ),
     );
   }
 
-  // 普通 Tab 样式 (图标 + 文字)
   Widget _buildNormalItem(AppTabItem tab, bool isSelected) {
     final Color color = isSelected ? Colors.black : Colors.grey;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(tab.icon, size: 28, color: color),
-        // const SizedBox(height: 4),
-        // Text(
-        //   tab.label,
-        //   style: TextStyle(
-        //     fontSize: 10,
-        //     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        //     color: color,
-        //   ),
-        // )
       ],
     );
   }
 
-  // 特殊 Tab 样式 (胶囊背景/圆圈)
   Widget _buildSpecialIcon(IconData icon) {
     return Container(
       width: 48,
-      height: 36, // 胶囊高度
+      height: 36,
       decoration: BoxDecoration(
-        color: Colors.blueGrey[900], // 深色背景
-        borderRadius: BorderRadius.circular(18), // 圆角
+        color: Colors.blueGrey[900],
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: Colors.blueGrey.withOpacity(0.3),

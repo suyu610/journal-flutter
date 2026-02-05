@@ -6,7 +6,7 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/pages/chat/widgets/bottom.dart';
-import 'package:journal/routers.dart';
+
 import 'package:journal/services/local_server.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 // 保持你原有的引用
@@ -276,15 +276,15 @@ class ChatPage extends GetView<ChatController> {
           Get.back();
         },
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.more_horiz, color: Colors.white),
-          onPressed: () {
-            Get.toNamed(Routers.CreateActivityUrl,
-                arguments: controller.currentActivity.value);
-          },
-        )
-      ],
+      // actions: [
+      //   IconButton(
+      //     icon: const Icon(Icons.more_horiz, color: Colors.white),
+      //     onPressed: () {
+      //       Get.toNamed(Routers.CreateActivityUrl,
+      //           arguments: controller.currentActivity.value);
+      //     },
+      //   )
+      // ],
     );
   }
 

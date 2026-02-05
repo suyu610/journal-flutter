@@ -171,9 +171,9 @@ class ActivityListPage extends GetView<ActivityListController> {
                   padding: const EdgeInsets.only(bottom: 15.0),
                   child: buildEmptyItem(
                       title: "未找到账本",
-                      operateText: "点击重试",
+                      operateText: "点击添加",
                       action: () {
-                        controller.fetchSelfActivityList();
+                        Get.toNamed(Routers.CreateActivityUrl);
                       }))
               : ConstrainedBox(
                   constraints: BoxConstraints(minHeight: 800.h),
@@ -200,35 +200,37 @@ class ActivityListPage extends GetView<ActivityListController> {
   }
 
   PreferredSizeWidget _buildAppbar(context) => TDNavBar(
-      useBorderStyle: true,
-      height: 48,
-      useDefaultBack: false,
-      titleWidget: Text(
-        "账本列表",
-        style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
-      ),
-      leftBarItems: [
-        TDNavBarItem(
-            iconWidget: Text("加入账本",
-                style: TextStyle(
-                  color: const Color(0xff000000).withOpacity(0.8),
-                )),
-            action: () {
-              Get.toNamed(Routers.JoinActivityPageUrl);
-              return;
-            }),
-      ],
-      border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
-      // 创建账本
-      rightBarItems: [
-        TDNavBarItem(
-            iconWidget: Text("新建账本",
-                style: TextStyle(
-                  color: const Color(0xff000000).withOpacity(0.8),
-                )),
-            action: () {
-              Get.toNamed(Routers.CreateActivityUrl);
-              return;
-            }),
-      ]);
+          useBorderStyle: true,
+          height: 48,
+          useDefaultBack: false,
+          titleWidget: Text(
+            "账本列表",
+            style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
+          ),
+          border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
+          leftBarItems: [
+            TDNavBarItem(
+                iconWidget: Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text("加入多人账本",
+                      style: TextStyle(
+                        color: const Color(0xff000000).withOpacity(0.8),
+                      )),
+                ),
+                action: () {
+                  Get.toNamed(Routers.JoinActivityPageUrl);
+                  return;
+                }),
+          ],
+          rightBarItems: [
+            TDNavBarItem(
+                iconWidget: Text("新建",
+                    style: TextStyle(
+                      color: const Color(0xff000000).withOpacity(0.8),
+                    )),
+                action: () {
+                  Get.toNamed(Routers.CreateActivityUrl);
+                  return;
+                }),
+          ]);
 }

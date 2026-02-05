@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/cell_group.dart';
 import 'package:journal/pages/lab/controller.dart';
 import 'package:journal/routers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -46,54 +47,88 @@ class LabPage extends GetView<LabController> {
     return packageInfo.version;
   }
 
+  // --- 新增：给 Icon 增加一点背景色，显得不那么单调 ---
+  Widget _buildIcon(IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, size: 18, color: color),
+    );
+  }
+
   // 主视图
   Widget _buildView(context) {
     return Column(
       children: [
         const SizedBox(height: 16),
-        TDCellGroup(theme: TDCellGroupTheme.cardTheme, cells: [
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
+        CellGroup(children: [
+          Cell(
+            title: "重置引导动画",
+            icon: _buildIcon(Icons.refresh, Colors.blueGrey),
+            onTap: () => controller.resetGuide(),
+          ),
+          Cell(
+            icon: _buildIcon(
+              Icons.fitbit_sharp,
+              Colors.blueGrey,
+            ),
+            title: "鱼缸",
+            onTap: () {
+              Get.toNamed(Routers.FishTankFlamePageUrl, arguments: {});
+            },
+          ),
+          Cell(
+            icon: _buildIcon(
               Icons.wysiwyg_outlined,
-              size: 18,
+              Colors.blueGrey,
             ),
             title: "存钱罐",
-            onClick: (v) {
+            onTap: () {
               Get.toNamed(Routers.MoneyJarPageUrl, arguments: {});
             },
           ),
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
-              Icons.wysiwyg_outlined,
-              size: 18,
+          Cell(
+            icon: _buildIcon(
+              Icons.eco_outlined,
+              Colors.blueGrey,
+            ),
+            title: "小树苗",
+            onTap: () {
+              Get.toNamed(Routers.GrowingTreeUrl, arguments: {});
+            },
+          ),
+
+          Cell(
+            icon: _buildIcon(
+              Icons.local_hospital,
+              Colors.blueGrey,
             ),
             title: "本地服务",
-            onClick: (v) {
+            onTap: () {
               Get.toNamed(Routers.LocalServicePageUrl, arguments: {});
             },
           ),
           // tabbar设置页
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
+          Cell(
+            icon: _buildIcon(
               Icons.settings_outlined,
-              size: 18,
+              Colors.blueGrey,
             ),
             title: "底部功能排序",
-            onClick: (v) {
+            onTap: () {
               Get.toNamed(Routers.TabBarSettingPageUrl, arguments: {});
             },
           ),
-          TDCell(
-            arrow: true,
-            leftIconWidget: const Icon(
+          Cell(
+            icon: _buildIcon(
               Icons.fact_check_outlined,
-              size: 18,
+              Colors.blueGrey,
             ),
             title: "自动记账",
-            onClick: (v) {
+            onTap: () {
               Get.toNamed(Routers.AutoWriteIntroPageUrl);
             },
           ),

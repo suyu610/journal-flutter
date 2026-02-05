@@ -26,7 +26,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         BrnSwitchFormItem(
           isRequire: false,
           value: controller.activity.value.activated,
-          title: "设为当前账本",
+          title: "设为默认账本",
           onChanged: (oldValue, newValue) {
             controller.updateActivated(newValue);
           },
@@ -62,19 +62,31 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         ),
         BrnBarBottomDivider(),
         Visibility(
-          visible: controller.isOwner.value ||
-              controller.activity.value.activityId == "",
-          child: TDButton(
-            margin: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
-            height: 44,
-            isBlock: true,
-            theme: TDButtonTheme.primary,
-            text: controller.activity.value.activityId == "" ? "创建" : "保存",
-            onTap: () {
-              controller.createActivity(context);
-            },
-          ),
-        ),
+            visible: controller.isOwner.value ||
+                controller.activity.value.activityId == "",
+            child: GestureDetector(
+              onTap: () {
+                controller.createActivity(context);
+              },
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.blueGrey[900],
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                margin: EdgeInsets.symmetric(vertical: 14.0.h, horizontal: 8.w),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                      controller.activity.value.activityId == "" ? "创建" : "保存",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold)),
+                ),
+              ),
+            )),
         Visibility(
           visible: controller.activity.value.activityId != "" &&
               controller.isOwner.value,

@@ -1157,6 +1157,22 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.5.0"
+  rive:
+    dependency: "direct main"
+    description:
+      name: rive
+      sha256: "2551a44fa766a7ed3f52aa2b94feda6d18d00edc25dee5f66e72e9b365bb6d6c"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.13.20"
+  rive_common:
+    dependency: transitive
+    description:
+      name: rive_common
+      sha256: "2ba42f80d37a4efd0696fb715787c4785f8a13361e8aea9227c50f1e78cf763a"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.4.15"
   rxdart:
     dependency: transitive
     description:
@@ -1269,6 +1285,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.0"
+  showcaseview:
+    dependency: "direct main"
+    description:
+      name: showcaseview
+      sha256: "59e5edf33cbe3afb56edcbf25de553211409a576cbbbdda226c574410a314a71"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "5.0.1"
   sign_in_with_apple:
     dependency: "direct main"
     description:

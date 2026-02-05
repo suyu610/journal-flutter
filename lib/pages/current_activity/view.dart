@@ -12,8 +12,9 @@ import 'package:journal/config/theme_config.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
+import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
-import 'package:journal/util/keyboard_util.dart';
+
 import 'package:journal/util/toast_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -58,10 +59,11 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   _buildEmptyCard() {
     return buildEmptyItem(
         title: "暂无默认账本",
-        operateText: "刷新",
+        operateText: "添加",
         action: () {
-          KeyboardUtils.hide();
-          controller.initData();
+          Get.toNamed(Routers.CreateActivityUrl);
+          // KeyboardUtils.hide();
+          // controller.initData();
         });
   }
 

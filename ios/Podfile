@@ -45,11 +45,7 @@ post_install do |installer|
       if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 26.0
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '26.0'
       end
-
-      
-      # You can remove unused permissions here
-      # for more information: https://github.com/BaseflowIT/flutter-permission-handler/blob/master/permission_handler/ios/Classes/PermissionHandlerEnums.h
-      # e.g. when you don't need camera permission, just add 'PERMISSION_CAMERA=0'
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
 

@@ -216,7 +216,8 @@ class ChartsPage extends GetView<ChartsController> {
                 isShowPointText: false,
                 lineWidth: 2.5, // 稍微加粗线条
                 pointRadius: 4,
-                isShowPoint: true,
+
+                isShowPoint: false,
                 isCurve: true,
                 points: _generateTrendPoints(dailyData),
                 shaderColors: [
@@ -252,6 +253,7 @@ class ChartsPage extends GetView<ChartsController> {
             yDialValues: _generateYAxisLabels(dailyData),
             yDialMin: 0,
             yDialMax: maxVal,
+            //  smooth the line
           ),
         ],
       ),

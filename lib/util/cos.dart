@@ -24,7 +24,7 @@ class TencentCosService {
 
     CosXmlServiceConfig serviceConfig = CosXmlServiceConfig(
       region: CosConfig.region,
-      isDebuggable: true, // 生产环境建议改为 false
+      isDebuggable: false, // 生产环境建议改为 false
       isHttps: true,
     );
 

@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/pages/tabbar_layout/custom_bottom_bar.dart';
+import 'package:journal/services/guide_manager.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class LayoutPage extends StatefulWidget {
   const LayoutPage({super.key});
@@ -14,6 +16,29 @@ class LayoutPage extends StatefulWidget {
 
 class _LayoutPageState extends State<LayoutPage>
     with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  final GlobalKey _addBtnKey = GlobalKey();
+  @override
+  void initState() {
+    super.initState();
+    ShowcaseView.register(
+      blurValue: 1,
+      autoPlayDelay: const Duration(seconds: 3),
+    );
+    // 一行代码搞定
+    GuideManager.show(
+      context,
+      featureId: 'home_manual_record_v1', // 唯一ID
+      keys: [_addBtnKey],
+    );
+  }
+
+  @override
+  void dispose() {
+    // 4. 记得注销
+    ShowcaseView.get().unregister();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -37,9 +62,12 @@ class _LayoutPageState extends State<LayoutPage>
       return Obx(() => CustomBottomBar(
             tabs: controller.activeTabs,
             currentIndex: controller.currentIndex.value,
-            // 点击回调
+            specialButtonKey: _addBtnKey,
             onTap: (index, tab) {
               controller.jumpToPage(index, tab);
+            },
+            onLongPress: (index, tab) {
+              controller.longPress(index, tab);
             },
           ));
     });

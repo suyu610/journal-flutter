@@ -8,7 +8,6 @@ IconData getIconByType(String type) {
       return Icons.attach_money_outlined;
     case "奖金":
       return Icons.emoji_events_outlined;
-
     case "副业":
     case "兼职":
       return Icons.work_outline;
@@ -89,7 +88,7 @@ IconData getIconByType(String type) {
       return Icons.cruelty_free_outlined;
     case "捐赠":
       return Icons.favorite_border;
+    default:
+      return Icons.category;
   }
-
-  return Icons.category;
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/cell_group.dart';
 import 'package:journal/config/theme_config.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -47,12 +49,12 @@ class ProfilePage extends GetView<ProfileController> {
           // 3. [新增] 常用功能 - 宫格卡片设计
           _buildToolsCard(context),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           // 4. 其他设置 - 列表设计 (保留次要功能)
           _buildSettingsList(context),
 
-          SizedBox(height: 40.h),
+          SizedBox(height: 20.h),
 
           // 5. 版本号
           FutureBuilder(
@@ -61,10 +63,7 @@ class ProfilePage extends GetView<ProfileController> {
               return Text(
                 "Version ${snapshot.data ?? ""}",
                 style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 11,
-                    letterSpacing: 0.5 // 稍微加点字间距，显得精致
-                    ),
+                    color: Colors.grey[400], fontSize: 11, letterSpacing: 0.5),
               );
             },
           ),
@@ -94,14 +93,14 @@ class ProfilePage extends GetView<ProfileController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 小标题，增加层级感
-          const Text(
-            "常用服务",
-            style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87),
-          ),
-          const SizedBox(height: 20),
+          // const Text(
+          //   "常用服务",
+          //   style: TextStyle(
+          //       fontSize: 15,
+          //       fontWeight: FontWeight.bold,
+          //       color: Colors.black87),
+          // ),
+          // const SizedBox(height: 20),
 
           // 宫格区域
           Row(
@@ -111,7 +110,7 @@ class ProfilePage extends GetView<ProfileController> {
               _buildGridItem(
                 icon: Icons.supervisor_account_outlined,
                 color: Colors.blueGrey[700]!, // 蓝色
-                label: "选择角色",
+                label: "AI角色",
                 onTap: () => Get.toNamed(Routers.AIConfigPageV2Url),
               ),
               _buildGridItem(
@@ -177,48 +176,38 @@ class ProfilePage extends GetView<ProfileController> {
 
   // --- 抽离出的设置列表 (保留列表样式) ---
   Widget _buildSettingsList(BuildContext context) {
-    return TDCellGroup(
-      theme: TDCellGroupTheme.cardTheme,
-      cells: [
-        TDCell(
-          arrow: true,
-          leftIconWidget:
-              _buildIcon(Icons.headset_mic_outlined, Colors.blueGrey),
+    return CellGroup(
+      children: [
+        Cell(
           title: "联系我们",
-          onClick: (v) => controller.contact(),
+          icon: _buildIcon(Icons.headset_mic_outlined, Colors.blueGrey),
+          onTap: () => controller.contact(),
         ),
-        TDCell(
-          arrow: true,
-          leftIconWidget:
-              _buildIcon(Icons.star_outline_rounded, Colors.blueGrey[700]!),
+        Cell(
+          icon: _buildIcon(Icons.star_outline_rounded, Colors.blueGrey[700]!),
           title: "评价我们",
-          onClick: (v) => controller.showRatingDialog(context),
+          onTap: () => controller.showRatingDialog(context),
         ),
-        TDCell(
-          arrow: true,
-          leftIconWidget:
-              _buildIcon(Icons.privacy_tip_outlined, Colors.blueGrey[700]!),
+        Cell(
+          icon: _buildIcon(Icons.privacy_tip_outlined, Colors.blueGrey[700]!),
           title: "隐私协议",
-          onClick: (v) {
+          onTap: () {
             Get.toNamed(Routers.WebViewPageUrl, arguments: {
               "url": "https://blog.uuorb.com/archives/journal-privacy",
               "title": "隐私协议"
             });
           },
         ),
-        TDCell(
-          arrow: true,
-          leftIconWidget: _buildIcon(Icons.logout, Colors.blueGrey[700]!),
+        Cell(
+          icon: _buildIcon(Icons.logout, Colors.blueGrey[700]!),
           title: "退出登录",
-          onClick: (v) => controller.logout(context),
+          onTap: () => controller.logout(context),
         ),
-        TDCell(
-          arrow: true,
-          leftIconWidget:
-              _buildIcon(Icons.delete_outline, Colors.blueGrey[700]!),
+        Cell(
+          icon: _buildIcon(Icons.delete_outline, Colors.blueGrey[700]!),
           title: "注销账号",
           // titleStyle: const TextStyle(color: Colors.redAccent), // 文字也变红，警示感
-          onClick: (v) => controller.deleteAccount(context),
+          onTap: () => controller.deleteAccount(context),
         ),
       ],
     );
@@ -236,7 +225,6 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  // --- 核心改造：头部区域 ---
   // --- 核心改造：头部区域 ---
   Widget _buildHeaderSection(BuildContext context) {
     var user = controller.user.value;
@@ -420,6 +408,17 @@ class ProfilePage extends GetView<ProfileController> {
   // 辅助方法：把原来的 Dialog 逻辑提出来，保持代码整洁
   void _showEditNameDialog(BuildContext context, String currentName) {
     controller.nicknameTextEditController.text = currentName;
+    PremiumGlassDialog.show(context,
+        title: "修改昵称",
+        textInputAction: TextInputAction.done,
+        confirmText: "确认", onConfirmWithInput: (v) {
+      if (v.isEmpty) {
+        Get.back();
+      } else {
+        controller.modifyNickname(v, context);
+      }
+    });
+    return;
     showGeneralDialog(
         context: context,
         pageBuilder: (BuildContext buildContext, Animation<double> animation,

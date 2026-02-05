@@ -1,7 +1,7 @@
 name: journal
 description: "A new Flutter project."
 publish_to: "none"
-version: 2.0.4+5
+version: 2.0.6+7
 fluwx:
   app_id: "wx30e85737940da4af"
   debug_logging: true 
@@ -73,6 +73,9 @@ dependencies:
   flame_forge2d: ^0.19.2 # 专门处理物理碰撞
   sensors_plus: ^7.0.0
   in_app_review: ^2.0.0
+  rive: ^0.13.2
+  showcaseview: ^5.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -83,6 +86,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/images/flame/
     - assets/images/
     - assets/images/playstore-icon.png
     - assets/fonts/
@@ -93,6 +97,7 @@ flutter:
     - assets/chat_bg/
     - assets/tdtheme.json
     - assets/web.zip
+    - assets/rive/
 
   fonts:
     - family: SmileySans

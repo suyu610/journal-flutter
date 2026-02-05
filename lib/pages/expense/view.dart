@@ -123,6 +123,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
               SizedBox(width: 8.w),
               Expanded(
                 child: TextField(
+                  focusNode: controller.expensePriceFocusNode,
                   controller: controller.expensePriceTextEditController,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),

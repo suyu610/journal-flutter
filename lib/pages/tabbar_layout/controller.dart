@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/app_tab_item.dart';
@@ -33,21 +34,34 @@ class LayoutController extends GetxController {
 
   RxBool hideTabbar = false.obs;
 
-  void jumpToPage(int index, AppTabItem tab) {
-    // 1. 如果是“聊天”这种功能性按钮
+  void longPress(int index, AppTabItem tab) {
     if (tab.id == 'chat') {
+      // 震动
+      HapticFeedback.mediumImpact();
       // 检查逻辑
+      if (user.value.currentActivityId == "") {
+        Get.toNamed(Routers.CreateActivityUrl);
+      } else {
+        Get.toNamed(Routers.ExpenseItemPageUrl, arguments: {
+          "mode": "create",
+          "activityId": user.value.currentActivityId
+        });
+      }
+      return;
+    } else {
+      jumpToPage(index, tab);
+    }
+  }
+
+  void jumpToPage(int index, AppTabItem tab) {
+    // 如果是第一次点击聊天按钮，则告诉他，长按可以进入自定义账本创建页面
+    if (tab.id == 'chat') {
       if (user.value.currentActivityId == "") {
         Get.toNamed(Routers.CreateActivityUrl);
       } else {
         // 这里的 ChatDetailPageUrl 应该是一个新路由页面（Scaffold）
         Get.toNamed(Routers.ChatDetailPageUrl);
       }
-
-      // 【关键点】
-      // 这里不需要 update currentIndex，也不需要 pageController.jumpToPage
-      // 这样底部栏会保持在点击之前的状态（例如 Index 0），
-      // 既解决了“无法再次点击”的问题，也让 iOS 左滑退出逻辑正常工作。
       return;
     }
 
@@ -71,6 +85,11 @@ class LayoutController extends GetxController {
           label: '活动列表',
           icon: Icons.folder_outlined,
           page: const ActivityListPage()),
+      // AppTabItem(
+      //     id: 'folder',
+      //     label: '小树苗',
+      //     icon: Icons.forest_outlined,
+      //     page: ForestPage()),
       AppTabItem(
           id: 'chat', label: '聊天', icon: Icons.add, page: const ChatPage()),
       AppTabItem(
@@ -78,7 +97,7 @@ class LayoutController extends GetxController {
           label: '数据统计',
           icon: Icons.analytics_outlined,
           page: const ChartsPage(),
-          isVipOnly: true),
+          isVipOnly: false),
       AppTabItem(
           id: 'profile',
           label: '个人中心',

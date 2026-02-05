@@ -26,7 +26,7 @@ Widget buildEmptyItem({
             ),
             SizedBox(height: 16.h),
             Text(
-              "刷新",
+              operateText,
               style: TextStyle(
                 fontSize: 14.sp,
               ),
