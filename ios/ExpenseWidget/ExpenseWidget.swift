@@ -154,6 +154,7 @@ var body: some View {
                 }
             }
         }
+        .widgetURL(URL(string: "journal://widget_1"))
     }
     
     // --- 辅助逻辑 ---

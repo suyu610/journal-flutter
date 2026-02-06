@@ -26,7 +26,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
         themeData: BrnAppBarConfig.light(),
         showDefaultBottom: true,
         title: const Text(
-          "选择分类", // 文案微调，更符合操作语境
+          "选择分类",
           style: TextStyle(
               fontSize: 17, fontWeight: FontWeight.w600, color: Colors.black87),
         ),
@@ -75,7 +75,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
           crossAxisSpacing: 0.w,
           childAspectRatio: 1, // 调整比例让文字显示更宽松
         ),
-        // 列表长度 + 1 是为了放最后的 "添加" 按钮
+        // 列表长度 + 1 是为了放最前面的 "添加" 按钮
         itemCount: list.length + 1,
         itemBuilder: (context, index) {
           if (index == list.length) {
@@ -84,7 +84,8 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
           final item = list[index];
           return _buildCategoryItem(
             label: item['labelName'],
-            iconData: getIconByType(item['labelName']), // 假设你用这个方法获取 Icon
+            iconData:
+                CategoryIconMap.getIcon(item['labelName']), // 假设你用这个方法获取 Icon
             onTap: () {
               // 选中逻辑
               Get.back(result: {

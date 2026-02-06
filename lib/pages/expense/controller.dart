@@ -9,6 +9,7 @@ import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/util/cos.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/media_util.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -176,8 +177,64 @@ class ExpensePageController extends GetxController {
     }
   }
 
-  // @override
-  // void onClose() {
-  //   super.onClose();
-  // }
+  void showDeleteDialog(BuildContext context) {
+    PremiumGlassDialog.show(context, title: "确认删除", content: "删除后无法恢复，确定要继续吗？",
+        onConfirm: () {
+      Navigator.pop(context); // 关弹窗
+      deleteExpenseItem(); // 执行删除
+    });
+  }
+
+  void showDatePicker(BuildContext context) {
+    DateTime initial;
+    try {
+      initial = DateTime.parse(expense.value.expenseTime);
+    } catch (e) {
+      initial = DateTime.now();
+    }
+    TDPicker.showDatePicker(context, title: '选择时间', onConfirm: (selected) {
+      var str =
+          "${selected['year']}-${selected['month']}-${selected['day']} ${selected['hour']}:${selected['minute']}:${selected['second']}";
+      modifyExpenseTime(str);
+      Navigator.of(context).pop();
+    },
+        useYear: true,
+        useMonth: true,
+        useDay: true,
+        useHour: true,
+        useMinute: true,
+        useSecond: true,
+        initialDate: [
+          initial.year,
+          initial.month,
+          initial.day,
+          initial.hour,
+          initial.minute,
+          initial.second
+        ]);
+  }
+
+  RxBool isRec = false.obs;
+  void autoCategorizeByLabel(context) {
+    if (isRec.value) return;
+    // 防抖
+    if (expense.value.label.isEmpty) {
+      // TDToast.showFail("请输入标签", context: context);
+      return;
+    }
+    isRec.value = true;
+    HttpRequest.request(Method.get, "/ai/type?sentence=${expense.value.label}",
+        success: (data) {
+      isRec.value = false;
+      data as dynamic;
+      print(data);
+      expense.value.type = data as String;
+      update(["expense_item"]);
+    }, fail: (code, msg) {
+      isRec.value = false;
+      if (context.mounted) {
+        TDToast.showFail(msg, context: context);
+      }
+    });
+  }
 }

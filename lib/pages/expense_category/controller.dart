@@ -23,7 +23,7 @@ class ExpenseTypePickerController extends GetxController {
       List<dynamic> data = value['data'] as List<dynamic>;
       // {id: 1, userId: us745b5117fa584096, typeName: 哈哈哈, type: expense}
       print("data: $data");
-// "labelName": "工资"
+      // "labelName": "工资"
       if (data.isNotEmpty) {
         data.forEach((element) {
           if (element["type"] == "expense") {

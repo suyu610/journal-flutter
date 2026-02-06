@@ -200,25 +200,24 @@ class ChartsPage extends GetView<ChartsController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 标题现在在卡片内部
-          Text(
+          const Text(
             "最近 7 天消费",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16.sp,
+              fontSize: 14,
               color: Colors.black87,
             ),
           ),
-          SizedBox(height: 24.h), // 增加图表与标题的间距
+          // SizedBox(height: 24.h), // 增加图表与标题的间距
           BrnBrokenLine(
-            size: Size(300.w, MediaQuery.of(context).size.height / 5),
+            size: Size(330.w, MediaQuery.of(context).size.height / 5),
             lines: [
               BrnPointsLine(
                 isShowPointText: false,
                 lineWidth: 2.5, // 稍微加粗线条
                 pointRadius: 4,
-
                 isShowPoint: false,
-                isCurve: true,
+                isCurve: false,
                 points: _generateTrendPoints(dailyData),
                 shaderColors: [
                   _chartPalette[2].withOpacity(0.3), // 调整透明度更柔和
@@ -235,25 +234,26 @@ class ChartsPage extends GetView<ChartsController> {
                   isCurve: false,
                   points: _generateBudgetPoints(dailyData.length),
                   shaderColors: [Colors.transparent, Colors.transparent],
-                  lineColor: Colors.redAccent.withOpacity(0.5), // 预算线淡一点
+                  lineColor: Colors.redAccent.withOpacity(1), // 预算线淡一点
                   // isDash: true, // 预算线改为虚线更直观（如果Bruno支持的话，不支持则保持实线）
                 ),
             ],
-            yHintLineOffset: 30, // 调整 Y 轴文字间距
+            isShowYHintLine: false,
+            yHintLineOffset: 0, // 调整 Y 轴文字间距
             hintLineColor: const Color(0xFFEEEEEE), // 辅助线更淡
             isShowXHintLine: true,
-            xyDialLineWidth: 0, // 隐藏坐标轴实线，只保留网格
-            showPointDashLine: true,
+            xyDialLineWidth: 0,
+            xDialColor: Colors.blueGrey[400],
+            showPointDashLine: false,
             isTipWindowAutoDismiss: true,
             isHintLineSolid: false,
-            isShowYDialText: true,
+            isShowYDialText: false,
             xDialValues: _generateXAxisLabels(dailyData),
             xDialMin: 0,
             xDialMax: dailyData.length.toDouble(),
             yDialValues: _generateYAxisLabels(dailyData),
             yDialMin: 0,
             yDialMax: maxVal,
-            //  smooth the line
           ),
         ],
       ),
@@ -276,11 +276,11 @@ class ChartsPage extends GetView<ChartsController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "消费分类",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16.sp,
+                  fontSize: 14,
                   color: Colors.black87,
                 ),
               ),
@@ -383,7 +383,7 @@ class ChartsPage extends GetView<ChartsController> {
         dialText: '${val.ceil()}',
         dialTextStyle: TextStyle(
           fontSize: 10.sp,
-          color: const Color(0xFFCFD8DC), // Y轴文字颜色更淡，减少视觉干扰
+          color: Colors.transparent, // Y轴文字颜色更淡，减少视觉干扰
         ),
         value: val,
       ));

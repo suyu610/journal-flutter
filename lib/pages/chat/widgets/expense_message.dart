@@ -89,7 +89,7 @@ Widget buildExpenseMessage(types.Message message, controller, context) {
                       border: Border.all(
                           color: themeColor.withOpacity(0.3), width: 1)),
                   child: Icon(
-                    getIconByType(item['type']),
+                    CategoryIconMap.getIcon(item['type']),
                     size: 18,
                     color: themeColor, // 亮蓝色图标
                   ),

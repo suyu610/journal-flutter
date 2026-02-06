@@ -32,7 +32,7 @@ Widget ActivityExpenseItem(Expense e, context) {
                 borderRadius: BorderRadius.circular(799.20),
               ),
             ),
-            child: Icon(getIconByType(e.type),
+            child: Icon(CategoryIconMap.getIcon(e.type),
                 size: 19.20, color: const Color.fromARGB(255, 0, 0, 0)),
           ),
           const SizedBox(width: 12),

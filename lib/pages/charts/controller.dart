@@ -254,12 +254,13 @@ class ChartsController extends GetxController {
     String nowDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
 
     try {
+      print("_getCurrentActivityId():${_getCurrentActivityId()}");
       var data = await HttpRequest.request(
         Method.get,
-        "/expense/list/${_getCurrentActivityId()}/date?date=$nowDate",
-        params: {},
+        "/expense/list/${_getCurrentActivityId()}/date",
+        params: {"date": nowDate},
       );
-
+      // print(data);
       // 拿到数据直接转
       if (data != null && data["data"] != null && data["data"] is List) {
         // 【修改点 1】 使用 List<Expense>.from 来强转，这比 map.toList() 更安全
@@ -271,8 +272,6 @@ class ChartsController extends GetxController {
         return result;
       }
 
-      // 【修改点 2】 返回空列表时，必须指定泛型类型 <Expense>[]
-      // 否则默认是 List<dynamic>，这会导致类型不匹配报错
       return <Expense>[];
     } catch (e) {
       print("获取今日账单失败: $e");

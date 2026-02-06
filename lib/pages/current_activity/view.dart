@@ -73,19 +73,13 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         useBorderStyle: true,
         height: 48,
         useDefaultBack: false,
-        titleWidget: Text(
-          "当前账本",
-          style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
-        )
-        // rightBarItems: [
-        //   TDNavBarItem(
-        //       icon: TDIcons.usergroup_add,
-        //       iconSize: 24,
-        //       action: () {
-        //         Get.toNamed(Routers.CreateActivityUrl);
-        //       }),
-        // ],
-        );
+        titleWidget: Obx(() => Text(
+              controller.shouldShowAddButton.value &&
+                      controller.currentActivity.value.activityName.isNotEmpty
+                  ? controller.currentActivity.value.activityName
+                  : "当前活动",
+              style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
+            )));
   }
 
   // 当前账本卡片
@@ -139,7 +133,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   _buildActivityDetail(Activity activity, context) {
     TextStyle activeTextStyle = const TextStyle(
       color: Colors.black,
-      fontSize: 14,
+      fontSize: 12,
       fontFamily: 'SourceCodePro',
       fontWeight: FontWeight.w600,
       height: 0,
@@ -160,7 +154,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("账单列表", style: activeTextStyle),
+                Text("账单列表", style: inactiveTextStyle),
                 GestureDetector(
                   onTap: () {
                     controller.switchExpenseListShowMode();
@@ -189,9 +183,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
               ],
             )),
         Obx(() {
-          // 2. 渲染列表
-          // 注意：这里需要再次包裹一个 Column，因为 Obx 必须返回一个 Widget
-          // 如果不想多一层 Column，你的父级布局需要调整，但通常这样写最安全
           return Column(
             children: controller.expenseDateGroupList
                 .map((e) => _buildSingleDateCard(e, context))
@@ -203,7 +194,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   }
 
   Widget _buildSingleDateCard(ExpenseDateGroup expenseDateGroup, context) {
-    // 1. 提早获取屏幕宽度，避免在循环中重复获取
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
@@ -220,7 +210,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ... (顶部日期栏保持不变) ...
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

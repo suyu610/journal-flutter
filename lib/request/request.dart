@@ -72,6 +72,7 @@ class HttpRequest {
 
       Response response = await dio.request(
         path,
+        // queryParameters: method == Method.get && params != null ? params : null,
         data: params,
         cancelToken: cancelToken,
         onSendProgress: onSendProgress,

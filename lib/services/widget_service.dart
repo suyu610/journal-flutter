@@ -4,6 +4,9 @@ import 'package:home_widget/home_widget.dart';
 class WidgetSyncService {
   static const String appGroupId = 'group.com.uuorb.journal_v2';
   static const String iOSWidgetName = 'ExpenseWidget';
+  static Future<void> setAppGroupId() async {
+    await HomeWidget.setAppGroupId(appGroupId);
+  }
 
   static Future<void> updateWidget({
     required String budgetType, // 'total' 或 'month'

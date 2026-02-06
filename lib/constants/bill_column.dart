@@ -1,7 +1,6 @@
 const List<dynamic> billColumnList = [
   {"labelName": "美食"},
   {"labelName": "服装"},
-  {"labelName": "捐赠"},
   {"labelName": "娱乐"},
   {"labelName": "燃料"},
   {"labelName": "房租"},
@@ -17,8 +16,6 @@ const List<dynamic> billColumnList = [
   {"labelName": "交通"},
   {"labelName": "其他"}
 ];
-
-
 
 const List<dynamic> incomeColumnList = [
   {"labelName": "工资"},

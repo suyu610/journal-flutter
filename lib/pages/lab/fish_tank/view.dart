@@ -172,29 +172,24 @@ class SmartFishComponent extends SpriteComponent with HasGameRef, TapCallbacks {
 }
 
 // --- 2. 强化版气泡组件 (更明显、更动态) ---
+// 替换原有的 BubbleComponent
 class BubbleComponent extends CircleComponent with HasGameRef {
   double speed = 0;
   double wobbleOffset = 0;
   double initialX = 0;
-  double _time = 0; // 自己记录时间
+  double _time = 0;
 
   BubbleComponent() : super(radius: 0);
 
   @override
   Future<void> onLoad() async {
     super.onLoad();
-    // 变大：半径 3 ~ 8
-    radius = 3 + Random().nextDouble() * 5;
-
-    // 变亮
-    paint = Paint()
-      ..color = Colors.white.withOpacity(0.4 + Random().nextDouble() * 0.3)
-      ..style = PaintingStyle.fill;
+    // 稍微调大一点，显得更Q弹
+    radius = 4 + Random().nextDouble() * 6;
 
     initialX = Random().nextDouble() * gameRef.size.x;
-    position = Vector2(initialX, gameRef.size.y + 20); // 从屏幕底下生成
-
-    speed = 50 + Random().nextDouble() * 150; // 速度快慢不一
+    position = Vector2(initialX, gameRef.size.y + 20);
+    speed = 50 + Random().nextDouble() * 100;
     wobbleOffset = Random().nextDouble() * 10;
   }
 
@@ -202,70 +197,131 @@ class BubbleComponent extends CircleComponent with HasGameRef {
   void update(double dt) {
     super.update(dt);
     _time += dt;
-
-    // 向上飞
     position.y -= speed * dt;
-
-    // 左右摇摆
-    position.x = initialX + sin(_time * 3 + wobbleOffset) * (5 + radius);
-
-    // 飞出屏幕上方销毁
+    position.x = initialX + sin(_time * 3 + wobbleOffset) * (10 + radius);
     if (position.y < -50) removeFromParent();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    // 【修改点】使用径向渐变，画出像“玻璃珠”一样的立体感
+    final paint = Paint()
+      ..shader = ui.Gradient.radial(
+        Offset(radius * 0.3, -radius * 0.3), // 高光点偏移
+        radius,
+        [
+          Colors.white.withOpacity(0.9), // 高光中心
+          Colors.white.withOpacity(0.3), // 中间
+          Colors.white.withOpacity(0.1), // 边缘
+        ],
+        [0.0, 0.5, 1.0],
+      );
+
+    // 移动画布中心到圆心，方便画径向渐变
+    canvas.save();
+    canvas.translate(radius, radius);
+    canvas.drawCircle(Offset.zero, radius, paint);
+
+    // 加一个淡淡的描边，增加轮廓
+    canvas.drawCircle(
+        Offset.zero,
+        radius,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = Colors.white.withOpacity(0.2));
+
+    canvas.restore();
+  }
+}
+
+// 替换原来的 SeaweedComponent
+class ImageSeaweedComponent extends SpriteComponent with HasGameRef {
+  final String imagePath;
+
+  ImageSeaweedComponent({required this.imagePath})
+      : super(anchor: Anchor.bottomCenter);
+
+  @override
+  Future<void> onLoad() async {
+    sprite = await gameRef.loadSprite(imagePath); // 比如 'flame/seaweed_01.png'
+
+    // 随机大小，保持比例
+    final double targetHeight =
+        gameRef.size.y * (0.15 + Random().nextDouble() * 0.15);
+    final double ratio = sprite!.originalSize.x / sprite!.originalSize.y;
+    size = Vector2(targetHeight * ratio, targetHeight);
+
+    // 随机位置（底部）
+    position = Vector2(
+        Random().nextDouble() * gameRef.size.x, gameRef.size.y + 10 // 稍微埋进土里一点
+        );
+
+    // 【关键】添加摇摆动画 (模拟水流)
+    // 利用 Flame 的 Effect 系统，让图片像不倒翁一样左右慢摇
+    add(RotateEffect.by(
+      0.05 + Random().nextDouble() * 0.1, // 摇摆弧度（不要太大，不然像断了）
+      EffectController(
+        duration: 2 + Random().nextDouble() * 2, // 摇摆速度（慢一点）
+        reverseDuration: 2 + Random().nextDouble() * 2,
+        infinite: true,
+        curve: Curves.easeInOutSine, // 丝滑曲线
+      ),
+    ));
   }
 }
 
 // --- 3. 动态水草组件 (贝塞尔曲线绘制) ---
+// 替换原有的 SeaweedComponent
 class SeaweedComponent extends PositionComponent with HasGameRef {
   double swayTimingOffset = 0;
   Color color;
-  double _time = 0; // 修复点：自己记录时间，不依赖 gameRef.elapsedTime
+  double _time = 0;
 
   SeaweedComponent({required this.color});
 
   @override
   Future<void> onLoad() async {
     anchor = Anchor.bottomCenter;
-    // 随机高度：屏幕高度的 15% ~ 25%
-    height = gameRef.size.y * (0.15 + Random().nextDouble() * 0.1);
-    // 随机宽度
-    width = 10 + Random().nextDouble() * 10;
-
-    // 位置
-    position = Vector2(Random().nextDouble() * gameRef.size.x, gameRef.size.y);
+    height = gameRef.size.y * (0.2 + Random().nextDouble() * 0.15); // 稍微加高
+    width = 20; // 宽度不再随机，而是固定用于计算粗细
+    position = Vector2(
+        Random().nextDouble() * gameRef.size.x, gameRef.size.y + 10); // 稍微沉底一点
     swayTimingOffset = Random().nextDouble() * 10;
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    _time += dt; // 每帧累加时间
+    _time += dt;
   }
 
   @override
   void render(Canvas canvas) {
-    final path = Path();
-    path.moveTo(width / 2, height); // 底部起点
-
-    // 计算摇摆：顶端摆动幅度大
-    double sway = sin(_time * 2 + swayTimingOffset) * 20;
-
-    // 二次贝塞尔曲线绘制
-    path.quadraticBezierTo(
-        width / 2 + sway / 2, // 控制点 X
-        height / 2, // 控制点 Y
-        width / 2 + sway, // 终点 X
-        0 // 终点 Y (顶部)
-        );
-
-    // 闭合路径形成叶片
-    path.quadraticBezierTo(width / 2 + sway / 2, height / 2, width / 2, height);
-    path.close();
-
     final paint = Paint()
       ..color = color
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.stroke // 关键：改为描边
+      ..strokeWidth = width // 关键：非常粗的线条
+      ..strokeCap = StrokeCap.round; // 关键：圆头，像手指搓出来的
+
+    final path = Path();
+    path.moveTo(width / 2, height);
+
+    double sway = sin(_time * 1.5 + swayTimingOffset) * 5;
+
+    // 使用三阶贝塞尔曲线，线条更顺滑柔软
+    path.cubicTo(
+        width / 2 + sway * 0.3,
+        height * 0.6, // 控制点1
+        width / 2 + sway * 0.8,
+        height * 0.3, // 控制点2
+        width / 2 + sway,
+        0 // 终点
+        );
 
     canvas.drawPath(path, paint);
+
+    // (可选) 为了增加立体感，可以在左侧画一条细一点的高光线，这里暂且省略保持简洁
   }
 }
 
@@ -378,15 +434,17 @@ class FishTankGame extends FlameGame with HasGameRef {
     // }
 
     // 2. 水草 (先加深色的在后排，再加浅色的在前排，制造层次感)
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 4; i++) {
       add(SeaweedComponent(
           color: const Color(0xFF0D4747).withOpacity(0.8) // 深墨绿
           ));
     }
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 3; i++) {
       add(SeaweedComponent(color: const Color(0xFF2D6E58).withOpacity(0.9)));
     }
+
+    // add(ImageSeaweedComponent(imagePath: 'flame/seaweed_01.png'));
 
     // 3. 浮游生物
     for (int i = 0; i < 40; i++) {
@@ -433,15 +491,14 @@ class FishTankFlamePage extends StatelessWidget {
           // 背景层
           Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+              // 模拟摄影棚背景纸的径向渐变
+              gradient: RadialGradient(
+                center: Alignment(0, -0.2), // 光源稍微靠上
+                radius: 1.2,
                 colors: [
-                  Color(0xFF1A5F7A),
-                  Color(0xFF002B45),
-                  Color(0xFF001122),
+                  Color(0xFF2B4C6F), // 中心稍微亮一点的蓝
+                  Color(0xFF101E2E), // 边缘深色
                 ],
-                stops: [0.0, 0.6, 1.0],
               ),
             ),
           ),
