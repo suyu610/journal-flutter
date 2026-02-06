@@ -9,10 +9,12 @@ import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
+import 'package:journal/pages/charts/models/daily_stats.dart';
 import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/lab/receipt/receipt_card.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'dart:convert';
 
 import 'package:tdesign_flutter/tdesign_flutter.dart'; // 必须引入，用于 utf8 解码
@@ -32,6 +34,72 @@ class ChartsController extends GetxController {
       BrnDoughnutDataItem(value: 0, title: "").obs;
   RxBool showTitleWhenSelected = false.obs;
 
+  //////// 日历相关
+  Rx<DateTime> focusedDay = DateTime.now().obs; // 当前日历聚焦的月份
+  Rx<DateTime?> selectedDay = Rx<DateTime?>(null); // 用户选中的具体某天
+  RxMap<String, DailyStats> calendarData = <String, DailyStats>{}.obs; // 日历数据源
+  RxDouble currentMonthExpense = 0.0.obs;
+  RxDouble currentMonthIncome = 0.0.obs;
+
+  void loadCalendarData(DateTime month) async {
+    // 模拟构造 API 请求参数：获取整月的每一天数据
+    String monthStr = DateFormat('yyyy-MM').format(month);
+    String activityId = _getCurrentActivityId();
+
+    try {
+      // 假设你的接口返回如下结构：
+
+      List<DailyStats> data = [
+        DailyStats(date: "2026-02-01", expense: 100.0, income: 0),
+        DailyStats(date: "2026-02-02", expense: 50.0, income: 200),
+        DailyStats(date: "2026-02-03", expense: 30.0, income: 150),
+        DailyStats(date: "2026-02-04", expense: 20.0, income: 100),
+        DailyStats(date: "2026-02-05", expense: 40.0, income: 150),
+      ];
+      // await _getAsync("/charts/calendar/$activityId",
+      // params: {"month": monthStr});
+
+      Map<String, DailyStats> newMap = {};
+      for (var item in data) {
+        String dateKey = item.date; // "2023-10-01"
+        newMap[dateKey] = DailyStats(
+          date: dateKey,
+          expense: double.tryParse(item.expense.toString()) ?? 0,
+          income: double.tryParse(item.income.toString()) ?? 0,
+        );
+      }
+      calendarData.value = newMap; // 更新数据
+      print("calendarData: $calendarData");
+      update(["calendar_chart", "charts"]);
+    } catch (e) {
+      Log().d("加载日历数据失败: $e");
+    }
+  }
+
+  // 3. 页面交互：切换月份
+  void onPageChanged(DateTime focused) {
+    focusedDay.value = focused;
+    loadCalendarData(focused); // 懒加载：滑到哪个月，加载哪个月的数据
+  }
+
+  // 4. 页面交互：点击某一天
+  void onDaySelected(DateTime selected, DateTime focused) {
+    if (!isSameDay(selectedDay.value, selected)) {
+      selectedDay.value = selected;
+      focusedDay.value = focused;
+
+      // TODO: 这里可以弹出一个 BottomSheet 显示当天的详细账单列表
+      // showDailyDetail(selected);
+    }
+  }
+
+  // 辅助：获取某天的统计数据
+  DailyStats? getStatsForDay(DateTime day) {
+    String key = DateFormat('yyyy-MM-dd').format(day);
+    print("key: $key");
+    return calendarData[key];
+  }
+
   // 将原本的回调风格请求转换为 Future，以便使用 await 和 Future.wait
   Future<dynamic> _getAsync(String url, {Map<String, dynamic>? params}) {
     Completer<dynamic> completer = Completer();
@@ -50,6 +118,7 @@ class ChartsController extends GetxController {
 
   // 1. 初始化数据入口
   _initData({bool forceRefreshActivity = false}) async {
+    loadCalendarData(DateTime(2026, 2, 1));
     // 只有在列表为空，或者强制刷新时，才请求 ActivityList
     isAnalyzing.value = false;
     judgeString.value = "";
@@ -257,8 +326,8 @@ class ChartsController extends GetxController {
       print("_getCurrentActivityId():${_getCurrentActivityId()}");
       var data = await HttpRequest.request(
         Method.get,
-        "/expense/list/${_getCurrentActivityId()}/date",
-        params: {"date": nowDate},
+        "/expense/list/${_getCurrentActivityId()}/date?date=$nowDate",
+        params: {},
       );
       // print(data);
       // 拿到数据直接转

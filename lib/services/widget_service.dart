@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:home_widget/home_widget.dart';
 
 // 假设你的 Activity 模型或传入参数包含这些字段
 class WidgetSyncService {
   static const String appGroupId = 'group.com.uuorb.journal_v2';
+  static const String androidAppGroupId = "com.uuorb.journal";
   static const String iOSWidgetName = 'ExpenseWidget';
   static Future<void> setAppGroupId() async {
     await HomeWidget.setAppGroupId(appGroupId);
@@ -17,7 +20,11 @@ class WidgetSyncService {
     required double budgetAmount,
   }) async {
     try {
-      await HomeWidget.setAppGroupId(appGroupId);
+      if (Platform.isAndroid) {
+        await HomeWidget.setAppGroupId(androidAppGroupId);
+      } else {
+        await HomeWidget.setAppGroupId(appGroupId);
+      }
       print("todayExpense: $todayExpense, target: ${budgetAmount / 30}");
       // 1. 写入数据到 UserDefaults
       await Future.wait([
@@ -32,7 +39,7 @@ class WidgetSyncService {
       // 2. 通知系统刷新
       await HomeWidget.updateWidget(
         iOSName: iOSWidgetName,
-        androidName: 'ExpenseWidget',
+        androidName: 'ExpenseWidgetProvider',
       );
 
       print("Widget 同步成功: $budgetType 模式");

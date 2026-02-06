@@ -75,6 +75,7 @@ dependencies:
   in_app_review: ^2.0.0
   rive: ^0.13.2
   showcaseview: ^5.0.1
+  table_calendar: ^3.1.2
 
 dev_dependencies:
   flutter_test:
