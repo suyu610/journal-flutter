@@ -1,53 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:journal/core/app_theme_colors.dart'; // 确保引入你的主题配置
+import 'package:journal/core/app_theme_colors.dart';
 
+/// 按钮的结构样式
 enum JournalButtonType {
-  primary, // 实心背景（主色调）
-  outline, // 轮廓模式（透明背景）
-  ghost, // 纯文字模式（无边框）
+  filled, // 实心填充 (默认)
+  outline, // 描边轮廓
+  ghost, // 纯文字/无边框
+}
+
+/// 按钮的颜色语义主题
+enum JournalButtonTheme {
+  primary, // 品牌主色 (默认)
+  danger, // 危险/错误色
+  secondary, // 次要/中性色 (可选)
 }
 
 class JournalButton extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
   final IconData? icon;
+
+  // 双属性控制
   final JournalButtonType type;
+  final JournalButtonTheme theme;
+
   final double? width;
   final double? height;
   final bool isLoading;
+  final double? borderRadius;
 
   const JournalButton({
     Key? key,
     required this.text,
     required this.onTap,
-    this.type = JournalButtonType.primary, // 默认是实心
+    this.type = JournalButtonType.filled, // 默认为实心
+    this.theme = JournalButtonTheme.primary, // 默认为主色
     this.icon,
     this.width,
     this.height,
     this.isLoading = false,
+    this.borderRadius,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // 自动获取主题色，如果获取不到则使用默认兜底
-    final appColors = Theme.of(context).extension<AppThemeColors>();
-    final primaryColor = appColors?.primaryText ?? Colors.black;
-    final onPrimaryColor =
-        appColors?.cardBackground ?? Colors.white; // 假设实心按钮文字颜色是背景色（反色）
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
-    // 统一尺寸配置
+    // ================= 1. 确定基础色板 (Color Palette) =================
+    Color baseColor; // 基础色 (通常是背景色或主色)
+    Color onBaseColor; // 基础色上的内容色 (通常是反色)
+
+    switch (theme) {
+      case JournalButtonTheme.primary:
+        baseColor = appColors.brandColor;
+        onBaseColor = appColors.onBrandColor;
+        break;
+      case JournalButtonTheme.danger:
+        baseColor = appColors.dangerColor;
+        onBaseColor = Colors.white; // 危险色背景上通常用白色文字
+        break;
+      case JournalButtonTheme.secondary:
+        baseColor = appColors.secondaryText;
+        onBaseColor = Colors.white;
+        break;
+    }
+
+    // ================= 2. 根据 Type 生成最终样式 (Style Logic) =================
+    Color bgColor; // 最终背景色
+    Color fgColor; // 最终前景色 (文字/图标)
+    Color? borderColor; // 最终边框色
+    Color overlayColor; // 水波纹颜色
+
+    switch (type) {
+      // 实心模式：背景有色，文字反白
+      case JournalButtonType.filled:
+        bgColor = baseColor;
+        fgColor = onBaseColor;
+        borderColor = null;
+        overlayColor = onBaseColor.withOpacity(0.1);
+        break;
+
+      // 描边模式：背景透明，文字和边框由主题色决定
+      case JournalButtonType.outline:
+        bgColor = Colors.transparent;
+        fgColor = baseColor; // 文字颜色等于主题色 (红/蓝)
+        // 边框稍微淡一点，更有质感
+        borderColor = baseColor.withOpacity(0.8);
+        overlayColor = baseColor.withOpacity(0.05);
+        break;
+
+      // 幽灵模式：背景透明，无边框，文字由主题色决定
+      case JournalButtonType.ghost:
+        bgColor = Colors.transparent;
+        fgColor = baseColor;
+        borderColor = null;
+        overlayColor = baseColor.withOpacity(0.05);
+        break;
+    }
+
+    // ================= 3. 构建 UI =================
     final buttonHeight = height ?? 52.h;
-    final borderRadius = BorderRadius.circular(12.r);
+    final radius = borderRadius ?? 12.r;
 
-    // 文本样式
     final textStyle = TextStyle(
       fontSize: 16.sp,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.5,
+      color: fgColor,
     );
 
-    // 构建内容（支持 Loading 状态）
     Widget content = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -57,43 +119,17 @@ class JournalButton extends StatelessWidget {
             height: 16.w,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: type == JournalButtonType.primary
-                  ? onPrimaryColor
-                  : primaryColor,
+              color: fgColor,
             ),
           ),
           SizedBox(width: 8.w),
         ] else if (icon != null) ...[
-          Icon(icon, size: 20.sp),
+          Icon(icon, size: 20.sp, color: fgColor),
           SizedBox(width: 8.w),
         ],
         Text(text, style: textStyle),
       ],
     );
-
-    // 1. 实心按钮 (Primary)
-    if (type == JournalButtonType.primary) {
-      return SizedBox(
-        width: width ?? double.infinity,
-        height: buttonHeight,
-        child: ElevatedButton(
-          onPressed: isLoading ? null : onTap,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: onPrimaryColor, // 文字颜色
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: borderRadius),
-            // 按压效果：白色微透
-            overlayColor: Colors.white.withOpacity(0.1),
-          ),
-          child: content,
-        ),
-      );
-    }
-
-    // 2. 轮廓按钮 (Outline)
-    // 3. 幽灵按钮 (Ghost - 逻辑类似，只是无边框)
-    final isOutline = type == JournalButtonType.outline;
 
     return SizedBox(
       width: width ?? double.infinity,
@@ -101,17 +137,15 @@ class JournalButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: isLoading ? null : onTap,
         style: OutlinedButton.styleFrom(
-          // 文字和图标颜色
-          foregroundColor: primaryColor,
-          backgroundColor: Colors.transparent,
+          foregroundColor: fgColor,
+          backgroundColor: bgColor,
           elevation: 0,
-          // 边框设置
-          side: isOutline
-              ? BorderSide(color: primaryColor.withOpacity(0.8), width: 1.2)
+          side: borderColor != null
+              ? BorderSide(color: borderColor, width: 1.2)
               : BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: borderRadius),
-          // 按压水波纹：主色调微透
-          overlayColor: primaryColor.withOpacity(0.05),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(radius)),
+          overlayColor: overlayColor,
         ),
         child: content,
       ),

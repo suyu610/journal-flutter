@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:journal/components/bruno/bruno.dart'; // 假设这是你的引用
+
 import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
@@ -46,9 +46,8 @@ class ChartsController extends GetxController {
   RxList<Activity> allActivityList = RxList<Activity>.empty(growable: true);
   Rx<Activity> currentActivity = Rx<Activity>(Activity.empty());
 
-  Rx<BrnDoughnutDataItem> selectedItem =
-      BrnDoughnutDataItem(value: 0, title: "").obs;
   RxBool showTitleWhenSelected = false.obs;
+  RxBool trendShowLabels = false.obs;
 
   //////// 日历相关
   Rx<DateTime> focusedDay = DateTime.now().obs; // 当前日历聚焦的月份
@@ -297,9 +296,8 @@ class ChartsController extends GetxController {
     return layoutController.user.value.currentActivityId ?? "";
   }
 
-  selectItem(BrnDoughnutDataItem? item) {
-    if (item == null) return;
-    selectedItem.value = item;
+  void switchTrendShowLabels() {
+    trendShowLabels.value = !trendShowLabels.value;
     update(["charts"]);
   }
 

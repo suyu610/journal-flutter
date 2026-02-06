@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/config/cos_config.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/request/request.dart';
-import 'package:journal/util/toast_util.dart';
+
 import 'package:tencentcloud_cos_sdk_plugin/cos.dart';
 import 'package:tencentcloud_cos_sdk_plugin/cos_transfer_manger.dart';
 import 'package:tencentcloud_cos_sdk_plugin/fetch_credentials.dart';
@@ -50,7 +50,7 @@ class TencentCosService {
 
     // 1. 显示 Loading (如果传入了 Context)
     if (context != null && context.mounted) {
-      BrnLoadingDialog.show(context, content: "上传中", useRootNavigator: true);
+      JournalToast.showLoading(context, text: "上传中");
     }
 
     // try {
@@ -63,7 +63,7 @@ class TencentCosService {
     // 3. 定义回调监听
     ResultListener listener = ResultListener((header, result) {
       // --- 成功 ---
-      if (context != null) ToastUtil.hideLoading();
+      if (context != null) JournalToast.dismiss();
 
       if (result != null && result.accessUrl != null) {
         // 替换域名为 CDN
@@ -77,8 +77,8 @@ class TencentCosService {
     }, (clientException, serviceException) {
       // --- 失败 ---
       if (context != null) {
-        ToastUtil.hideLoading();
-        BrnToast.show("上传失败", context);
+        JournalToast.dismiss();
+        JournalToast.showError(context, "上传失败");
       }
       Log().d("ClientErr: $clientException, ServiceErr: $serviceException");
       completer.complete(null);
@@ -87,12 +87,6 @@ class TencentCosService {
     // 4. 执行上传
     await transferManager.upload(CosConfig.bucket, cosPath,
         filePath: filePath, resultListener: listener);
-    // } catch (e) {
-    //   if (context != null) ToastUtil.hideLoading();
-    //   e.printInfo();
-    //   Log().d("Upload Exception: ${e..toString()}");
-    //   completer.complete(null);
-    // }
 
     return completer.future;
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_button.dart';
+
 import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
@@ -126,10 +128,14 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         // 创建/保存按钮
         if (controller.isOwner.value ||
             controller.activity.value.activityId == "")
-          _buildMainButton(
+          // _buildMainButton(
+          //   text: controller.activity.value.activityId == "" ? "创建" : "保存",
+          //   onTap: () => controller.createActivity(context),
+          //   appColors: appColors,
+          // ),
+          JournalButton(
             text: controller.activity.value.activityId == "" ? "创建" : "保存",
             onTap: () => controller.createActivity(context),
-            appColors: appColors,
           ),
 
         SizedBox(height: 16.h),
@@ -137,8 +143,9 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         // 删除按钮 (Owner)
         if (controller.activity.value.activityId != "" &&
             controller.isOwner.value)
-          _buildDestructiveButton(
+          JournalButton(
             text: "删除账本",
+            type: JournalButtonType.outline,
             onTap: () {
               PremiumGlassDialog.show(context,
                   title: "确认删除此账本？",
@@ -158,16 +165,17 @@ class CreateActivityPage extends GetView<CreateActivityController> {
                 }
               });
             },
-            appColors: appColors,
+            theme: JournalButtonTheme.danger,
           ),
 
         // 退出按钮 (Non-Owner)
         if (controller.activity.value.activityId != "" &&
             !controller.isOwner.value)
-          _buildDestructiveButton(
+          JournalButton(
             text: "退出账本",
+            type: JournalButtonType.outline,
+            theme: JournalButtonTheme.danger,
             onTap: () => controller.exitActivity(context),
-            appColors: appColors,
           ),
       ],
     );
@@ -340,64 +348,5 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         height: 1,
         thickness: 0.5,
         color: appColors.primaryText.withOpacity(0.05));
-  }
-
-  // 5. 主按钮
-  Widget _buildMainButton({
-    required String text,
-    required VoidCallback onTap,
-    required AppThemeColors appColors,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52.h,
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: appColors.mainButtonBg,
-          elevation: 5,
-          shadowColor: appColors.mainButtonBg.withOpacity(0.3),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
-            color: appColors.mainButtonIcon,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 6. 危险/次要按钮 (空心/文字)
-  Widget _buildDestructiveButton({
-    required String text,
-    required VoidCallback onTap,
-    required AppThemeColors appColors,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52.h,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.redAccent, width: 1),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-          backgroundColor: Colors.transparent,
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.redAccent,
-          ),
-        ),
-      ),
-    );
   }
 }

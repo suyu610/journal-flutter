@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
@@ -49,7 +49,7 @@ class JoinActivityController extends GetxController {
       searchActivity(context);
     } else {
       // 状态2：已有数据 -> 执行加入
-      joinActivity();
+      joinActivity(context);
     }
   }
 
@@ -106,13 +106,13 @@ class JoinActivityController extends GetxController {
     );
   }
 
-  void joinActivity() {
+  void joinActivity(context) {
     HttpRequest.request(
       Method.post,
       "/activity/join/${regInviteId(id.value)}",
       success: (data) {
         eventBus.fire(const NeedRefreshData(refreshActivityList: true));
-        BrnToast.show("加入成功", Get.context!);
+        JournalToast.showSuccess(context, "加入成功");
         Get.back(result: true);
       },
       fail: (code, msg) {

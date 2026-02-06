@@ -2,28 +2,39 @@ import 'package:flutter/material.dart';
 
 // 自定义颜色扩展类
 class AppThemeColors extends ThemeExtension<AppThemeColors> {
-  final Color primaryText; // 主要文字（深色）
-  final Color secondaryText; // 次要文字（浅灰）
+  // === 1. 你原有的基础字段 ===
+  final Color primaryText; // 主要文字
+  final Color secondaryText; // 次要文字
   final Color cardBackground; // 卡片背景
   final Color chartLine; // 图表线条颜色
   final List<Color> chartPalette; // 饼图色盘
   final Color navActive; // 底部导航选中色
-  // --- 新增字段 ---
   final Color navInactive; // 底部导航未选中色
   final Color mainButtonBg; // 中间大按钮背景
   final Color mainButtonIcon; // 中间大按钮图标色
 
+  // === 2. 新增的语义化字段 (用于 JournalButton) ===
+  final Color brandColor; // 品牌主色 (用于 Primary 实心按钮背景)
+  final Color onBrandColor; // 品牌色上的文字颜色 (通常是反色)
+  final Color dangerColor; // 危险色 (用于删除、退出按钮)
+  final Color outlineBorder; // 默认边框颜色 (非激活状态)
+
   const AppThemeColors({
+    // 原有
     required this.primaryText,
     required this.secondaryText,
     required this.cardBackground,
     required this.chartLine,
     required this.chartPalette,
     required this.navActive,
-    // --- 新增构造参数 ---
     required this.navInactive,
     required this.mainButtonBg,
-    required this.mainButtonIcon, // 中间大按钮图标色
+    required this.mainButtonIcon,
+    // 新增
+    required this.brandColor,
+    required this.onBrandColor,
+    required this.dangerColor,
+    required this.outlineBorder,
   });
 
   @override
@@ -34,10 +45,14 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? chartLine,
     List<Color>? chartPalette,
     Color? navActive,
-    // --- 新增参数 ---
     Color? navInactive,
     Color? mainButtonBg,
-    Color? mainButtonIcon, // 中间大按钮图标色
+    Color? mainButtonIcon,
+    // 新增
+    Color? brandColor,
+    Color? onBrandColor,
+    Color? dangerColor,
+    Color? outlineBorder,
   }) {
     return AppThemeColors(
       primaryText: primaryText ?? this.primaryText,
@@ -46,10 +61,14 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       chartLine: chartLine ?? this.chartLine,
       chartPalette: chartPalette ?? this.chartPalette,
       navActive: navActive ?? this.navActive,
-      // --- 新增参数 ---
       navInactive: navInactive ?? this.navInactive,
       mainButtonBg: mainButtonBg ?? this.mainButtonBg,
-      mainButtonIcon: mainButtonIcon ?? this.mainButtonIcon, // 中间大按钮图标色
+      mainButtonIcon: mainButtonIcon ?? this.mainButtonIcon,
+      // 新增
+      brandColor: brandColor ?? this.brandColor,
+      onBrandColor: onBrandColor ?? this.onBrandColor,
+      dangerColor: dangerColor ?? this.dangerColor,
+      outlineBorder: outlineBorder ?? this.outlineBorder,
     );
   }
 
@@ -62,14 +81,17 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       secondaryText: Color.lerp(secondaryText, other.secondaryText, t)!,
       cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,
       chartLine: Color.lerp(chartLine, other.chartLine, t)!,
-      // 列表颜色插值比较复杂，这里简化处理，直接取其一
+      // 列表插值简化处理
       chartPalette: t < 0.5 ? chartPalette : other.chartPalette,
       navActive: Color.lerp(navActive, other.navActive, t)!,
-      // --- 新增参数 ---
       navInactive: Color.lerp(navInactive, other.navInactive, t)!,
       mainButtonBg: Color.lerp(mainButtonBg, other.mainButtonBg, t)!,
-      mainButtonIcon:
-          Color.lerp(mainButtonIcon, other.mainButtonIcon, t)!, // 中间大按钮图标色
+      mainButtonIcon: Color.lerp(mainButtonIcon, other.mainButtonIcon, t)!,
+      // 新增
+      brandColor: Color.lerp(brandColor, other.brandColor, t)!,
+      onBrandColor: Color.lerp(onBrandColor, other.onBrandColor, t)!,
+      dangerColor: Color.lerp(dangerColor, other.dangerColor, t)!,
+      outlineBorder: Color.lerp(outlineBorder, other.outlineBorder, t)!,
     );
   }
 }

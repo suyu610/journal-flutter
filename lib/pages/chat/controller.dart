@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
 
@@ -447,11 +447,11 @@ class ChatController extends GetxController {
   void tts(String text, BuildContext context) {
     PremiumGlassDialog.show(context, title: "播放语音？", onConfirm: () {
       Get.back();
-      BrnLoadingDialog.show(context);
+      JournalToast.showLoading(context);
       HttpRequest.request(Method.get,
           "/ai/tts?sentence=$text&activityId=${activity.value.activityId}",
           fail: (code, msg) {}, success: (data) async {
-        BrnLoadingDialog.dismiss(context);
+        JournalToast.dismiss();
         final player = AudioPlayer();
         // 1. 解码 Base64
         Uint8List bytes = base64Decode(data as String);

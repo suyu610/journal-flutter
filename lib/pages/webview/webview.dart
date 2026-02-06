@@ -1,13 +1,12 @@
 // ignore_for_file: depend_on_referenced_packages, use_key_in_widget_constructors, must_be_immutable, no_leading_underscores_for_local_identifiers
 
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_nav_bar.dart';
+
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewPage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     var url = Get.arguments['url'];
@@ -34,7 +33,7 @@ class WebviewPage extends StatelessWidget {
     controller.loadRequest(Uri.parse(url));
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: BrnAppBar(title: title),
+      appBar: JournalNavBar(title: title),
       body: GestureDetector(
           onLongPressStart: (LongPressStartDetails longPress) async {
             String imgUrl =

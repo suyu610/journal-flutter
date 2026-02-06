@@ -30,18 +30,15 @@ Widget buildEmptyItem({
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // 可以加一个装饰性图标，提升视觉层次
-              Icon(
-                Icons.post_add_rounded,
-                size: 48.sp,
-                color: appColors.secondaryText.withOpacity(0.3),
-              ),
+              Icon(Icons.bar_chart_rounded,
+                  size: 60.sp, color: appColors.secondaryText.withOpacity(0.3)),
               SizedBox(height: 16.h),
 
               Text(
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
-                  fontSize: 16.sp,
+                  fontSize: 14,
                   color: appColors.primaryText, // 适配文字颜色
                 ),
               ),

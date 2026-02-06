@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/src/components/navbar/brn_appbar.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 import 'package:journal/pages/reminder_settings/controller.dart';
 
 class ReminderSettingsPage extends GetView<ReminderSettingsController> {
@@ -11,10 +11,7 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: BrnAppBar(
-        title: "记账提醒",
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-      ),
+      appBar: const JournalNavBar(title: "记账提醒"),
       body: SafeArea(
         child: _buildView(context),
       ),

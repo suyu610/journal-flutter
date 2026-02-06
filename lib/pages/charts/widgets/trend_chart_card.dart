@@ -1,7 +1,8 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_switch.dart';
 import 'package:journal/core/app_theme_colors.dart';
 import '../controller.dart';
 import 'chart_card_container.dart';
@@ -11,7 +12,6 @@ class TrendChartCard extends GetView<ChartsController> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. 获取主题配置
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return GetBuilder<ChartsController>(
@@ -23,37 +23,44 @@ class TrendChartCard extends GetView<ChartsController> {
         final maxVal = _calculateMaxYAxis(dailyData);
         if (maxVal <= 0) return const SizedBox.shrink();
 
+        // 获取开关状态
+        final bool showLabels = controller.trendShowLabels.value;
+
         return ChartCardContainer(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "最近 7 天消费",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: appColors.primaryText, // 适配标题色
+              // 标题与开关
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "最近 7 天消费",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14.sp,
+                      color: appColors.primaryText,
+                    ),
+                  ),
+                  JournalSwitch(
+                    value: controller.trendShowLabels.value,
+                    onChanged: (v) => controller.switchTrendShowLabels(),
+                    height: 20,
+                    width: 40,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              // 图表主体
+              AspectRatio(
+                aspectRatio: 1.70,
+                child: LineChart(
+                  _mainData(dailyData, maxVal, appColors, showLabels),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
                 ),
               ),
-              BrnBrokenLine(
-                xDialMax: dailyData.length.toDouble(),
-                xDialMin: 0,
-                yDialMin: 0,
-                yDialMax: maxVal,
-                size: Size(330.w, 180.h),
-                yDialValues: _generateYAxisLabels(dailyData, maxVal),
-                xDialValues: _generateXAxisLabels(dailyData, appColors),
-                xDialColor: appColors.secondaryText.withOpacity(0.4),
-                hintLineColor: appColors.secondaryText.withOpacity(0.2),
-                isShowYDialText: false,
-                isTipWindowAutoDismiss: true,
-                lines: [
-                  // 1. 实际消费曲线
-                  _buildLineData(dailyData, appColors),
-                  // 2. 预算参考线 (修复：加回此逻辑)
-                  _buildBudgetLine(dailyData, appColors, context),
-                ],
-              )
             ],
           ),
         );
@@ -61,86 +68,193 @@ class TrendChartCard extends GetView<ChartsController> {
     );
   }
 
-  // 构建消费曲线 (实线，深色)
-  BrnPointsLine _buildLineData(
-      List<ChartDataModel> data, AppThemeColors appColors) {
-    return BrnPointsLine(
-        isCurve: true,
-        // 使用主题色盘的主色
-        lineColor: appColors.chartPalette[0],
-        points: data.map((e) {
-          return BrnPointData(
-            x: data.indexOf(e).toDouble(),
-            y: e.doubleValue,
-            lineTouchData: BrnLineTouchData(
-              tipWindowSize: const Size(0, 0),
-            ),
-          );
-        }).toList(),
-        isShowPointText: false);
-  }
+  // 构建图表核心数据配置
+  LineChartData _mainData(List<dynamic> data, double maxVal,
+      AppThemeColors appColors, bool showLabels) {
+    final budgetColor = (appColors.dangerColor).withOpacity(0.5);
+    final mainColor = appColors.chartPalette.isNotEmpty
+        ? appColors.chartPalette[0]
+        : appColors.primaryText;
 
-  // 构建预算线 (建议做成淡色或虚线)
-  BrnPointsLine _buildBudgetLine(List<ChartDataModel> data,
-      AppThemeColors appColors, BuildContext context) {
-    return BrnPointsLine(
-      lineColor: Colors.red.withOpacity(0.4),
-      points: List.generate(data.length, (index) {
-        return BrnPointData(
-          x: index.toDouble(),
-          y: controller.dailyBudgetValue,
-          lineTouchData: BrnLineTouchData(
-            tipWindowSize: const Size(0, 0),
+    // 1. 定义消费曲线的数据 (为了后面引用，先提取出来)
+    final consumptionLineBarData = LineChartBarData(
+      spots: data.asMap().entries.map((e) {
+        return FlSpot(e.key.toDouble(), e.value.doubleValue);
+      }).toList(),
+      isCurved: true,
+      curveSmoothness: 0.3,
+      color: mainColor,
+      barWidth: 3,
+      isStrokeCapRound: true,
+
+      // === 关键修改：空心点配置 ===
+      dotData: FlDotData(
+        show: true, // 始终显示点
+        getDotPainter: (spot, percent, barData, index) {
+          return FlDotCirclePainter(
+            radius: showLabels ? 2 : 0, // 点的大小
+            color: appColors.cardBackground, // 核心：内部颜色=背景色=空心效果
+            strokeWidth: showLabels ? 2.5 : 0, // 边框粗细
+            strokeColor: mainColor, // 边框颜色
+          );
+        },
+      ),
+
+      belowBarData: BarAreaData(
+        show: true,
+        gradient: LinearGradient(
+          colors: [
+            mainColor.withOpacity(0.15),
+            mainColor.withOpacity(0.0),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+    );
+
+    // 2. 生成强制显示的 Tooltip 指示器 (当开关打开时)
+    List<ShowingTooltipIndicators> showingTooltipIndicators = [];
+    if (showLabels) {
+      showingTooltipIndicators = data.asMap().entries.map((entry) {
+        return ShowingTooltipIndicators([
+          LineBarSpot(
+            consumptionLineBarData,
+            1,
+            consumptionLineBarData.spots[entry.key],
           ),
-        );
-      }),
-      isShowPointText: false,
+        ]);
+      }).toList();
+    }
+
+    return LineChartData(
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: false,
+        horizontalInterval: maxVal / 5,
+        getDrawingHorizontalLine: (value) {
+          return FlLine(
+            color: appColors.secondaryText.withOpacity(0.1),
+            strokeWidth: 1,
+          );
+        },
+      ),
+      titlesData: FlTitlesData(
+        show: true,
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 30,
+            interval: 1,
+            getTitlesWidget: (value, meta) {
+              final index = value.toInt();
+              if (index >= 0 && index < data.length) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    data[index].name,
+                    style: TextStyle(
+                      color: appColors.secondaryText,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 10.sp,
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox();
+            },
+          ),
+        ),
+      ),
+      borderData: FlBorderData(show: false),
+      minX: 0,
+      maxX: (data.length - 1).toDouble(),
+      minY: 0,
+      maxY: maxVal,
+      showingTooltipIndicators: showingTooltipIndicators,
+      lineTouchData: LineTouchData(
+        // 如果开启了显示标签，禁用触摸交互，避免冲突（或者你可以保留，看需求）
+        handleBuiltInTouches: !showLabels,
+
+        getTouchedSpotIndicator:
+            (LineChartBarData barData, List<int> spotIndexes) {
+          return spotIndexes.map((spotIndex) {
+            return TouchedSpotIndicatorData(
+              FlLine(
+                color: appColors.primaryText.withOpacity(0.2),
+                strokeWidth: 2,
+                dashArray: [5, 5],
+              ),
+              const FlDotData(show: false), // 触摸时不额外画大圆点了，因为我们有点了
+            );
+          }).toList();
+        },
+
+        touchTooltipData: LineTouchTooltipData(
+          // 技巧：如果开关打开，背景透明；如果开关关闭(手按)，背景深色
+          getTooltipColor: (_) => showLabels
+              ? Colors.transparent
+              : appColors.primaryText.withOpacity(0.9),
+
+          tooltipPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          // 调整 margin 让文字离点近一点
+          tooltipMargin: showLabels ? 2 : 16,
+
+          getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+            return touchedBarSpots.map((barSpot) {
+              final flSpot = barSpot;
+              if (barSpot.barIndex == 0) return null;
+
+              final textColor =
+                  showLabels ? appColors.primaryText : appColors.cardBackground;
+
+              return LineTooltipItem(
+                '¥${flSpot.y.toStringAsFixed(1)}', // 这里的 1 可以改为 0 去掉小数位
+                TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'SourceCodePro', // 保持数字字体风格
+                  fontSize: 12.sp,
+                ),
+              );
+            }).toList();
+          },
+        ),
+      ),
+      lineBarsData: [
+        // A. 预算线 (index 0)
+        LineChartBarData(
+          spots: List.generate(data.length, (index) {
+            return FlSpot(index.toDouble(), controller.dailyBudgetValue);
+          }),
+          isCurved: false,
+          color: budgetColor,
+          barWidth: 2,
+          isStrokeCapRound: true,
+          dashArray: [5, 5],
+          dotData: const FlDotData(show: false),
+        ),
+
+        // B. 消费线 (index 1) - 使用上面定义好的变量
+        consumptionLineBarData,
+      ],
     );
   }
 
-  // 生成 X 轴标签
-  List<BrnDialItem> _generateXAxisLabels(
-      List<ChartDataModel> data, AppThemeColors appColors) {
-    return data.asMap().entries.map((entry) {
-      return BrnDialItem(
-        dialText: entry.value.name,
-        dialTextStyle: TextStyle(
-          fontSize: 10.sp,
-          color: appColors.secondaryText, // 适配轴文字颜色
-        ),
-        value: entry.key.toDouble(),
-      );
-    }).toList();
-  }
-
-  // 生成 Y 轴刻度
-  List<BrnDialItem> _generateYAxisLabels(
-      List<ChartDataModel> data, double maxVal) {
-    double minVal = 0;
-    double step = maxVal / 5;
-    if (step == 0) step = 100;
-
-    List<BrnDialItem> yDialValues = [];
-    for (int i = 0; i <= 5; i++) {
-      double val = minVal + i * step;
-      yDialValues.add(BrnDialItem(
-        dialText: '${val.ceil()}',
-        dialTextStyle: const TextStyle(color: Colors.transparent),
-        value: val,
-      ));
-    }
-    return yDialValues;
-  }
-
-  double _calculateMaxYAxis(List<ChartDataModel> data) {
+  // 辅助方法保持不变...
+  double _calculateMaxYAxis(List<dynamic> data) {
     if (data.isEmpty) return 0;
-    // 同时也考虑预算值，防止预算很高但消费很低时，预算线画在图表外面
     double maxDataVal =
         data.map((e) => e.doubleValue).reduce((a, b) => a > b ? a : b);
     double maxVal = maxDataVal > controller.dailyBudgetValue
         ? maxDataVal
         : controller.dailyBudgetValue;
-
-    return maxVal * 1.2; // 留出 20% 顶部空间
+    if (maxVal == 0) return 100;
+    return maxVal * 1.2;
   }
 }

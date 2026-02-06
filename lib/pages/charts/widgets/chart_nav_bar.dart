@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/bruno.dart';
 import 'package:journal/components/journal_nav_bar.dart';
+import 'package:journal/components/journal_pop_menu.dart';
 import 'package:journal/core/app_theme_colors.dart';
 import '../controller.dart';
 
@@ -70,23 +70,20 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   void _showActivityPicker(BuildContext context) {
-    // BrnPopupListWindow 是第三方组件，样式可能受限，
-    // 但通常它会跟随 Theme 的 cardColor，我们在 App.dart 里已经全局配置了 cardColor
-    BrnPopupListWindow.showPopListWindow(
+    JournalPopMenu.show(
       context,
-      actionKey,
-      offset: 10,
-      data: controller.allActivityList.isEmpty
+      width: 180, // 可以指定宽度，也可以默认
+      items: controller.allActivityList.isEmpty
           ? ["加载中"]
           : controller.allActivityList.map((e) => e.activityName).toList(),
-      onItemClick: (index, name) {
+      // 传入当前选中的名字，会自动打勾
+      currentSelect: controller.currentActivity.value.activityName,
+      onSelected: (index, name) {
         if (controller.allActivityList.isNotEmpty) {
           controller.currentActivity.value = controller.allActivityList[index];
           controller.onInit();
           controller.update(['charts']);
         }
-        Get.back();
-        return true;
       },
     );
   }

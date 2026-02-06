@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/src/components/toast/brn_toast.dart';
 import 'package:journal/components/journal_date_picker.dart';
 import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
@@ -172,7 +171,9 @@ class ExpensePageController extends GetxController {
       }
     } catch (e) {
       Log().d("上传失败: $e");
-      BrnToast.show("上传失败", Get.context!);
+      if (context.mounted) {
+        JournalToast.showError(context, "上传失败");
+      }
     } finally {
       JournalToast.dismiss();
     }

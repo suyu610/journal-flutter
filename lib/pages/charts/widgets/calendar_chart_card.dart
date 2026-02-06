@@ -14,149 +14,186 @@ class CalendarChartCard extends GetView<ChartsController> {
   @override
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 不需要单独判断 isDark，完全依赖 appColors
 
     return ChartCardContainer(
-      padding: EdgeInsets.zero, // 移除容器默认内边距
+      padding: EdgeInsets.zero,
       child: GetBuilder<ChartsController>(
-          id: 'calendar_chart',
-          builder: (_) {
-            return Column(
-              children: [
-                _buildHeader(appColors),
-                Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 0.h),
-                  child: TableCalendar(
-                    rowHeight: 65,
-                    availableGestures: AvailableGestures.horizontalSwipe,
-                    locale: 'zh_CN',
-                    firstDay: DateTime.utc(2020, 1, 1),
-                    lastDay: DateTime.utc(2030, 12, 31),
-                    focusedDay: controller.focusedDay.value,
-                    currentDay: DateTime.now(),
-                    headerVisible: false, // 隐藏默认头部，使用自定义
-                    calendarFormat: CalendarFormat.month,
-                    startingDayOfWeek: StartingDayOfWeek.monday,
-                    calendarBuilders: CalendarBuilders(
-                      defaultBuilder: (context, day, focusedDay) => _buildCell(
-                          context,
-                          day,
-                          appColors,
-                          isDark,
-                          controller.dailyBudgetValue),
-                      todayBuilder: (context, day, focusedDay) => _buildCell(
-                          context,
-                          day,
-                          appColors,
-                          isDark,
-                          controller.dailyBudgetValue),
-                      outsideBuilder: (context, day, focusedDay) =>
-                          const SizedBox(),
-                      disabledBuilder: (context, day, focusedDay) =>
-                          const SizedBox(),
-                    ),
-                    onPageChanged: (focusedDay) =>
-                        controller.onPageChanged(focusedDay),
+        id: 'calendar_chart',
+        builder: (_) {
+          return Column(
+            children: [
+              _buildHeader(appColors),
+              Padding(
+                padding: EdgeInsets.fromLTRB(10.w, 0, 10.w, 16.h),
+                child: TableCalendar(
+                  rowHeight: 58,
+                  availableGestures: AvailableGestures.horizontalSwipe,
+                  locale: 'zh_CN',
+                  firstDay: DateTime.utc(2020, 1, 1),
+                  lastDay: DateTime.utc(2030, 12, 31),
+                  focusedDay: controller.focusedDay.value,
+                  currentDay: DateTime.now(),
+                  headerVisible: false,
+                  calendarFormat: CalendarFormat.month,
+                  startingDayOfWeek: StartingDayOfWeek.monday,
+
+                  // 星期栏样式
+                  daysOfWeekHeight: 30.h,
+                  daysOfWeekStyle: DaysOfWeekStyle(
+                    weekdayStyle: TextStyle(
+                        color: appColors.secondaryText,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500),
+                    weekendStyle: TextStyle(
+                        color: appColors.secondaryText,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500),
                   ),
+
+                  calendarBuilders: CalendarBuilders(
+                    // 1. 默认格子
+                    defaultBuilder: (context, day, focusedDay) => _buildCell(
+                        context, day, appColors, controller.dailyBudgetValue,
+                        isToday: false),
+
+                    // 2. 今天 (高亮)
+                    todayBuilder: (context, day, focusedDay) => _buildCell(
+                        context, day, appColors, controller.dailyBudgetValue,
+                        isToday: true),
+
+                    // 3. 禁用/范围外
+                    outsideBuilder: (context, day, focusedDay) =>
+                        const SizedBox(),
+                    disabledBuilder: (context, day, focusedDay) =>
+                        const SizedBox(),
+                  ),
+                  onPageChanged: (focusedDay) =>
+                      controller.onPageChanged(focusedDay),
                 ),
-              ],
-            );
-          }),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  // 头部月份切换
+  // 头部月份
   Widget _buildHeader(AppThemeColors appColors) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Obx(() => Text(
-                DateFormat('yyyy年MM月').format(controller.focusedDay.value),
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: appColors.primaryText,
-                ),
-              )),
+          Row(
+            children: [
+              // 这里的日期格式化可以根据喜好调整
+              Obx(() => Text(
+                    DateFormat('yyyy年MM月').format(controller.focusedDay.value),
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: appColors.primaryText,
+                    ),
+                  )),
+            ],
+          ),
+          // 这里可以放一个“回到今天”的小按钮，或者留白
         ],
       ),
     );
   }
 
-  // 自定义日期格子
-  Widget _buildCell(BuildContext context, DateTime day,
-      AppThemeColors appColors, bool isDark, num? budget) {
+  // 核心：构建日期格子
+  Widget _buildCell(
+      BuildContext context, DateTime day, AppThemeColors appColors, num? budget,
+      {required bool isToday}) {
     DailyStats? stats = controller.getStatsForDay(day);
-    bool hasData = stats != null && (stats.income > 0 || stats.expense > 0);
-    // Color? bgColor = isDark ? const Color(0xFF5D4037) : const Color(0xFFFFFAF0);
-    Color? bgColor;
-    if (hasData) {
-      // bool hasExpense = stats.expense > 0;
-      // bool hasIncome = stats.income > 0;
-      bool isBudgetExceeded = budget != null && stats.expense > budget;
-      bgColor = isDark ? const Color(0xFF5D4037) : const Color(0xFFFFFAF0);
-      if (isBudgetExceeded) {
-        bgColor = isDark
-            ? const Color(0xFFE53935).withOpacity(0.2)
-            : const Color(0xFFFFF5F5);
-      }
+    bool hasIncome = stats != null && stats.income > 0;
+    bool hasExpense = stats != null && stats.expense > 0;
 
-      // if (hasExpense && hasIncome) {
-      // } else if (hasExpense) {
-      //   bgColor = isDark
-      //       ? const Color(0xFFE53935).withOpacity(0.2)
-      //       : const Color(0xFFFFF5F5);
-      // } else {
-      //   bgColor = isDark
-      //       ? const Color(0xFF1E88E5).withOpacity(0.2)
-      //       : const Color(0xFFF0FAFF);
-      // }
+    // 判断是否超支
+    bool isBudgetExceeded =
+        budget != null && hasExpense && stats.expense > budget;
+
+    // 背景色逻辑
+    Color bgColor = Colors.transparent;
+    BoxDecoration? decoration;
+
+    if (isToday) {
+      decoration = BoxDecoration(
+        border: Border.all(
+            color: appColors.dangerColor.withOpacity(0.3), width: 1.w),
+        borderRadius: BorderRadius.circular(10.r),
+      );
+    } else if (hasExpense || hasIncome) {
+      bgColor = isBudgetExceeded
+          ? (appColors.dangerColor).withOpacity(0.08)
+          : appColors.secondaryText.withOpacity(0.05);
+
+      decoration = BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(10.r), // 方圆形 (Squaricle)
+      );
     }
 
-    // 字体颜色
-    final textExpense =
-        isDark ? const Color(0xFFFF8A80) : const Color(0xFFFF6B6B);
-    final textIncome =
-        isDark ? const Color(0xFF82B1FF) : const Color(0xFF4DA9FF);
+    // 文字颜色逻辑
+    Color dayTextColor = appColors.primaryText;
+
+    // 金额颜色
+    final textExpense = appColors.primaryText; // 支出用主色，干净
+    // 如果想要支出显示红色：final textExpense = appColors.dangerColor ?? Colors.red;
+
+    const textIncome = Color(0xFF00A870); // 收入用绿色，保持固定
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      margin: const EdgeInsets.only(top: 6, bottom: 6),
+      margin: EdgeInsets.all(3.w), // 单元格间距
+      decoration: decoration,
       width: 40,
-      decoration: BoxDecoration(
-        color: bgColor ?? Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          const SizedBox(
+            height: 4,
+          ),
           Text(
             '${day.day}',
             style: TextStyle(
-              fontSize: 12,
-              color: appColors.primaryText,
+              fontSize: 14,
+              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+              color: dayTextColor,
             ),
           ),
-          if (hasData) ...[
-            Text(
-              "+${_formatNum(stats.income)}",
-              style: TextStyle(
-                  fontSize: 8, color: textIncome, fontWeight: FontWeight.w500),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              "-${_formatNum(stats.expense)}",
-              style: TextStyle(
-                  fontSize: 8, color: textExpense, fontWeight: FontWeight.w500),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+
+          // 仅当有数据时显示，且只显示非0数据
+          if (hasIncome || hasExpense) ...[
+            SizedBox(height: 1.h),
+            if (hasIncome)
+              Text(
+                "+${_formatNum(stats.income)}",
+                style: TextStyle(
+                    fontSize: 8.sp,
+                    fontFamily: 'SourceCodePro',
+                    color: textIncome,
+                    fontWeight: FontWeight.w500),
+                maxLines: 1,
+              ),
+
+            // 支出 (-xx)
+            if (hasExpense)
+              Text(
+                "-${_formatNum(stats.expense)}",
+                style: TextStyle(
+                    fontSize: 8.sp,
+                    fontFamily: 'SourceCodePro',
+                    color: textExpense,
+                    fontWeight: FontWeight.w500),
+                maxLines: 1,
+              ),
+            SizedBox(height: 2.h),
           ] else ...[
-            SizedBox(height: 22.h), // 占位
+            // SizedBox(height: 12.h),
           ]
         ],
       ),
@@ -167,6 +204,10 @@ class CalendarChartCard extends GetView<ChartsController> {
     if (num >= 10000) {
       return "${(num / 10000).toStringAsFixed(1)}w";
     }
-    return num.toStringAsFixed(0);
+    // 这种小格子里的数字，如果太大可以截断或者去掉小数位
+    if (num > 999) {
+      return num.toStringAsFixed(0);
+    }
+    return num.toStringAsFixed(0); // 默认不显示小数，保持干净
   }
 }

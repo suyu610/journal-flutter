@@ -163,7 +163,6 @@ InitialBinding() {
   Get.lazyPut(() => LoginLogic());
 }
 
-// ------------ 底部配置变量 (直接在这里实例化) ------------
 // 1. 亮色模式配置
 const _lightAppColors = AppThemeColors(
   primaryText: Color(0xFF2D3436),
@@ -171,38 +170,81 @@ const _lightAppColors = AppThemeColors(
   cardBackground: Color(0xFFFFFFFF),
   chartLine: Color(0xFF2D3436),
   chartPalette: [
-    Color(0xFF34495E),
-    Color(0xFF576D7E),
-    Color(0xFF95A5A6),
-    Color(0xFFBDC3C7),
-    Color(0xFFE8ECEF)
+    // 1. 核心主色 (冷暖平衡)
+    Color(0xFF7B8D8E), // 莫兰迪绿 (Sage Green) - 沉稳治愈
+    Color(0xFFD4A5A5), // 干燥玫瑰 (Dusty Rose) - 温柔不俗
+    Color(0xFF9FB1BC), // 雾霾蓝 (Haze Blue) - 经典高级灰蓝
+
+    // 2. 大地色系 (百搭耐看)
+    Color(0xFFC7B198), // 燕麦拿铁 (Oat Latte)
+    Color(0xFFA99C92), // 暖灰褐 (Warm Taupe)
+    Color(0xFFDFD3C3), // 杏仁白 (Almond) - 用作对比
+
+    // 3. 气质辅色 (增加层次)
+    Color(0xFF949FB3), // 钢蓝灰 (Steel Blue)
+    Color(0xFFBFA6A2), // 藕粉 (Lotus Pink)
+    Color(0xFF8A9A9A), // 青灰 (Cyan Grey)
+
+    // 4. 深色点缀 (压住阵脚)
+    Color(0xFF6B7B8C), // 深岩蓝 (Slate)
+    Color(0xFF8C8078), // 可可棕 (Cocoa)
+    Color(0xFF9E9E9E), // 中性灰 (Neutral Grey)
   ],
   navActive: Color(0xFF2D3436),
-  // --- 新增 ---
-  navInactive: Color(0xFFB2B2B2), // 浅灰
-  mainButtonBg: Color(0xFF2D3436), // 深色按钮
-  mainButtonIcon: Color(0xFFFFFFFF), // 白色图标
+  navInactive: Color(0xFFB2B2B2),
+  mainButtonBg: Color(0xFF2D3436),
+  mainButtonIcon: Color(0xFFFFFFFF),
+
+  // === 新增语义化配置 ===
+  // 品牌色：直接复用你喜欢的深灰 (0xFF2D3436)
+  brandColor: Color(0xFF2D3436),
+  // 品牌文字色：白色
+  onBrandColor: Color(0xFFFFFFFF),
+  // 危险色：选用了 Flat UI 中的 "Chi-Gong" 红，比纯红更有质感，配你的深灰很搭
+  dangerColor: Color(0xFFFF4757),
+  // 边框色：选用了浅灰色，比 navInactive 稍淡
+  outlineBorder: Color(0xFFDFE6E9),
 );
 
 // 2. 暗色模式配置
 const _darkAppColors = AppThemeColors(
   primaryText: Color(0xFFECF0F1),
   secondaryText: Color(0xFF95A5A6),
-  cardBackground: Color.fromARGB(255, 44, 57, 63),
-  // cardBackground: Color(0xFF2C3E50),
-  //Color(0xFF2C3E50),
+  cardBackground: Color.fromARGB(255, 44, 57, 63), // 你的深青灰背景
   chartLine: Color(0xFFECF0F1),
   chartPalette: [
-    Color(0xFFECF0F1),
-    Color(0xFFBDC3C7),
-    Color(0xFF95A5A6),
-    Color(0xFF7F8C8D),
-    Color(0xFF34495E)
+    // 1. 核心主色 (冷暖平衡)
+    Color(0xFF7B8D8E), // 莫兰迪绿 (Sage Green) - 沉稳治愈
+    Color(0xFFD4A5A5), // 干燥玫瑰 (Dusty Rose) - 温柔不俗
+    Color(0xFF9FB1BC), // 雾霾蓝 (Haze Blue) - 经典高级灰蓝
+
+    // 2. 大地色系 (百搭耐看)
+    Color(0xFFC7B198), // 燕麦拿铁 (Oat Latte)
+    Color(0xFFA99C92), // 暖灰褐 (Warm Taupe)
+    Color(0xFFDFD3C3), // 杏仁白 (Almond) - 用作对比
+
+    // 3. 气质辅色 (增加层次)
+    Color(0xFF949FB3), // 钢蓝灰 (Steel Blue)
+    Color(0xFFBFA6A2), // 藕粉 (Lotus Pink)
+    Color(0xFF8A9A9A), // 青灰 (Cyan Grey)
+
+    // 4. 深色点缀 (压住阵脚)
+    Color(0xFF6B7B8C), // 深岩蓝 (Slate)
+    Color(0xFF8C8078), // 可可棕 (Cocoa)
+    Color(0xFF9E9E9E), // 中性灰 (Neutral Grey)
   ],
   navActive: Color(0xFFECF0F1),
+  navInactive: Color(0xFF636E72),
+  mainButtonBg: Color(0xFFECF0F1),
+  mainButtonIcon: Color(0xFF2D3436),
 
-  // --- 新增 ---
-  navInactive: Color(0xFF636E72), // 深灰
-  mainButtonBg: Color(0xFFECF0F1), // 亮色按钮 (在深色背景下醒目)
-  mainButtonIcon: Color(0xFF2D3436), // 深色图标
+  // === 新增语义化配置 ===
+  // 品牌色：复用你的亮色文字 (ECF0F1)，在深色背景下最醒目
+  brandColor: Color(0xFFECF0F1),
+  // 品牌文字色：复用你的深色背景色 (2D3436)，形成黑字白底
+  onBrandColor: Color(0xFF2D3436),
+  // 危险色：深色模式下红稍微亮一点，或者偏粉一点，这里选用了稍柔和的红
+  dangerColor: Color(0xFFFF6B81),
+  // 边框色：复用 navInactive 或稍深一点
+  outlineBorder: Color(0xFF636E72),
 );

@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
-import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_toast.dart';
+
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
@@ -58,7 +59,7 @@ class ProfileController extends GetxController {
   }
 
   void modifyNickname(String nickname, BuildContext context) {
-    BrnLoadingDialog.show(context);
+    JournalToast.showLoading(context);
     HttpRequest.request(
       Method.patch,
       "/user",
@@ -66,9 +67,9 @@ class ProfileController extends GetxController {
         "nickname": nickname,
       },
       success: (data) {
-        BrnLoadingDialog.dismiss(context);
+        JournalToast.dismiss();
         user.value.nickname = nickname;
-        BrnToast.show("修改成功", context);
+        JournalToast.show(context, "修改成功");
         Get.back();
 
         update(["profile"]);
@@ -111,7 +112,7 @@ class ProfileController extends GetxController {
       layoutCtrl.user.value.avatarUrl = url;
       layoutCtrl.update(["user"]);
 
-      BrnToast.showInCenter(text: "更新成功", context: context);
+      JournalToast.showSuccess(context, "更新成功");
     });
   }
 
@@ -279,7 +280,7 @@ class ProfileController extends GetxController {
       _saveLastRatingTime();
     } else {
       if (context.mounted) {
-        BrnToast.show("无法打开应用商店", context);
+        JournalToast.show(context, "无法打开应用商店");
       }
     }
   }

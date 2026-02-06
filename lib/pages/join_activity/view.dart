@@ -246,7 +246,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
             : appColors.secondaryText.withOpacity(0.5);
 
         return GestureDetector(
-          onTap: () => controller.joinActivity(),
+          onTap: () => controller.joinActivity(context),
           child: Container(
             width: double.infinity,
             height: 50.h,
