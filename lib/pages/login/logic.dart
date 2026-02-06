@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
@@ -16,13 +18,14 @@ import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'state.dart';
 
-///登录页面
+/// 登录页面逻辑层
 class LoginLogic extends GetxController {
   final LoginState state = LoginState();
   final TextEditingController controller = TextEditingController();
   SliderController sliderController = SliderController();
   Fluwx fluwx = Fluwx();
   RxBool isEmailMode = false.obs;
+
   @override
   void dispose() {
     super.dispose();
@@ -40,7 +43,6 @@ class LoginLogic extends GetxController {
     fluwx.addSubscriber((response) {
       if (response is WeChatAuthResponse && response.isSuccessful) {
         Log().d(response.toString());
-        // delay一下
         Future.delayed(const Duration(milliseconds: 100), () {});
         Log().d("微信登录中${response.code}");
         handlerWechatLoginWithCode(response.code);
@@ -48,26 +50,38 @@ class LoginLogic extends GetxController {
     });
   }
 
+  // --- 改造 1: 滑动验证码弹窗 (适配主题色) ---
   buildSliderCaptcha(BuildContext context) {
+    // 获取主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return Center(
       child: Container(
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(4.w)),
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.all(8.0),
+            color: appColors.cardBackground, // 适配背景
+            borderRadius: BorderRadius.circular(16.w),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              )
+            ]),
+        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.symmetric(horizontal: 24.0),
         child: SliderCaptcha(
           captchaSize: 50,
-          title: "滑动验证",
-          titleStyle: const TextStyle(
-              fontSize: 12,
+          title: "安全验证",
+          titleStyle: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
               decoration: TextDecoration.none,
-              color: Colors.white),
-          imageToBarPadding: 10,
+              color: appColors.primaryText), // 适配标题色
+          imageToBarPadding: 16,
           controller: sliderController,
           onConfirm: (value) async {
             if (value) {
-              TDToast.showSuccess("验证通过",
-                  context: context); // ToastUtil.showToast("验证通过");
+              TDToast.showSuccess("验证通过", context: context);
               Get.back();
               state.verify.value = true;
               next(context);
@@ -81,8 +95,8 @@ class LoginLogic extends GetxController {
             fit: BoxFit.fitWidth,
           ),
           borderImager: 1,
-          colorBar: Colors.blueGrey[900]!,
-          colorCaptChar: Colors.white, //,
+          colorBar: appColors.cardBackground, // 适配滑块条颜色
+          colorCaptChar: appColors.cardBackground, // 适配缺口背景
         ),
       ),
     );
@@ -108,73 +122,15 @@ class LoginLogic extends GetxController {
     }
 
     if (!state.isAgree.value) {
-      ToastUtil.showBottomPopup(
-        false,
-        SizedBox(
-          width: 375.w,
-          height: 200.h,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 20.h,
-              ),
-              Text(
-                "请阅读并同意以下条款",
-                style: TextStyle(fontSize: 16.sp),
-              ),
-              SizedBox(
-                height: 20.h,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                    "url": "https://blog.uuorb.com/archives/journal-privacy",
-                    "title": "隐私协议"
-                  });
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "《隐私政策》",
-                      style: TextStyle(color: Color(0xff22384e)),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20.h,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: TextButton(
-                    onPressed: () {
-                      state.isAgree.value = true;
-                      Navigator.of(context).pop();
-                      FocusScope.of(Get.context!).requestFocus(FocusNode());
-                      next(context);
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.black),
-                      // white
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                      // 设置按钮的大小
-                      minimumSize: WidgetStateProperty.all(Size(375.w, 45.h)),
-                      // 设置按钮的边框
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.w),
-                        ),
-                      ),
-                    ),
-                    child: const Text("同意并继续")),
-              )
-            ],
-          ),
-        ),
-      );
+      // 使用统一提取的隐私弹窗
+      _showPrivacyPopup(context, () {
+        // 同意后的回调
+        FocusScope.of(context).unfocus();
+        next(context);
+      });
       return;
     }
+
     if (!state.verify.value) {
       Get.dialog(
         buildSliderCaptcha(context),
@@ -188,81 +144,108 @@ class LoginLogic extends GetxController {
 
   void loginWithWechat(BuildContext context) {
     if (!state.isAgree.value) {
-      ToastUtil.showBottomPopup(
-        false,
-        SizedBox(
-          width: 375.w,
-          height: 200.h,
-          child: Column(
-            children: [
-              SizedBox(
-                height: 20.h,
-              ),
-              Text(
-                "请阅读并同意以下条款",
-                style: TextStyle(fontSize: 16.sp),
-              ),
-              SizedBox(
-                height: 20.h,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                    "url": "https://blog.uuorb.com/archives/journal-privacy",
-                    "title": "隐私协议"
-                  });
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "《隐私政策》",
-                      style: TextStyle(color: Color(0xff22384e)),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 20.h,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: TextButton(
-                    onPressed: () {
-                      state.isAgree.value = true;
-                      Navigator.of(context).pop();
-                      Future.delayed(const Duration(milliseconds: 500), () {
-                        if (context.mounted) {
-                          loginWithWechat(context);
-                        }
-                      });
-                    },
-                    style: ButtonStyle(
-                      backgroundColor:
-                          WidgetStateProperty.all(const Color(0xff000000)),
-                      // white
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                      // 设置按钮的大小
-                      minimumSize: WidgetStateProperty.all(Size(375.w, 45.h)),
-                      // 设置按钮的边框
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6.w),
-                        ),
-                      ),
-                    ),
-                    child: const Text("同意并继续")),
-              )
-            ],
-          ),
-        ),
-      );
+      // 使用统一提取的隐私弹窗
+      _showPrivacyPopup(context, () {
+        // 同意后的回调 (稍微延迟，等待弹窗关闭动画)
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (context.mounted) {
+            loginWithWechat(context);
+          }
+        });
+      });
       return;
     }
 
     fluwx.authBy(
         which: NormalAuth(
             scope: 'snsapi_userinfo', state: 'wechat_sdk_demo_test'));
+  }
+
+  // --- 改造 2: 提取统一的隐私协议弹窗 (适配主题色) ---
+  void _showPrivacyPopup(BuildContext context, VoidCallback onAgree) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    ToastUtil.showBottomPopup(
+      false,
+      Container(
+        width: 375.w,
+        padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 40.h),
+        decoration: BoxDecoration(
+          color: appColors.cardBackground, // 适配背景
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // 高度自适应
+          children: [
+            Text(
+              "服务协议与隐私政策",
+              style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: appColors.primaryText),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              "为了更好地保障您的权益，请阅读并同意以下条款：",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14.sp, color: appColors.secondaryText),
+            ),
+            SizedBox(height: 20.h),
+            GestureDetector(
+              onTap: () {
+                Get.toNamed(Routers.WebViewPageUrl, arguments: {
+                  "url": "https://blog.uuorb.com/archives/journal-privacy",
+                  "title": "隐私协议"
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: appColors.primaryText.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.article_outlined,
+                        size: 20, color: appColors.primaryText),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "《隐私政策》",
+                      style: TextStyle(
+                          color: appColors.primaryText,
+                          fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 32.h),
+            SizedBox(
+              width: double.infinity,
+              height: 50.h,
+              child: ElevatedButton(
+                  onPressed: () {
+                    state.isAgree.value = true;
+                    Navigator.of(context).pop();
+                    onAgree();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: appColors.mainButtonBg, // 适配按钮背景
+                    foregroundColor: appColors.mainButtonIcon, // 适配按钮文字
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25.r),
+                    ),
+                  ),
+                  child: const Text("同意并继续",
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold))),
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   // 用微信code换token

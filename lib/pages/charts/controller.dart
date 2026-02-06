@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,21 @@ import 'package:table_calendar/table_calendar.dart';
 import 'dart:convert';
 
 import 'package:tdesign_flutter/tdesign_flutter.dart'; // 必须引入，用于 utf8 解码
+// 数据模型保持不变
+
+class ChartDataModel {
+  String? value;
+
+  String name;
+
+  ChartDataModel(this.value, this.name);
+
+  factory ChartDataModel.fromJson(Map<String, dynamic> json) {
+    return ChartDataModel(json['value']?.toString(), json['name']);
+  }
+
+  double get doubleValue => double.tryParse(value ?? '0') ?? 0.0;
+}
 
 class ChartsController extends GetxController {
   RxString judgeString = "".obs;
@@ -27,6 +43,7 @@ class ChartsController extends GetxController {
   RxList<ChartDataModel> groupByTypeCharts =
       RxList<ChartDataModel>.empty(growable: true);
 
+  EasyRefreshController refreshController = EasyRefreshController();
   RxList<Activity> allActivityList = RxList<Activity>.empty(growable: true);
   Rx<Activity> currentActivity = Rx<Activity>(Activity.empty());
 
@@ -49,23 +66,16 @@ class ChartsController extends GetxController {
     try {
       // 假设你的接口返回如下结构：
 
-      List<DailyStats> data = [
-        DailyStats(date: "2026-02-01", expense: 100.0, income: 0),
-        DailyStats(date: "2026-02-02", expense: 50.0, income: 200),
-        DailyStats(date: "2026-02-03", expense: 30.0, income: 150),
-        DailyStats(date: "2026-02-04", expense: 20.0, income: 100),
-        DailyStats(date: "2026-02-05", expense: 40.0, income: 150),
-      ];
-      // await _getAsync("/charts/calendar/$activityId",
-      // params: {"month": monthStr});
+      List<dynamic> data =
+          await _getAsync("/charts/calendar/$activityId?month=$monthStr");
 
       Map<String, DailyStats> newMap = {};
       for (var item in data) {
-        String dateKey = item.date; // "2023-10-01"
+        String dateKey = item['date']; // "2023-10-01"
         newMap[dateKey] = DailyStats(
           date: dateKey,
-          expense: double.tryParse(item.expense.toString()) ?? 0,
-          income: double.tryParse(item.income.toString()) ?? 0,
+          expense: double.tryParse(item['expense'].toString()) ?? 0,
+          income: double.tryParse(item['income'].toString()) ?? 0,
         );
       }
       calendarData.value = newMap; // 更新数据
@@ -88,7 +98,6 @@ class ChartsController extends GetxController {
       selectedDay.value = selected;
       focusedDay.value = focused;
 
-      // TODO: 这里可以弹出一个 BottomSheet 显示当天的详细账单列表
       // showDailyDetail(selected);
     }
   }
@@ -96,7 +105,6 @@ class ChartsController extends GetxController {
   // 辅助：获取某天的统计数据
   DailyStats? getStatsForDay(DateTime day) {
     String key = DateFormat('yyyy-MM-dd').format(day);
-    print("key: $key");
     return calendarData[key];
   }
 
@@ -117,7 +125,7 @@ class ChartsController extends GetxController {
   }
 
   // 1. 初始化数据入口
-  _initData({bool forceRefreshActivity = false}) async {
+  initData({bool forceRefreshActivity = false}) async {
     loadCalendarData(DateTime(2026, 2, 1));
     // 只有在列表为空，或者强制刷新时，才请求 ActivityList
     isAnalyzing.value = false;
@@ -304,7 +312,7 @@ class ChartsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initData();
+    initData();
   }
 
   @override
@@ -314,7 +322,7 @@ class ChartsController extends GetxController {
       Log().d("need refresh data: $data");
       if (data.refreshChartsList) {
         // 这里如果是单纯刷新图表，不需要强制刷新 ActivityList
-        _initData(forceRefreshActivity: false);
+        initData(forceRefreshActivity: false);
       }
     });
   }

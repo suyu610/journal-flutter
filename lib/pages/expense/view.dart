@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/core/app_theme_colors.dart'; // 1. 引入主题文件
 import 'package:journal/pages/image_preview_page.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/icons.dart';
@@ -11,31 +12,37 @@ import 'index.dart';
 class ExpenseItemPage extends GetView<ExpensePageController> {
   const ExpenseItemPage({super.key});
 
-  // 定义统一的风格常量
-  final Color _backgroundColor = const Color(0xFFF6F7F9); // 首页同款浅灰背景
-  final Color _cardColor = Colors.white;
-  final double _cardRadius = 16.0;
+  // 定义统一的圆角
+  final double _cardRadius = 24.0;
 
   @override
   Widget build(BuildContext context) {
+    // 2. 获取当前主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return GetBuilder<ExpensePageController>(
       init: ExpensePageController(),
       id: "expense_item",
       builder: (_) {
         return Scaffold(
-          backgroundColor: _backgroundColor,
-          appBar: _buildAppBar(context),
-          body: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 1.h),
-            child: Column(
-              children: [
-                _buildTypeAndAmountCard(context),
-                SizedBox(height: 12.h),
-                _buildDetailsCard(context),
-                SizedBox(height: 24.h),
-                _buildSaveButton(context)
-              ],
+          // 背景色跟随主题 (亮色:冷灰 / 暗色:深蓝灰)
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: _buildAppBar(context, appColors),
+          body: GestureDetector(
+            // 点击空白处收起键盘
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              child: Column(
+                children: [
+                  _buildTypeAndAmountCard(context, appColors),
+                  SizedBox(height: 16.h),
+                  _buildDetailsCard(context, appColors),
+                  SizedBox(height: 32.h),
+                  _buildSaveButton(context, appColors)
+                ],
+              ),
             ),
           ),
         );
@@ -43,61 +50,66 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(
+      BuildContext context, AppThemeColors appColors) {
     return AppBar(
-      backgroundColor: _backgroundColor,
+      backgroundColor: Colors.transparent, // 沉浸式
       elevation: 0,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new,
-            color: Colors.black87, size: 20),
+        icon: Icon(Icons.arrow_back_ios_new,
+            color: appColors.primaryText, size: 20),
         onPressed: () => Get.back(),
       ),
-      title: const Text(
+      title: Text(
         "记一笔",
         style: TextStyle(
-            color: Colors.black, fontSize: 17, fontWeight: FontWeight.w600),
+            color: appColors.primaryText,
+            fontSize: 17,
+            fontWeight: FontWeight.w600),
       ),
       actions: [_buildDeleteButton(context)],
     );
   }
 
   // =======================================================
-  // 【delete】 1. 顶部核心卡片：类型切换 + 金额输入 + 分类选择
+  // 1. 顶部核心卡片：类型 -> 金额 -> 商品名(强) -> 分类
   // =======================================================
-  Widget __buildTypeAndAmountCard(BuildContext context) {
+  Widget _buildTypeAndAmountCard(
+      BuildContext context, AppThemeColors appColors) {
     var expense = controller.expense.value;
-    bool isExpense = expense.positive == 0; // 0是支出，1是收入
+    bool isExpense = expense.positive == 0;
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 8.w),
       decoration: BoxDecoration(
-        color: _cardColor,
+        color: appColors.cardBackground, // 适配卡片背景
         borderRadius: BorderRadius.circular(_cardRadius),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4))
+              color: Colors.black.withOpacity(0.04), // 细腻的阴影
+              blurRadius: 20,
+              offset: const Offset(0, 10))
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. 收支切换 (类似 iOS 分段控制器)
+          // 1. 收支切换
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F3F5),
-              borderRadius: BorderRadius.circular(8),
+              // 背景色：主色调的极低透明度
+              color: appColors.primaryText.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                _buildSegmentBtn("支出", isExpense, () {
+                _buildSegmentBtn("支出", isExpense, appColors, () {
                   expense.positive = 0;
                   controller.update(['expense_item']);
                 }),
-                _buildSegmentBtn("收入", !isExpense, () {
+                _buildSegmentBtn("收入", !isExpense, appColors, () {
                   expense.positive = 1;
                   controller.update(['expense_item']);
                 }),
@@ -106,8 +118,9 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
           ),
           SizedBox(height: 24.h),
 
-          // 2. 金额输入 (超大字体，类似首页金额展示)
-          const Text("金额", style: TextStyle(color: Colors.grey, fontSize: 12)),
+          // 2. 金额输入
+          Text("金额",
+              style: TextStyle(color: appColors.secondaryText, fontSize: 12)),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -117,12 +130,12 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                 style: TextStyle(
                     fontSize: 30.sp,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87),
+                    color: appColors.primaryText),
               ),
               SizedBox(width: 8.w),
               Expanded(
                 child: TextField(
-                  cursorColor: Colors.black87,
+                  cursorColor: appColors.primaryText,
                   focusNode: controller.expensePriceFocusNode,
                   controller: controller.expensePriceTextEditController,
                   keyboardType:
@@ -130,12 +143,13 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                   style: TextStyle(
                       fontSize: 40.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace', // 使用等宽字体或你首页用的数字字体
-                      color: Colors.black),
-                  decoration: const InputDecoration(
+                      fontFamily: 'monospace',
+                      color: appColors.primaryText),
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: "0.00",
-                    hintStyle: TextStyle(color: Color(0xFFE0E0E0)),
+                    hintStyle: TextStyle(
+                        color: appColors.secondaryText.withOpacity(0.3)),
                     isDense: true,
                   ),
                   onChanged: (v) => controller.modifyExpensePrice(v),
@@ -144,53 +158,100 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             ],
           ),
 
-          // 3. 划线价 (只有有值时才显示显眼，否则折叠或显示占位)
-          Container(
-            margin: EdgeInsets.only(top: 2.h),
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAFAFA),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Text("原价",
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: TextField(
-                    cursorColor: Colors.black87,
-                    controller:
-                        controller.expenseOriginalPriceTextEditController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.grey[800],
-                      decoration: TextDecoration.lineThrough, // 输入时就有划线效果
+          Divider(height: 1, color: appColors.primaryText.withOpacity(0.05)),
+          SizedBox(height: 16.h),
+
+          // 3. 商品名称输入 & AI 按钮
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("商品/事项",
+                        style: TextStyle(
+                            color: appColors.secondaryText, fontSize: 12)),
+                    TextField(
+                      cursorColor: appColors.primaryText,
+                      controller: controller.expenseLabelTextEditController,
+                      style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w500,
+                          color: appColors.primaryText),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "例如：好享记账会员",
+                        hintStyle: TextStyle(
+                            color: appColors.secondaryText.withOpacity(0.5),
+                            fontSize: 16.sp),
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
+                      ),
+                      onChanged: (v) => controller.modifyExpenseLabel(v),
                     ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "选填（如有优惠）",
-                      hintStyle: TextStyle(
-                          color: Color(0xFFDDDDDD),
-                          fontSize: 12,
-                          decoration: TextDecoration.none),
-                      isDense: true,
-                    ),
-                    onChanged: (v) => controller.modifyExpenseOriginalPrice(v),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              // AI 智能分类按钮
+              Obx(() {
+                bool isLoading = controller.isRec.value;
+
+                return GestureDetector(
+                  onTap: isLoading
+                      ? null
+                      : () {
+                          controller.autoCategorizeByLabel(context);
+                        },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      // AI 按钮颜色适配
+                      color: isLoading
+                          ? appColors.primaryText.withOpacity(0.05)
+                          : appColors.primaryText.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isLoading
+                            ? Colors.transparent
+                            : appColors.primaryText.withOpacity(0.1),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isLoading)
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: appColors.primaryText,
+                            ),
+                          )
+                        else
+                          Icon(Icons.auto_awesome,
+                              size: 14, color: appColors.primaryText),
+                        SizedBox(width: 6.w),
+                        Text(
+                          isLoading ? "分析中..." : "智能分类",
+                          style: TextStyle(
+                              fontSize: 12.sp,
+                              color: appColors.primaryText,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              })
+            ],
           ),
 
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.h),
-            child: const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          ),
+          SizedBox(height: 12.h),
 
-          // 4. 分类选择 (改为一行，点击跳转)
+          // 4. 分类选择
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {
@@ -202,34 +263,38 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                 }
               });
             },
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10.w),
-                  decoration: const BoxDecoration(
-                    color: Colors.black87,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.category_outlined,
-                      color: Colors.white, size: 20),
-                ),
-                SizedBox(width: 12.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("分类",
-                        style: TextStyle(fontSize: 10, color: Colors.grey)),
-                    Text(
-                      expense.type.isEmpty ? "选择分类" : expense.type,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600),
+            child: Container(
+              padding: EdgeInsets.only(top: 12.h, bottom: 8.h),
+              decoration: BoxDecoration(
+                border: Border(
+                    top: BorderSide(
+                        color: appColors.primaryText.withOpacity(0.05),
+                        width: 1)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: appColors.primaryText.withOpacity(0.05),
+                      shape: BoxShape.circle,
                     ),
-                  ],
-                ),
-                const Spacer(),
-                const Icon(Icons.arrow_forward_ios_rounded,
-                    size: 14, color: Colors.grey),
-              ],
+                    child: Icon(CategoryIconMap.getIcon(expense.type),
+                        color: appColors.primaryText, size: 18),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    expense.type.isEmpty ? "选择分类" : expense.type,
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: appColors.primaryText),
+                  ),
+                  const Spacer(),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      size: 14, color: appColors.secondaryText),
+                ],
+              ),
             ),
           ),
         ],
@@ -238,16 +303,19 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
   }
 
   // 收支切换按钮子组件
-  Widget _buildSegmentBtn(String text, bool isSelected, VoidCallback onTap) {
+  Widget _buildSegmentBtn(String text, bool isSelected,
+      AppThemeColors appColors, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(vertical: 8.h),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            // 选中时使用卡片色，未选中透明
+            color: isSelected ? appColors.cardBackground : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
@@ -262,7 +330,9 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected ? Colors.black : Colors.grey[600],
+              // 选中跟随主色，未选中跟随次要色
+              color:
+                  isSelected ? appColors.primaryText : appColors.secondaryText,
             ),
           ),
         ),
@@ -271,335 +341,15 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
   }
 
   // =======================================================
-  // 1. 顶部核心卡片：类型 -> 金额 -> 商品名(强) -> 分类
-  // =======================================================
-  Widget _buildTypeAndAmountCard(BuildContext context) {
-    var expense = controller.expense.value;
-    bool isExpense = expense.positive == 0;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 20.w, 20.w, 8.w), // 底部padding减小，紧凑一点
-      decoration: BoxDecoration(
-        color: _cardColor,
-        borderRadius: BorderRadius.circular(_cardRadius),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. 收支切换
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2F3F5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                _buildSegmentBtn("支出", isExpense, () {
-                  expense.positive = 0;
-                  controller.update(['expense_item']);
-                }),
-                _buildSegmentBtn("收入", !isExpense, () {
-                  expense.positive = 1;
-                  controller.update(['expense_item']);
-                }),
-              ],
-            ),
-          ),
-          SizedBox(height: 24.h),
-
-          // 2. 金额输入
-          const Text("金额", style: TextStyle(color: Colors.grey, fontSize: 12)),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                "¥",
-                style: TextStyle(
-                    fontSize: 30.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: TextField(
-                  cursorColor: Colors.black87,
-                  focusNode: controller.expensePriceFocusNode,
-                  controller: controller.expensePriceTextEditController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  style: TextStyle(
-                      fontSize: 40.sp,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace',
-                      color: Colors.black),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "0.00",
-                    hintStyle: TextStyle(color: Color(0xFFE0E0E0)),
-                    isDense: true,
-                  ),
-                  onChanged: (v) => controller.modifyExpensePrice(v),
-                ),
-              ),
-            ],
-          ),
-
-          const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          SizedBox(height: 16.h),
-
-          // 3. 商品名称输入 (强化显示，原“备注”) & AI 按钮
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("商品/事项",
-                        style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    TextField(
-                      cursorColor: Colors.black87,
-                      controller: controller.expenseLabelTextEditController,
-                      style: TextStyle(
-                          fontSize: 18.sp, fontWeight: FontWeight.w500),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "例如：好享记账会员",
-                        hintStyle:
-                            TextStyle(color: Colors.grey[300], fontSize: 16.sp),
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
-                      ),
-                      onChanged: (v) => controller.modifyExpenseLabel(v),
-                    ),
-                  ],
-                ),
-              ),
-              // AI 智能分类按钮
-              // 包裹一个 Obx 来监听状态变化
-              Obx(() {
-                bool isLoading = controller.isRec.value;
-
-                return GestureDetector(
-                  // 如果正在识别，禁止再次点击 (onTap 设为 null)
-                  onTap: isLoading
-                      ? null
-                      : () {
-                          controller.autoCategorizeByLabel(context);
-                        },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300), // 增加一点呼吸动效
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                    decoration: BoxDecoration(
-                      // 加载时背景稍微变淡一点
-                      color: isLoading
-                          ? Colors.blueGrey[900]!.withOpacity(0.05)
-                          : Colors.blueGrey[900]!.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isLoading
-                            ? Colors.transparent
-                            : Colors.blueGrey[900]!.withOpacity(0.2),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min, // 紧凑布局
-                      children: [
-                        // 根据状态切换图标
-                        if (isLoading)
-                          SizedBox(
-                            width: 10,
-                            height: 10,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.blueGrey[900],
-                            ),
-                          )
-                        else
-                          Icon(Icons.auto_awesome,
-                              size: 14, color: Colors.blueGrey[900]),
-
-                        SizedBox(width: 4.w),
-
-                        // 根据状态切换文字
-                        Text(
-                          isLoading ? "分析中..." : "智能分类",
-                          style: TextStyle(
-                              fontSize: 11.sp,
-                              color: Colors.blueGrey[900],
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              })
-            ],
-          ),
-
-          SizedBox(height: 12.h),
-
-          // 4. 分类选择 (样式微调，与上方对齐)
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              Get.toNamed(Routers.ExpenseCategoryPageUrl)?.then((result) {
-                if (result != null) {
-                  expense.type = result['type'];
-                  expense.positive = result['positive'];
-                  controller.update(['expense_item']);
-                }
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.only(top: 12.h, bottom: 8.h),
-              decoration: const BoxDecoration(
-                border:
-                    Border(top: BorderSide(color: Color(0xFFFAFAFA), width: 1)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(CategoryIconMap.getIcon(expense.type),
-                        color: Colors.black87, size: 18),
-                  ),
-                  SizedBox(width: 12.w),
-                  Text(
-                    expense.type.isEmpty ? "选择分类" : expense.type,
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                  const Spacer(),
-                  const Icon(Icons.arrow_forward_ios_rounded,
-                      size: 14, color: Colors.grey),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // =======================================================
   // 2. 详情卡片：日期、备注、图片
   // =======================================================
-  Widget __buildDetailsCard(BuildContext context) {
+  Widget _buildDetailsCard(BuildContext context, AppThemeColors appColors) {
     var expense = controller.expense.value;
 
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: _cardColor,
-        borderRadius: BorderRadius.circular(_cardRadius),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 日期选择
-          GestureDetector(
-            onTap: () => controller.showDatePicker(context),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today_outlined,
-                    size: 18, color: Colors.black54),
-                SizedBox(width: 10.w),
-                Text("日期",
-                    style: TextStyle(fontSize: 15.sp, color: Colors.black87)),
-                const Spacer(),
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF2F3F5),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    expense.expenseTime, // 这里假设是 String, 格式化逻辑建议放在 controller
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          ),
-
-          // 备注输入 (多行)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 2.0),
-                child: Icon(Icons.edit_note_rounded,
-                    size: 20, color: Colors.black54),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: TextField(
-                  controller: controller.expenseLabelTextEditController,
-                  cursorColor: Colors.black87,
-                  maxLines: 3,
-                  minLines: 1,
-                  style: TextStyle(fontSize: 15.sp),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "写点什么备注一下...",
-                    hintStyle: TextStyle(color: Color(0xFFCCCCCC)),
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  onChanged: (v) => controller.modifyExpenseLabel(v),
-                ),
-              ),
-            ],
-          ),
-
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          ),
-
-          // 图片选择 (复用你的逻辑，但美化 UI)
-          const Text("附件图片",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12.h),
-          _buildImageGrid(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailsCard(BuildContext context) {
-    var expense = controller.expense.value;
-
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: _cardColor,
+        color: appColors.cardBackground,
         borderRadius: BorderRadius.circular(_cardRadius),
         boxShadow: [
           BoxShadow(
@@ -616,23 +366,26 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             onTap: () => controller.showDatePicker(context),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today_outlined,
-                    size: 18, color: Colors.black54),
+                Icon(Icons.calendar_today_outlined,
+                    size: 18, color: appColors.secondaryText),
                 SizedBox(width: 10.w),
                 Text("日期",
-                    style: TextStyle(fontSize: 15.sp, color: Colors.black87)),
+                    style: TextStyle(
+                        fontSize: 15.sp, color: appColors.primaryText)),
                 const Spacer(),
                 Container(
                   padding:
                       EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF2F3F5),
+                    color: appColors.primaryText.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     expense.expenseTime,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: appColors.primaryText),
                   ),
                 ),
               ],
@@ -641,40 +394,43 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
 
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: const Divider(height: 1, color: Color(0xFFF0F0F0)),
+            child: Divider(
+                height: 1, color: appColors.primaryText.withOpacity(0.05)),
           ),
 
-          // 2. 原价 (弱化处理，移到此处)
+          // 2. 原价
           Row(
             children: [
-              const Icon(Icons.price_change_outlined,
-                  size: 18, color: Colors.black54),
+              Icon(Icons.price_change_outlined,
+                  size: 18, color: appColors.secondaryText),
               SizedBox(width: 10.w),
               Text("原价",
-                  style: TextStyle(fontSize: 15.sp, color: Colors.black87)),
+                  style:
+                      TextStyle(fontSize: 15.sp, color: appColors.primaryText)),
               SizedBox(width: 8.w),
               Text("(可选)",
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
+                  style: TextStyle(
+                      fontSize: 12.sp, color: appColors.secondaryText)),
               const Spacer(),
               SizedBox(
                 width: 100.w,
                 child: TextField(
-                  cursorColor: Colors.black87,
-
+                  cursorColor: appColors.primaryText,
                   controller: controller.expenseOriginalPriceTextEditController,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  textAlign: TextAlign.end, // 靠右对齐
+                  textAlign: TextAlign.end,
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.grey[800],
-                    decoration: TextDecoration.lineThrough, // 保持划线效果
+                    color: appColors.secondaryText,
+                    decoration: TextDecoration.lineThrough, // 保持划线
+                    decorationColor: appColors.secondaryText,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: "无优惠",
                     hintStyle: TextStyle(
-                        color: Color(0xFFDDDDDD),
+                        color: appColors.secondaryText.withOpacity(0.5),
                         fontSize: 14,
                         decoration: TextDecoration.none),
                     isDense: true,
@@ -688,27 +444,30 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
 
           Padding(
             padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: const Divider(height: 1, color: Color(0xFFF0F0F0)),
+            child: Divider(
+                height: 1, color: appColors.primaryText.withOpacity(0.05)),
           ),
 
           // 3. 图片附件
-          const Text("附件图片",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text("附件图片",
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: appColors.primaryText)),
           SizedBox(height: 12.h),
-          _buildImageGrid(context),
+          _buildImageGrid(context, appColors),
         ],
       ),
     );
   }
 
-  // 图片网格 (美化版)
-  Widget _buildImageGrid(BuildContext context) {
+  // 图片网格
+  Widget _buildImageGrid(BuildContext context, AppThemeColors appColors) {
     var expense = controller.expense.value;
     var fileList = expense.fileList ?? [];
-    // 计算大小：(屏幕宽 - padding*2 - spacing*2) / 3
-    double totalPadding = 16.w * 2 + 20.w * 2; // 外层 padding + card padding
+    double totalPadding = 16.w * 2 + 20.w * 2;
     double itemWidth =
-        (MediaQuery.of(context).size.width - totalPadding - 80) / 3;
+        (MediaQuery.of(context).size.width - totalPadding - 20) / 3;
 
     return Wrap(
       spacing: 10,
@@ -731,7 +490,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                   width: itemWidth,
                   height: itemWidth,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
                       image: NetworkImage(fileList[index]),
                       fit: BoxFit.cover,
@@ -770,10 +529,10 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
               width: itemWidth,
               height: itemWidth,
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F3F5),
-                borderRadius: BorderRadius.circular(8),
+                color: appColors.primaryText.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.add, color: Colors.grey, size: 28),
+              child: Icon(Icons.add, color: appColors.secondaryText, size: 28),
             ),
           ),
       ],
@@ -783,23 +542,26 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
   // =======================================================
   // 3. 底部按钮区
   // =======================================================
-  Widget _buildSaveButton(BuildContext context) {
+  Widget _buildSaveButton(BuildContext context, AppThemeColors appColors) {
     return SizedBox(
       width: double.infinity,
-      height: 50.h,
+      height: 52.h,
       child: ElevatedButton(
         onPressed: () => controller.updateExpense(context),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black, // 首页风格的主色调
+          // 使用主题定义的主按钮色
+          backgroundColor: appColors.mainButtonBg,
           elevation: 5,
-          shadowColor: Colors.black.withOpacity(0.3),
+          shadowColor: appColors.mainButtonBg.withOpacity(0.3),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
         ),
-        child: const Text(
+        child: Text(
           "保存",
           style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: appColors.mainButtonIcon),
         ),
       ),
     );
@@ -811,6 +573,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
       child: Container(
         width: 50.h,
         height: 50.h,
+        color: Colors.transparent,
         child: const Icon(
           Icons.delete_outline_rounded,
           color: Colors.redAccent,

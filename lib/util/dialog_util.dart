@@ -1,5 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 
 class PremiumGlassDialog extends StatefulWidget {
   final String? title;
@@ -48,7 +50,7 @@ class PremiumGlassDialog extends StatefulWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: "Dismiss",
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withOpacity(0.6), // 深色遮罩稍微加深一点，更聚焦
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, anim1, anim2) {
         return PremiumGlassDialog(
@@ -65,12 +67,12 @@ class PremiumGlassDialog extends StatefulWidget {
         );
       },
       transitionBuilder: (context, anim1, anim2, child) {
-        final curvedValue = Curves.easeIn.transform(anim1.value) - 1.0;
+        final curvedValue = Curves.easeOutCubic.transform(anim1.value) - 1.0;
         return Transform(
           transform: Matrix4.translationValues(
             0.0,
             0.0,
-            curvedValue * 200,
+            curvedValue * 20, // 稍微减小位移距离，更精致
           ),
           child: Opacity(
             opacity: anim1.value,
@@ -102,28 +104,28 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // 只有当传入了 input 回调时，才认为是输入模式
+    // 1. 获取主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
     final bool isInputMode = widget.onConfirmWithInput != null;
 
     return Scaffold(
-      // 使用 Scaffold 确保键盘弹出时布局自适应
       backgroundColor: Colors.transparent,
       body: Stack(
         alignment: Alignment.center,
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(), // 点击空白处关闭
+            onTap: () => Navigator.of(context).pop(),
             child: Container(color: Colors.transparent),
           ),
           Center(
             child: SingleChildScrollView(
-              // 防止键盘遮挡
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    filter:
+                        ImageFilter.blur(sigmaX: 16, sigmaY: 16), // 加大模糊度，质感更好
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -131,20 +133,23 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Colors.white.withOpacity(0.9),
-                            Colors.white.withOpacity(0.8),
+                            // 使用卡片背景色的高不透明度版本
+                            // 这样在亮色是白透，深色是黑透
+                            appColors.cardBackground.withOpacity(0.90),
+                            appColors.cardBackground.withOpacity(0.80),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.5),
-                          width: 1.5,
+                          // 边框也适配：使用主色的极低透明度
+                          color: appColors.primaryText.withOpacity(0.05),
+                          width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            spreadRadius: -5,
+                            blurRadius: 30,
+                            spreadRadius: -2,
                             offset: const Offset(0, 10),
                           ),
                         ],
@@ -161,10 +166,10 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                               child: Text(
                                 widget.title!,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1D2129),
+                                  color: appColors.primaryText, // 适配文字
                                   decoration: TextDecoration.none,
                                 ),
                               ),
@@ -179,9 +184,9 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                               child: Text(
                                 widget.content!,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
-                                  color: Color(0xFF4E5969),
+                                  color: appColors.secondaryText, // 适配文字
                                   height: 1.5,
                                   fontWeight: FontWeight.w400,
                                   decoration: TextDecoration.none,
@@ -190,9 +195,9 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                             ),
                           ],
 
-                          // --- 输入框区域 (仅在输入模式下显示) ---
+                          // --- 输入框区域 ---
                           if (isInputMode) ...[
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 24),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
@@ -200,16 +205,21 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                                 color: Colors.transparent,
                                 child: TextField(
                                   controller: _textController,
-                                  autofocus: true, // 自动聚焦，体验更好
+                                  autofocus: true,
                                   textInputAction: widget.textInputAction,
-                                  style: const TextStyle(
-                                      fontSize: 16, color: Color(0xFF1D2129)),
+                                  cursorColor: appColors.primaryText, // 光标颜色
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: appColors.primaryText), // 输入文字颜色
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: const Color(0xFFF7F8FA), // 浅灰背景
+                                    // 输入框背景：淡色主题背景
+                                    fillColor:
+                                        appColors.primaryText.withOpacity(0.04),
                                     hintText: widget.inputHintText ?? "请输入...",
-                                    hintStyle: const TextStyle(
-                                        color: Color(0xFFC9CDD4)),
+                                    hintStyle: TextStyle(
+                                        color: appColors.secondaryText
+                                            .withOpacity(0.5)),
                                     contentPadding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 14),
                                     border: OutlineInputBorder(
@@ -218,13 +228,14 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
+                                      // 聚焦边框：主色
                                       borderSide: BorderSide(
-                                          color: Colors.blueGrey[900]!,
-                                          width: 1), // 聚焦时的高亮
+                                          color: appColors.primaryText
+                                              .withOpacity(0.3),
+                                          width: 1),
                                     ),
                                   ),
                                   onSubmitted: (v) {
-                                    // 键盘上的“完成”键也可以触发确认
                                     widget.onConfirmWithInput?.call(v);
                                   },
                                 ),
@@ -243,6 +254,7 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                                 Expanded(
                                   child: _buildButton(
                                     context,
+                                    appColors, // 传入 colors
                                     text: widget.cancelText,
                                     isPrimary: false,
                                     onTap: () {
@@ -255,17 +267,15 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
                                 Expanded(
                                   child: _buildButton(
                                     context,
+                                    appColors, // 传入 colors
                                     text: widget.confirmText,
                                     isPrimary: true,
                                     isDestructive: widget.isDestructive,
                                     onTap: () {
                                       if (isInputMode) {
-                                        // 输入模式：将文本传出去，不自动关闭弹窗
-                                        // 由外部逻辑（比如你的校验逻辑）决定是否关闭
                                         widget.onConfirmWithInput
                                             ?.call(_textController.text);
                                       } else {
-                                        // 普通模式：自动关闭
                                         Navigator.of(context).pop();
                                         widget.onConfirm?.call();
                                       }
@@ -289,19 +299,32 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
   }
 
   Widget _buildButton(
-    BuildContext context, {
+    BuildContext context,
+    AppThemeColors appColors, {
     required String text,
     required bool isPrimary,
     bool isDestructive = false,
     VoidCallback? onTap,
   }) {
-    final Color backgroundColor = isPrimary
-        ? (isDestructive ? const Color(0xFFFFECE8) : const Color(0xFF1D2129))
-        : const Color(0xFFF2F3F5);
+    // 计算背景色
+    Color backgroundColor;
+    Color textColor;
 
-    final Color textColor = isPrimary
-        ? (isDestructive ? const Color(0xFFD32F2F) : Colors.white)
-        : const Color(0xFF4E5969);
+    if (isPrimary) {
+      if (isDestructive) {
+        // 毁灭性操作（如删除）：浅红背景 + 红色文字
+        backgroundColor = const Color(0xFFE34D59).withOpacity(0.1);
+        textColor = const Color(0xFFE34D59);
+      } else {
+        // 普通确认：主按钮色
+        backgroundColor = appColors.mainButtonBg;
+        textColor = appColors.mainButtonIcon;
+      }
+    } else {
+      // 取消按钮：极淡的背景 + 次要文字
+      backgroundColor = appColors.primaryText.withOpacity(0.05);
+      textColor = appColors.secondaryText;
+    }
 
     return GestureDetector(
       onTap: onTap,

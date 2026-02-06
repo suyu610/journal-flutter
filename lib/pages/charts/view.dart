@@ -1,34 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/config/theme_config.dart'; // 假设你的主题配置在这里
+import 'package:easy_refresh/easy_refresh.dart'; // 1. 引入 EasyRefresh
+// 引入你的工具类 (用于震动)
+import 'package:journal/util/toast_util.dart';
+
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/pages/charts/widgets/calendar_chart_card.dart';
 
 import 'index.dart';
-
-// 引入拆分后的组件
 import 'widgets/chart_nav_bar.dart';
 import 'widgets/ai_analysis_card.dart';
 import 'widgets/trend_chart_card.dart';
 import 'widgets/category_chart_card.dart';
-
-// 数据模型保持在这里，或者移到 model/chart_model.dart 更好
-class ChartDataModel {
-  String? value;
-  String name;
-  ChartDataModel(this.value, this.name);
-  factory ChartDataModel.fromJson(Map<String, dynamic> json) {
-    return ChartDataModel(json['value']?.toString(), json['name']);
-  }
-  double get doubleValue => double.tryParse(value ?? '0') ?? 0.0;
-}
 
 class ChartsPage extends GetView<ChartsController> {
   const ChartsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 页面级的 Key，用于 Popup 定位
     final GlobalKey actionKey = GlobalKey();
 
     return GetBuilder<ChartsController>(
@@ -37,15 +27,20 @@ class ChartsPage extends GetView<ChartsController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          backgroundColor: backgroundColor,
-          // 使用拆分后的 NavBar
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: ChartNavBar(
             controller: controller,
             actionKey: actionKey,
           ),
-          body: SafeArea(
+          body: EasyRefresh(
+            controller: controller.refreshController, // 绑定 Controller
+            onRefresh: () async {
+              // 3. 调用刷新逻辑
+              ToastUtil.heavyImpact(); // 震动
+              await controller.initData(); // 调用你的 public 初始化方法
+            },
             child: _shouldShowEmptyState()
-                ? _buildEmptyState()
+                ? _buildEmptyState(context)
                 : _buildMainContent(context),
           ),
         );
@@ -59,8 +54,8 @@ class ChartsPage extends GetView<ChartsController> {
 
   Widget _buildMainContent(BuildContext context) {
     return Container(
-      color: backgroundColor,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
+      // EasyRefresh 会自动处理这个 SingleChildScrollView
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
@@ -68,23 +63,13 @@ class ChartsPage extends GetView<ChartsController> {
           children: [
             Obx(() => SizedBox(
                 height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
-
-            // 1. AI 分析模块
             const AiAnalysisCard(),
-
             Obx(() => SizedBox(
                 height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
-
-            // 2. 趋势图模块
             const TrendChartCard(),
-
             SizedBox(height: 16.h),
-
-            // 3. 分类图模块
             const CategoryChartCard(),
             SizedBox(height: 16.h),
-
-            // 【新增】日历卡片
             const CalendarChartCard(),
             SizedBox(height: 30.h),
           ],
@@ -93,32 +78,43 @@ class ChartsPage extends GetView<ChartsController> {
     );
   }
 
-  // 空状态稍微简单点，可以保留在 View 里，也可以继续拆
-  Widget _buildEmptyState() {
-    return Container(
-      color: backgroundColor,
-      child: Center(
-        child: GestureDetector(
-          onTap: () {
-            controller.onInit();
-            controller.update(['charts']);
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.bar_chart_rounded,
-                  size: 60.sp, color: Colors.grey[300]),
-              SizedBox(height: 16.h),
-              Text("暂无数据",
-                  style:
-                      TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
-              SizedBox(height: 8.h),
-              Text("点击屏幕刷新",
-                  style: TextStyle(fontSize: 14.sp, color: Colors.grey)),
-            ],
+  // 4. 改造空状态：必须是可滚动的，否则无法触发下拉刷新
+  Widget _buildEmptyState(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    // 使用 ListView 或 LayoutBuilder + SingleChildScrollView 确保占满屏幕且可滚动
+    return CustomScrollView(
+      slivers: [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: GestureDetector(
+              onTap: () {
+                // 点击也可以刷新，双重保障
+                controller.refreshController.callRefresh();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bar_chart_rounded,
+                      size: 60.sp,
+                      color: appColors.secondaryText.withOpacity(0.3)),
+                  SizedBox(height: 16.h),
+                  Text("暂无数据",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16.sp,
+                          color: appColors.primaryText)),
+                  SizedBox(height: 8.h),
+                  Text("下拉或点击刷新", // 提示文案修改
+                      style: TextStyle(
+                          fontSize: 14.sp, color: appColors.secondaryText)),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        )
+      ],
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:journal/core/app_theme_colors.dart';
 
 class ChartCardContainer extends StatelessWidget {
   final Widget child;
@@ -13,17 +14,19 @@ class ChartCardContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return Container(
       width: double.infinity,
       padding: padding ?? EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        color: appColors.cardBackground, // 适配深色
+        borderRadius: BorderRadius.circular(24.r), // 统一 24px 大圆角
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, 4),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            offset: const Offset(0, 10),
+            blurRadius: 20,
           )
         ],
       ),

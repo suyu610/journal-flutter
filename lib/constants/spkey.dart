@@ -18,4 +18,6 @@ class SPKey {
   static const String live2dZipVersion = "live2dZipVersion";
 
   static const String tabOrder = "tabOrder";
+
+  static const String themeMode = "themeMode";
 }

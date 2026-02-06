@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/pages/login/sms_code/widget/verification_code.dart';
 
 import 'logic.dart';
@@ -11,116 +13,165 @@ class CodePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<CodeLogic>();
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 40.h),
-          InkWell(
-            onTap: () {
-              Get.back();
-            },
-            child: Icon(
-              Icons.close,
-              size: 35.r,
-            ),
-          ),
-          SizedBox(height: 20.w),
-          Text(
-            "请输入验证码",
-            style: TextStyle(
-              fontSize: 30.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 10.w),
-          Obx(() => Text(
-                "已向您的${logic.phoneNum.isEmail ? "邮箱" : "手机号"} ${logic.phoneNum} 发送验证码",
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  color: Colors.grey,
-                ),
-              )),
-          SizedBox(height: 30.h),
-          VerificationCode(
-            autoFocused: true,
-            height: 50,
-            style: CodeStyle.rectangle,
-            maxLength: 4,
-            itemWidth: 50,
-            itemSpace: 40,
-            borderWidth: 1,
-            contentSize: 28.sp,
-            contentColor: Colors.black,
-            borderSelectColor: Colors.black,
-            borderColor: Colors.grey.withAlpha(50),
-            onCompleted: (String value) {
-              logic.codeInputCompleted(code: value);
-            },
-            onChanged: (value) {
-              logic.state.code.value = value;
-            },
-          ),
-          SizedBox(height: 20.w),
-          Obx(
-            () => Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
-                  onTap: () {
-                    logic.reSendCode();
-                  },
-                  child: Text(
-                    logic.state.countDownNum.value == -1
-                        ? "重新发送"
-                        : "重新发送(${logic.state.countDownNum.value})s",
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      color: logic.state.countDownNum.value == -1
-                          ? Colors.blue
-                          : Colors.grey,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 10.w),
-          Obx(
-            () => InkWell(
-              onTap: () {
-                logic.next(context);
-              },
-              child: Container(
-                height: 40.h,
-                alignment: Alignment.center,
-                margin: EdgeInsets.only(top: 20.w, bottom: 30.w),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6.r)),
-                    color: logic.codeIsCompleted
-                        ? const Color(0xff000000)
-                        : const Color(0xff000000).withAlpha(50)),
-                child: Text(
-                  "下一步",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+    // 2. 获取主题色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    return Scaffold(
+      // 背景色适配
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      // 使用 SafeArea 保证不被刘海遮挡
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 20.h),
+              // 关闭按钮
+              InkWell(
+                onTap: () {
+                  Get.back();
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Icon(
+                    Icons.close,
+                    size: 28.r,
+                    color: appColors.primaryText, // 适配图标色
                   ),
                 ),
               ),
-            ),
-          ),
-          SizedBox(height: 10.w),
-          Row(
-            children: [
-              Expanded(child: Container()),
+              SizedBox(height: 32.h),
+
+              // 大标题
+              Text(
+                "请输入验证码",
+                style: TextStyle(
+                  fontSize: 28.sp,
+                  fontWeight: FontWeight.w600,
+                  color: appColors.primaryText, // 适配标题色
+                  letterSpacing: 1,
+                ),
+              ),
+              SizedBox(height: 12.h),
+
+              // 副标题
+              Obx(() => Text(
+                    "已向您的${logic.phoneNum.isEmail ? "邮箱" : "手机号"} ${logic.phoneNum} 发送验证码",
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      height: 1.5,
+                      color: appColors.secondaryText, // 适配次要文本色
+                    ),
+                  )),
+
+              SizedBox(height: 48.h),
+
+              // 验证码输入框 (需要 VerificationCode 组件支持颜色参数)
+              Center(
+                child: VerificationCode(
+                  autoFocused: true,
+                  height: 50,
+                  style: CodeStyle.rectangle,
+                  maxLength: 4,
+                  itemWidth: 50,
+                  itemSpace: 30, // 稍微减小间距以适应小屏
+                  borderWidth: 1.5,
+                  contentSize: 24.sp,
+                  // 适配颜色：
+                  contentColor: appColors.primaryText, // 输入数字颜色
+                  borderSelectColor: appColors.primaryText, // 选中框颜色
+                  borderColor:
+                      appColors.secondaryText.withOpacity(0.2), // 未选中框颜色
+                  onCompleted: (String value) {
+                    logic.codeInputCompleted(code: value);
+                  },
+                  onChanged: (value) {
+                    logic.state.code.value = value;
+                  },
+                ),
+              ),
+
+              SizedBox(height: 32.h),
+
+              // 重新发送按钮
+              Obx(
+                () => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        logic.reSendCode();
+                      },
+                      child: Text(
+                        logic.state.countDownNum.value == -1
+                            ? "重新发送"
+                            : "重新发送 (${logic.state.countDownNum.value}s)",
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          // 倒计时中灰色，可点击时蓝色(或其他强调色)
+                          color: logic.state.countDownNum.value == -1
+                              ? Colors.blueAccent
+                              : appColors.secondaryText,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 48.h),
+
+              // 下一步按钮
+              Obx(() {
+                // 按钮是否可用
+                bool isEnabled = logic.codeIsCompleted;
+
+                return GestureDetector(
+                  onTap: () {
+                    if (isEnabled) logic.next(context);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 50.h,
+                    alignment: Alignment.center,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25.r), // 圆角胶囊
+                      // 适配按钮背景色
+                      color: isEnabled
+                          ? appColors.mainButtonBg
+                          : appColors.secondaryText.withOpacity(0.1),
+                      // 增加阴影
+                      boxShadow: isEnabled
+                          ? [
+                              BoxShadow(
+                                  color:
+                                      appColors.mainButtonBg.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4))
+                            ]
+                          : [],
+                    ),
+                    child: Text(
+                      "下一步",
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        // 适配按钮文字色
+                        color: isEnabled
+                            ? appColors.mainButtonIcon
+                            : appColors.secondaryText.withOpacity(0.5),
+                      ),
+                    ),
+                  ),
+                );
+              }),
             ],
-          )
-        ],
+          ),
+        ),
       ),
     );
   }

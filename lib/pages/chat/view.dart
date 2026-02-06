@@ -5,11 +5,12 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/pages/chat/widgets/bottom.dart';
 
 import 'package:journal/services/local_server.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-// 保持你原有的引用
 import 'package:journal/components/voice_record/message_voice_send_widget.dart';
 import 'package:journal/pages/chat/widgets/bubble.dart';
 import 'index.dart';
@@ -19,166 +20,182 @@ class ChatPage extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    // 设置状态栏文字为白色（适应深色背景）
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    // 2. 获取主题色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // 设置状态栏
+    SystemChrome.setSystemUIOverlayStyle(
+        isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark);
 
     return GetBuilder<ChatController>(
       init: ChatController(),
       id: "chat",
       builder: (_) {
         return Scaffold(
-          resizeToAvoidBottomInset: false, // 基础底色：深邃夜空蓝，防止加载时闪白屏
-          backgroundColor: const Color(0xFF1A1A2E),
+          resizeToAvoidBottomInset: false,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           extendBodyBehindAppBar: true,
-          appBar: _buildTransparentAppBar(context),
+          appBar: _buildTransparentAppBar(context, appColors, isDark),
           body: Stack(
             children: [
               // ==============================
-              // 1. 背景层：温馨的星空/极光渐变
+              // 1. 背景层：动态渐变 + 智能遮罩
               // ==============================
               Positioned.fill(
                 child: Obx(() {
-                  final bgColors =
+                  // 获取角色背景色，如果没有则兜底
+                  final List<Color> bgColors =
                       controller.currentCharacter.value?.bgColors ??
                           [
-                            const Color(0xFF2E335A), // 顶部：深紫蓝 (更有二次元夜晚感)
-                            const Color(0xFF1C1B33), // 中部：过渡深色
-                            const Color(0xFF000000), // 底部：纯黑 (保证输入框清晰)
+                            Theme.of(context).scaffoldBackgroundColor,
+                            Theme.of(context).scaffoldBackgroundColor,
                           ];
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 600),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.center,
-                        end: Alignment.bottomCenter,
-                        colors: bgColors.length == 2
-                            ? [
-                                ...bgColors,
-                              ] // 强制加一个黑色底部，保证输入框清晰
-                            : bgColors,
-                      ),
-                    ),
-                    // 叠加一层黑色遮罩在底部，保证输入框区域的可读性
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.1),
-                            Colors.black.withOpacity(0.4),
-                          ],
-                          stops: const [0.5, 0.8, 1.0],
+
+                  return Stack(
+                    children: [
+                      // 1.1 原始彩色渐变
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 600),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: bgColors.length >= 2
+                                ? bgColors
+                                : [bgColors.first, bgColors.first],
+                          ),
                         ),
                       ),
-                    ),
+
+                      // 1.2 深色模式滤镜 (核心修改)
+                      // 深色模式下盖一层半透明黑，压住刺眼的亮色
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 600),
+                        color: isDark
+                            ? Colors.black.withOpacity(0.6) // 压暗 60%
+                            : Colors.transparent,
+                      ),
+
+                      // 1.3 底部遮罩 (让底部输入框区域文字更清晰)
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              // 深色模式下底部更黑一点
+                              (isDark ? Colors.black : Colors.white)
+                                  .withOpacity(0.0),
+                              (isDark ? Colors.black : Colors.white)
+                                  .withOpacity(isDark ? 0.8 : 0.4),
+                            ],
+                            stops: const [0.5, 0.8, 1.0],
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 }),
               ),
 
               // ==============================
-              // 1.1 氛围光 (关键：增加温馨感)
+              // 1.1 氛围光 (优化版)
               // ==============================
-              // 在人物背后加一个淡淡的暖色光晕，像是一个温暖的灵魂
-              // ==============================
-// 1.1 氛围光 (优化版：极致柔和)
-// ==============================
               Positioned(
-                top: 100.h, //稍微上移一点，让光更自然地散落在头部周围
+                top: 80.h,
                 left: 0,
                 right: 0,
-                // 不需要限制 height，让光自由发散
                 child: Center(
                   child: Obx(() {
-                    final themeColor =
+                    final originColor =
                         controller.currentCharacter.value?.themeColor ??
                             const Color(0xFFFF9A9E);
+
+                    // 计算光晕颜色
+                    Color glowColor;
+                    double glowOpacity;
+
+                    if (isDark) {
+                      // 深色模式：颜色与黑色混合，降低饱和度
+                      glowColor = Color.lerp(originColor, Colors.black, 0.5)!;
+                      glowOpacity = 0.2; // 极其微弱的光，避免光污染
+                    } else {
+                      glowColor = originColor;
+                      glowOpacity = 0.4;
+                    }
+
                     return ImageFiltered(
-                      imageFilter: ImageFilter.blur(
-                          sigmaX: 20, sigmaY: 20), // 大数值模糊，消除一切硬边
+                      imageFilter:
+                          ImageFilter.blur(sigmaX: 60, sigmaY: 60), // 模糊度加大
                       child: AnimatedContainer(
-                        duration:
-                            const Duration(milliseconds: 800), // 变色更慢一点，更柔
-                        curve: Curves.easeOutQuart,
-                        width: 280.w,
-                        height: 280.w,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                        width: 300.w,
+                        height: 300.w,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          // 关键修改 2: 使用纯色混合模式或简单的 BoxShadow 模拟核心光
-                          // 这里的渐变用于制造光的层次
-                          gradient: RadialGradient(
-                            colors: [
-                              themeColor.withOpacity(0.8), // 中心稍微亮一点
-                              Colors.white.withOpacity(0.2), // 中间过渡
-                              Colors.transparent, // 边缘完全消失
-                            ],
-                            stops: const [0.0, 0.4, 1.0], // 控制光晕的扩散范围
-                            radius: 0.8,
-                          ),
+                          color: glowColor.withOpacity(glowOpacity),
                         ),
                       ),
                     );
                   }),
                 ),
               ),
+
               // ==============================
               // 2. Live2D 人物层
               // ==============================
               Obx(() => Positioned(
-                    top: 120.h, // 稍微上移，让人物占据上半部分
+                    top: 120.h,
                     left: 0,
                     right: 0,
-                    // 根据你的模型调整高度，通常占屏幕一半多一点
                     height: 0.65.sh,
                     child: controller.isModelLoaded.value
                         ? live2D("${LocalServer.baseUrl}/index.html")
                         : const SizedBox(),
                   )),
 
-              // ==================== 新增：游戏风格对话气泡层 ====================
-              // 位置：放在 Live2D 头部上方 (根据 top: 110.h 估算，头部大概在 120-150 左右，气泡放在 60-80)
+              // ==================== 顶部状态气泡 ====================
               Positioned(
                 top: 60.h,
-                left: 40.w, // 左右留出边距，防止贴边
+                left: 40.w,
                 right: 40.w,
                 child: Obx(() => AnimatedOpacity(
                       duration: const Duration(milliseconds: 300),
                       opacity: controller.isBubbleVisible.value ? 1.0 : 0.0,
                       child: Column(
                         children: [
-                          // 气泡本体
                           Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 8.h),
+                                horizontal: 16.w, vertical: 10.h),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95), // 稍微一点点透
-                              borderRadius:
-                                  BorderRadius.circular(20), // 圆润的游戏风格
+                              // 深色模式下背景稍微实一点，提高可读性
+                              color: appColors.cardBackground
+                                  .withOpacity(isDark ? 0.95 : 0.85),
+                              borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
+                                  color: Colors.black.withOpacity(0.1), // 阴影加深
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 6),
                                 )
                               ],
                               border: Border.all(
-                                  color: const Color(0xFFE0E0E0), width: 1),
+                                  color:
+                                      appColors.primaryText.withOpacity(0.05),
+                                  width: 1),
                             ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  controller.bubbleText.value,
-                                  style: TextStyle(
-                                    color: const Color(0xFF333333),
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.w500, // 加粗一点，像游戏字幕
-                                    fontFamily: "ZCOOLKuaiLle", // 如果你有圆体字库更好
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+                            child: Text(
+                              controller.bubbleText.value,
+                              style: TextStyle(
+                                color: appColors.primaryText,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "ZCOOLKuaiLle",
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ],
@@ -190,16 +207,20 @@ class ChatPage extends GetView<ChatController> {
               // 5. 聊天内容列表
               // ==============================
               Positioned.fill(
-                top: 110.h, // 避开头部区域
-                bottom: 100.h, // 避开底部输入框
+                top: 110.h,
+                bottom: 100.h,
                 child: ShaderMask(
-                  // 顶部边缘渐隐遮罩：让消息向上滚动时慢慢消失，而不是生硬切断
+                  // 顶部渐隐遮罩：使用 Alpha 通道遮罩
                   shaderCallback: (Rect bounds) {
                     return const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.white, Colors.white],
-                      stops: [0.0, 0.15, 1.0],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black,
+                        Colors.black
+                      ], // 这里的颜色本身不重要，重要的是Alpha
+                      stops: [0.0, 0.1, 1.0],
                     ).createShader(bounds);
                   },
                   blendMode: BlendMode.dstIn,
@@ -210,7 +231,6 @@ class ChatPage extends GetView<ChatController> {
                         user: controller.user,
                         showUserAvatars: false,
                         showUserNames: false,
-                        // 自定义气泡构建
                         bubbleBuilder: (Widget widget,
                             {required types.Message message,
                             required bool nextMessageInGroup}) {
@@ -218,15 +238,15 @@ class ChatPage extends GetView<ChatController> {
                               message: message,
                               nextMessageInGroup: nextMessageInGroup);
                         },
-                        // 使用下方定义的温馨暗黑主题
-                        theme: _buildCozyDarkTheme(),
-                        customBottomWidget: const SizedBox(), // 底部留空，我们自己做浮动的
+                        // 主题适配
+                        theme: _buildCozyTheme(context, appColors, isDark),
+                        customBottomWidget: const SizedBox(),
                       )),
                 ),
               ),
 
               // ==============================
-              // 6. 语音录制组件
+              // 6. 语音组件
               // ==============================
               VoiceMessageSendWidget((cancel, text, seconds) {
                 if (cancel == true || text == "") return;
@@ -251,57 +271,47 @@ class ChatPage extends GetView<ChatController> {
   }
 
   // --------------------------------------------------------------------------
-  // 组件：透明 AppBar (带状态指示)
+  // 透明 AppBar
   // --------------------------------------------------------------------------
-  AppBar _buildTransparentAppBar(context) {
+  PreferredSizeWidget _buildTransparentAppBar(
+      BuildContext context, AppThemeColors appColors, bool isDark) {
     return AppBar(
       backgroundColor: Colors.transparent,
       forceMaterialTransparency: true,
       elevation: 0,
       centerTitle: true,
-      // title: Column(
-      //   children: [
-      //     Text(
-      //       controller.activity.value.activityName,
-      //       style: TextStyle(color: Colors.white, fontSize: 14.sp, shadows: [
-      //         Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4)
-      //       ]),
-      //     ),
-      //   ],
-      // ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+        // 深色模式下固定用白色，或者跟随 primaryText (通常也是白色)
+        icon: Icon(Icons.arrow_back_ios_new, color: appColors.primaryText),
         onPressed: () {
-          print("推出聊天页面");
           Get.back();
         },
       ),
-      // actions: [
-      //   IconButton(
-      //     icon: const Icon(Icons.more_horiz, color: Colors.white),
-      //     onPressed: () {
-      //       Get.toNamed(Routers.CreateActivityUrl,
-      //           arguments: controller.currentActivity.value);
-      //     },
-      //   )
-      // ],
     );
   }
 
   // --------------------------------------------------------------------------
-  // 主题配置：温馨暗色调
+  // 主题配置：适配深浅模式
   // --------------------------------------------------------------------------
-  ChatTheme _buildCozyDarkTheme() {
-    // 1. 安全获取当前角色
+  ChatTheme _buildCozyTheme(
+      BuildContext context, AppThemeColors appColors, bool isDark) {
     final char = controller.currentCharacter.value;
-    // 2. 智能取色逻辑：优先取背景渐变的第一个颜色（通常更鲜艳适合做气泡），如果没有则用主题色
-    Color activeColor = char?.bgColors.isNotEmpty == true
-        ? char!.bgColors.first
-        : (char?.themeColor ?? const Color(0xFF667EEA));
-    // 3. 智能文字反色：计算背景亮度，如果太亮，文字就用黑色
-    bool isLightColor = activeColor.computeLuminance() > 0.5;
-    Color textColor =
-        isLightColor ? Colors.black.withOpacity(0.8) : Colors.white;
+
+    // 1. 发送方 (用户)
+    Color userBubbleColor = char?.themeColor ?? appColors.mainButtonBg;
+    // 智能计算文字颜色：如果气泡颜色太亮，文字就用黑，否则用白
+    bool isBubbleLight = userBubbleColor.computeLuminance() > 0.5;
+    Color userTextColor =
+        isBubbleLight ? Colors.black.withOpacity(0.8) : Colors.white;
+
+    // 2. 接收方 (AI)
+    // 深色模式：使用卡片背景色 (深灰)，亮色模式：半透明白
+    Color aiBubbleColor = isDark
+        ? appColors.cardBackground.withOpacity(0.9)
+        : Colors.white.withOpacity(0.95);
+
+    // 接收方文字颜色
+    Color aiTextColor = appColors.primaryText;
 
     return DefaultChatTheme(
       emptyChatPlaceholderTextStyle: const TextStyle(
@@ -311,41 +321,38 @@ class ChatPage extends GetView<ChatController> {
       ),
       backgroundColor: Colors.transparent,
 
-      // 机器人气泡：半透明的深色，带一点紫灰，不突兀
-      secondaryColor: const Color(0xFF1E1E1E).withOpacity(0.8),
-      receivedMessageBodyTextStyle: const TextStyle(
-        color: Color(0xFFEBEBEB),
+      // --- 接收方 (AI) ---
+      secondaryColor: aiBubbleColor,
+      receivedMessageBodyTextStyle: TextStyle(
+        color: aiTextColor,
         fontSize: 15,
-        height: 1.4,
+        height: 1.5,
       ),
 
-      // 用户气泡（发送）：使用角色的“主氛围色”
-      primaryColor: activeColor,
+      // --- 发送方 (用户) ---
+      primaryColor: userBubbleColor,
       sentMessageBodyTextStyle: TextStyle(
-        color: textColor, // <--- 动态文字颜色
+        color: userTextColor,
         fontSize: 15,
         fontWeight: FontWeight.w500,
         height: 1.5,
       ),
 
-      // 细节优化
-      messageBorderRadius: 16,
-      messageInsetsHorizontal: 14,
-      messageInsetsVertical: 10,
+      // 细节微调
+      messageBorderRadius: 20,
+      messageInsetsHorizontal: 16,
+      messageInsetsVertical: 12,
+      // 日期分割线
       dateDividerTextStyle: TextStyle(
-          color: Colors.white.withOpacity(0.3),
-          fontSize: 10,
+          color: appColors.secondaryText.withOpacity(0.6),
+          fontSize: 11,
           fontWeight: FontWeight.w500),
       inputBackgroundColor: Colors.transparent,
     );
   }
 
-  // --------------------------------------------------------------------------
-  // Live2D WebView
-  // --------------------------------------------------------------------------
   Widget live2D(String url) {
     WebViewController webController = controller.webViewController;
-    // 赋值给 controller 方便调用
     return WebViewWidget(controller: webController);
   }
 }

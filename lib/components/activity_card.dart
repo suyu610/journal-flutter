@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
@@ -11,37 +13,53 @@ Widget activityCard(
     {Widget? footerWidget, Widget? topRightWidget}) {
   // 1. 初始化计算逻辑
   final stats = _BudgetStats(activity);
+
+  // 2. 获取主题颜色
+  final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    padding: const EdgeInsets.all(24), // 增加内边距，更有呼吸感
     margin: const EdgeInsets.only(bottom: 16),
     decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      color: appColors.cardBackground, // 适配深色背景
+      borderRadius: BorderRadius.circular(24), // 统一大圆角
+      boxShadow: [
+        // 统一的高级弥散阴影
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
     ),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 2. 头部信息
+        // 头部信息
         _Header(
             activity: activity,
             topRightWidget: topRightWidget,
-            context: context),
+            context: context,
+            appColors: appColors), // 传入颜色配置
 
-        const SizedBox(height: 16),
-        const Divider(height: 1, color: Color(0xFFF5F5F5)),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
+        // 分割线：使用极淡的主题色
+        Divider(height: 1, color: appColors.primaryText.withOpacity(0.05)),
+        const SizedBox(height: 20),
 
-        // 3. 核心财务数据 (结余已改为 remainingBudget)
-        _FinanceOverview(activity: activity, onRefresh: refreshFunc),
+        // 核心财务数据
+        _FinanceOverview(
+            activity: activity, onRefresh: refreshFunc, appColors: appColors),
 
-        // 4. 预算分析模块 (日周重点展示)
+        // 预算分析模块
         if (stats.hasBudget) ...[
-          const SizedBox(height: 20),
-          _BudgetAnalysis(stats: stats, activity: activity),
+          const SizedBox(height: 24),
+          _BudgetAnalysis(
+              stats: stats, activity: activity, appColors: appColors),
         ],
 
-        // 5. 底部扩展区域
+        // 底部扩展区域
         if (footerWidget != null) ...[
           const SizedBox(height: 14),
           footerWidget,
@@ -51,21 +69,15 @@ Widget activityCard(
   );
 }
 
-// =============================================================================
-//  Logic Model: 数据清洗与计算
-// =============================================================================
+// ... _BudgetStats 类保持不变 ...
 class _BudgetStats {
   final bool hasBudget;
   final bool isMonthType;
   final double progress;
   final double budgetAmount;
-  final double remaining; // 总剩余/月剩余
-
-  // 限额 (仅用于月模式)
+  final double remaining;
   final double dayLimit;
   final double weekLimit;
-
-  // 剩余 (仅用于月模式)
   final double dayRemaining;
   final double weekRemaining;
 
@@ -74,8 +86,6 @@ class _BudgetStats {
         isMonthType = (activity.budgetType ?? 'TOTAL').toUpperCase() == 'MONTH',
         budgetAmount = _toDouble(activity.budget),
         progress = _calculateProgress(activity),
-        // 这里虽然叫 remaining，但逻辑上被 activity.remainingBudget 替代显示了
-        // 不过进度条计算里可能还需要用到计算值
         remaining = _toDouble(activity.remainingBudget),
         dayLimit = _toDouble(activity.budget) / 30,
         weekLimit = _toDouble(activity.budget) / 4.2,
@@ -104,18 +114,20 @@ class _BudgetStats {
 }
 
 // =============================================================================
-//  Sub Widgets: UI 组件
+//  Sub Widgets: UI 组件 (已深度改造)
 // =============================================================================
 
 class _Header extends StatelessWidget {
   final Activity activity;
   final Widget? topRightWidget;
   final BuildContext context;
+  final AppThemeColors appColors;
 
   const _Header({
     required this.activity,
     required this.topRightWidget,
     required this.context,
+    required this.appColors,
   });
 
   @override
@@ -128,12 +140,13 @@ class _Header extends StatelessWidget {
         children: [
           Row(
             children: [
+              // 图标背景
               Container(
-                width: 40,
-                height: 40,
+                width: 44, // 稍微加大
+                height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(99),
+                  color: appColors.primaryText, // 使用主题文字色作为背景（黑/白反转）
+                  borderRadius: BorderRadius.circular(16), // 圆角方形更现代
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -142,53 +155,32 @@ class _Header extends StatelessWidget {
                       : (activity.activityName.isNotEmpty
                           ? activity.activityName
                           : ""),
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
+                  style: TextStyle(
+                      color: appColors.cardBackground, // 反色文字
+                      fontSize: 18,
                       fontWeight: FontWeight.bold),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     activity.activityName,
-                    style: const TextStyle(
-                        color: Color(0xFF1D1D1D),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                        color: appColors.primaryText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1),
-                        decoration: BoxDecoration(
-                            color: const Color(0xFFF2F3F5),
-                            borderRadius: BorderRadius.circular(4)),
-                        child: const Text(
-                          "编辑",
-                          style:
-                              TextStyle(color: Color(0xFF666666), fontSize: 10),
-                        ),
-                      ),
-                      if (activity.activated)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1),
-                          decoration: BoxDecoration(
-                              color: const Color(0xFFF2F3F5),
-                              borderRadius: BorderRadius.circular(4)),
-                          child: const Text(
-                            "当前账本",
-                            style: TextStyle(
-                                color: Color(0xFF666666), fontSize: 10),
-                          ),
-                        ),
+                      _buildTag("编辑", appColors),
+                      if (activity.activated) ...[
+                        const SizedBox(width: 6),
+                        _buildTag("当前账本", appColors),
+                      ]
                     ],
                   ),
                 ],
@@ -200,19 +192,39 @@ class _Header extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildTag(String text, AppThemeColors appColors) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+          // 使用极淡的背景色
+          color: appColors.secondaryText.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(6)),
+      child: Text(
+        text,
+        style: TextStyle(
+            color: appColors.secondaryText, // 次要文字色
+            fontSize: 10,
+            fontWeight: FontWeight.w500),
+      ),
+    );
+  }
 }
 
 class _FinanceOverview extends StatelessWidget {
   final Activity activity;
   final Function onRefresh;
+  final AppThemeColors appColors;
 
-  const _FinanceOverview({required this.activity, required this.onRefresh});
+  const _FinanceOverview(
+      {required this.activity,
+      required this.onRefresh,
+      required this.appColors});
 
   @override
   Widget build(BuildContext context) {
     final double income = _BudgetStats._toDouble(activity.totalIncome);
     final double expense = _BudgetStats._toDouble(activity.totalExpense);
-    // 修改点：直接使用 activity.remainingBudget，如果为 null 则显示 0
     final double balance = _BudgetStats._toDouble(activity.remainingBudget);
 
     return Column(
@@ -228,13 +240,15 @@ class _FinanceOverview extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  const Text("总支出",
-                      style: TextStyle(color: Color(0xFF999999), fontSize: 12)),
+                  Text("总支出",
+                      style: TextStyle(
+                          color: appColors.secondaryText, fontSize: 13)),
                   const SizedBox(width: 4),
                   if (activity.budget != 0)
-                    const Text("/ 限额",
-                        style:
-                            TextStyle(color: Color(0xFF999999), fontSize: 10)),
+                    Text("/ 限额",
+                        style: TextStyle(
+                            color: appColors.secondaryText.withOpacity(0.7),
+                            fontSize: 11)),
                 ],
               ),
               const SizedBox(height: 4),
@@ -242,79 +256,78 @@ class _FinanceOverview extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  const Text("¥",
+                  Text("¥",
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: appColors.primaryText, // 适配颜色
                           fontFamily: 'SourceCodePro')),
                   const SizedBox(width: 4),
                   Text(
                     expense.toStringAsFixed(2),
-                    style: const TextStyle(
-                        fontSize: 32,
+                    style: TextStyle(
+                        fontSize: 36, // 字体加大
                         fontFamily: 'SourceCodePro',
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF1D1D1D)),
+                        fontWeight: FontWeight.w600,
+                        color: appColors.primaryText),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   if (activity.budget != 0)
                     Text(
                       "/ ${activity.budget?.toStringAsFixed(2) ?? "0.00"}",
-                      style: const TextStyle(
-                          fontSize: 14,
+                      style: TextStyle(
+                          fontSize: 15,
                           fontFamily: 'SourceCodePro',
                           fontWeight: FontWeight.w400,
-                          color: Color(0xFF999999)),
+                          color: appColors.secondaryText),
                     ),
                 ],
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           children: [
-            _miniStatItem("收入", income, const Color(0xFF00A870)),
+            _miniStatItem("收入", income, const Color(0xFF00A870), appColors),
+            // 分割线
             Container(
               width: 1,
               height: 24,
-              color: const Color(0xFFE7E7E7),
+              color: appColors.chartLine.withOpacity(0.1),
             ),
-            const SizedBox(
-              width: 4,
-            ),
-            // 这里的结余现在显示的是 remainingBudget
+            const SizedBox(width: 4),
             _miniStatItem(
                 "结余",
                 balance,
-                balance < 0
-                    ? const Color(0xFFE34D59)
-                    : const Color(0xFF1D1D1D)),
+                balance < 0 ? const Color(0xFFE34D59) : appColors.primaryText,
+                appColors),
           ],
         )
       ],
     );
   }
 
-  Widget _miniStatItem(String label, double value, Color valueColor) {
+  Widget _miniStatItem(
+      String label, double value, Color valueColor, AppThemeColors appColors) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4), // 稍微缩进一点
+            padding: const EdgeInsets.only(left: 12),
             child: Text(label,
-                style: const TextStyle(color: Color(0xFF999999), fontSize: 12)),
+                style: TextStyle(color: appColors.secondaryText, fontSize: 12)),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Padding(
-            padding: const EdgeInsets.only(left: 4),
+            padding: const EdgeInsets.only(left: 12),
             child: Text(
               value.toStringAsFixed(2),
               style: TextStyle(
                   fontSize: 18,
                   fontFamily: 'SourceCodePro',
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: valueColor),
             ),
           ),
@@ -327,83 +340,82 @@ class _FinanceOverview extends StatelessWidget {
 class _BudgetAnalysis extends StatelessWidget {
   final _BudgetStats stats;
   final Activity activity;
+  final AppThemeColors appColors;
 
-  const _BudgetAnalysis({required this.stats, required this.activity});
+  const _BudgetAnalysis(
+      {required this.stats, required this.activity, required this.appColors});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 1. 总进度条 (始终显示)
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. 总进度条
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(stats.isMonthType ? "本月花销进度" : "总花销进度",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: appColors.primaryText)),
+            Text("${(stats.progress * 100).toStringAsFixed(1)}%",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'SourceCodePro',
+                    fontWeight: FontWeight.w500,
+                    color: appColors.primaryText))
+          ],
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6), // 圆润一点
+          child: LinearProgressIndicator(
+            value: stats.progress,
+            // 背景色：浅淡的主题色
+            backgroundColor: appColors.primaryText.withOpacity(0.05),
+            // 进度条颜色：如果爆了就红，没爆就用主色
+            valueColor: AlwaysStoppedAnimation<Color>(stats.progress >= 1.0
+                ? const Color(0xFFE34D59)
+                : appColors.primaryText),
+            minHeight: 8,
+          ),
+        ),
+
+        if (stats.isMonthType) ...[
+          const SizedBox(height: 20),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(stats.isMonthType ? "本月花销进度" : "总花销进度",
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF333333))),
-              Text("${(stats.progress * 100).toStringAsFixed(1)}%",
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontFamily: 'SourceCodePro',
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff000000)))
+              Expanded(
+                  child: _highlightCard(
+                      title: "今日",
+                      remainingLabel:
+                          "今日${stats.dayRemaining < 0 ? "超出" : "剩余"}",
+                      remaining: stats.dayRemaining,
+                      spent: (activity.todayExpense ?? 0).toDouble(),
+                      limit: stats.dayLimit)),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _highlightCard(
+                      title: "本周",
+                      remainingLabel: stats.weekRemaining < 0 ? "本周超出" : "本周剩余",
+                      remaining: stats.weekRemaining,
+                      spent: (activity.weekExpense ?? 0).toDouble(),
+                      limit: stats.weekLimit)),
             ],
           ),
+        ] else ...[
           const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: stats.progress,
-              backgroundColor: const Color(0xFFE0E0E0),
-              valueColor: AlwaysStoppedAnimation<Color>(stats.progress >= 1.0
-                  ? const Color(0xFFE34D59)
-                  : const Color(0xFF000000)),
-              minHeight: 8,
-            ),
+          Text(
+            "总预算 ¥${stats.budgetAmount.toStringAsFixed(2)}",
+            style: TextStyle(color: appColors.secondaryText, fontSize: 11),
           ),
-
-          if (stats.isMonthType) ...[
-            const SizedBox(height: 20), // 加大间距
-            Row(
-              children: [
-                Expanded(
-                    child: _highlightCard(
-                        title: "今日",
-                        remainingLabel:
-                            "今日${stats.dayRemaining < 0 ? "超出" : "剩余"}",
-                        remaining: stats.dayRemaining,
-                        spent: (activity.todayExpense ?? 0).toDouble(),
-                        limit: stats.dayLimit)),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: _highlightCard(
-                        title: "本周",
-                        remainingLabel:
-                            stats.weekRemaining < 0 ? "本周超出" : "本周剩余",
-                        remaining: stats.weekRemaining,
-                        spent: (activity.weekExpense ?? 0).toDouble(),
-                        limit: stats.weekLimit)),
-              ],
-            ),
-          ] else ...[
-            // 总预算模式下的简单文本
-            const SizedBox(height: 8),
-            Text(
-              "总预算 ¥${stats.budgetAmount.toStringAsFixed(2)}",
-              style: const TextStyle(color: Color(0xFF999999), fontSize: 11),
-            ),
-          ]
-        ],
-      ),
+        ]
+      ],
     );
   }
 
-  // 高亮展示卡片
+  // 高亮展示卡片 (重构为卡片中的卡片)
   Widget _highlightCard({
     required String title,
     required String remainingLabel,
@@ -411,12 +423,16 @@ class _BudgetAnalysis extends StatelessWidget {
     required double spent,
     required double limit,
   }) {
-    // 剩余颜色：不够了变红，够用则是深色
     final remainColor =
-        remaining < 0 ? const Color(0xFFE34D59) : const Color(0xFF1D1D1D);
+        remaining < 0 ? const Color(0xFFE34D59) : appColors.primaryText;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        // 使用非常淡的背景色，制造层次
+        color: appColors.primaryText.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -425,56 +441,59 @@ class _BudgetAnalysis extends StatelessWidget {
               Container(
                   width: 3,
                   height: 12,
-                  color: const Color(0xff000000),
+                  // 装饰条颜色
+                  color: appColors.primaryText,
                   margin: const EdgeInsets.only(right: 6)),
               Text(title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333))),
+                      color: appColors.primaryText)),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          // 重点：剩余金额
           Text(remainingLabel,
-              style: const TextStyle(fontSize: 10, color: Color(0xFF999999))),
+              style: TextStyle(fontSize: 10, color: appColors.secondaryText)),
+          const SizedBox(height: 2),
           Text(
             "¥${remaining.abs().toStringAsFixed(1)}",
             style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontFamily: 'SourceCodePro',
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: remainColor),
           ),
 
+          const SizedBox(height: 12),
+          // 分割线
+          Container(height: 1, color: appColors.primaryText.withOpacity(0.05)),
           const SizedBox(height: 8),
-          Container(height: 1, color: const Color(0xFFF0F0F0)),
-          const SizedBox(height: 6),
 
-          // 辅点：支出与限额
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("已支",
-                  style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
+              Text("已支",
+                  style:
+                      TextStyle(fontSize: 10, color: appColors.secondaryText)),
               Text("¥${spent.toStringAsFixed(0)}",
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 10,
                       fontFamily: 'SourceCodePro',
-                      color: Color(0xFF666666))),
+                      color: appColors.secondaryText)),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("限额",
-                  style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
+              Text("限额",
+                  style:
+                      TextStyle(fontSize: 10, color: appColors.secondaryText)),
               Text("¥${limit.toStringAsFixed(0)}",
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 10,
                       fontFamily: 'SourceCodePro',
-                      color: Color(0xFF999999))),
+                      color: appColors.secondaryText)),
             ],
           ),
         ],
@@ -483,6 +502,7 @@ class _BudgetAnalysis extends StatelessWidget {
   }
 }
 
+// 头像部分保持逻辑，样式稍作调整
 Widget buildOperationAvatar(Activity activity, BuildContext context) {
   List<String> avatarList =
       activity.userList.take(3).map((e) => e.avatarUrl).toList();
@@ -499,6 +519,7 @@ Widget buildOperationAvatar(Activity activity, BuildContext context) {
               ? '${activity.userList.length}+'
               : "+",
           avatarDisplayList: avatarList,
+          // 可以根据需要调整 avatar 的边框颜色等，但 TDesign 默认封装较好
           onTap: () {
             TDToast.showText('点击了操作', context: context);
           }),

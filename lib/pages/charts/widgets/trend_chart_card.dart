@@ -1,25 +1,19 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/core/app_theme_colors.dart';
 import '../controller.dart';
-import '../view.dart'; // 引用 DataModel
 import 'chart_card_container.dart';
 
 class TrendChartCard extends GetView<ChartsController> {
-  // 配色方案也可以抽离到 config，这里暂时保留在组件内
-  static final List<Color> _chartPalette = [
-    const Color(0xFF263238),
-    const Color(0xFF607D8B),
-    const Color(0xFFCFD8DC),
-  ];
-
   const TrendChartCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 监听数据变化
+    // 1. 获取主题配置
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return GetBuilder<ChartsController>(
       id: "charts",
       builder: (_) {
@@ -33,59 +27,30 @@ class TrendChartCard extends GetView<ChartsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "最近 7 天消费",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: Colors.black87,
+                  color: appColors.primaryText, // 适配标题色
                 ),
               ),
               BrnBrokenLine(
-                size: Size(330.w, MediaQuery.of(context).size.height / 5),
-                lines: [
-                  BrnPointsLine(
-                    isShowPointText: false,
-                    lineWidth: 2.5,
-                    pointRadius: 4,
-                    isShowPoint: false,
-                    isCurve: false,
-                    points: _generateTrendPoints(dailyData),
-                    shaderColors: [
-                      _chartPalette[1].withOpacity(0.3),
-                      _chartPalette[1].withOpacity(0.01)
-                    ],
-                    lineColor: _chartPalette[0],
-                  ),
-                  if (controller.dailyBudgetValue > 0)
-                    BrnPointsLine(
-                      isShowPointText: false,
-                      lineWidth: 1,
-                      pointRadius: 0,
-                      isShowPoint: false,
-                      isCurve: false,
-                      points: _generateBudgetPoints(dailyData.length),
-                      shaderColors: [Colors.transparent, Colors.transparent],
-                      lineColor: Colors.redAccent.withOpacity(1),
-                    ),
-                ],
-                isShowYHintLine: false,
-                yHintLineOffset: 0,
-                hintLineColor: const Color(0xFFEEEEEE),
-                isShowXHintLine: true,
-                xyDialLineWidth: 0,
-                xDialColor: Colors.blueGrey[400],
-                showPointDashLine: false,
-                isTipWindowAutoDismiss: true,
-                isHintLineSolid: false,
-                isShowYDialText: false,
-                xDialValues: _generateXAxisLabels(dailyData),
-                xDialMin: 0,
                 xDialMax: dailyData.length.toDouble(),
-                yDialValues: _generateYAxisLabels(dailyData, maxVal),
+                xDialMin: 0,
                 yDialMin: 0,
                 yDialMax: maxVal,
-              ),
+                size: Size(330.w, 180.h),
+                yDialValues: _generateYAxisLabels(dailyData, maxVal),
+                xDialValues: _generateXAxisLabels(dailyData, appColors),
+                isShowYDialText: false,
+                lines: [
+                  // 1. 实际消费曲线
+                  _buildLineData(dailyData, appColors),
+                  // 2. 预算参考线 (修复：加回此逻辑)
+                  _buildBudgetLine(dailyData, appColors),
+                ],
+              )
             ],
           ),
         );
@@ -93,52 +58,66 @@ class TrendChartCard extends GetView<ChartsController> {
     );
   }
 
-  // --- 私有辅助方法 (从 View 中移入) ---
-
-  List<BrnPointData> _generateTrendPoints(List<ChartDataModel> data) {
-    return data.asMap().entries.map((entry) {
-      final index = entry.key;
-      final item = entry.value;
-      return BrnPointData(
-        pointText: item.value,
-        x: index.toDouble(),
-        y: item.doubleValue,
-        lineTouchData: BrnLineTouchData(
-          tipWindowSize: const Size(60, 40),
-          onTouch: () => item.value,
-        ),
-      );
-    }).toList();
+  // 构建消费曲线 (实线，深色)
+  BrnPointsLine _buildLineData(
+      List<ChartDataModel> data, AppThemeColors appColors) {
+    return BrnPointsLine(
+      // 使用主题色盘的主色
+      lineColor: appColors.chartPalette[0],
+      points: data.map((e) {
+        return BrnPointData(
+          x: data.indexOf(e).toDouble(),
+          y: e.doubleValue,
+          lineTouchData: BrnLineTouchData(
+            onTouch: () =>
+                "${e.name}\n${e.doubleValue.toStringAsFixed(0)}", // 显示日期+金额
+            tipWindowSize: const Size(60, 40),
+          ),
+        );
+      }).toList(),
+      isShowPointText: false,
+    );
   }
 
-  List<BrnPointData> _generateBudgetPoints(int count) {
-    return List.generate(count, (index) {
-      return BrnPointData(
-        pointText: "",
-        x: index.toDouble(),
-        y: controller.dailyBudgetValue,
-        lineTouchData: BrnLineTouchData(
-          onTouch: () =>
-              "预算\n${controller.dailyBudgetValue.toStringAsFixed(0)}",
-          tipWindowSize: const Size(80, 50),
-        ),
-      );
-    });
+  // 构建预算线 (建议做成淡色或虚线)
+  BrnPointsLine _buildBudgetLine(
+      List<ChartDataModel> data, AppThemeColors appColors) {
+    return BrnPointsLine(
+      // 使用次要颜色的低透明度，防止喧宾夺主，同时适配深色模式
+      lineColor: appColors.secondaryText.withOpacity(0.4),
+      // 如果 Bruno 支持 isDash: true 最好，不支持则靠颜色区分
+      points: List.generate(data.length, (index) {
+        return BrnPointData(
+          pointText: "",
+          x: index.toDouble(),
+          y: controller.dailyBudgetValue,
+          lineTouchData: BrnLineTouchData(
+            onTouch: () =>
+                "预算\n${controller.dailyBudgetValue.toStringAsFixed(0)}",
+            tipWindowSize: const Size(80, 50),
+          ),
+        );
+      }),
+      isShowPointText: false,
+    );
   }
 
-  List<BrnDialItem> _generateXAxisLabels(List<ChartDataModel> data) {
+  // 生成 X 轴标签
+  List<BrnDialItem> _generateXAxisLabels(
+      List<ChartDataModel> data, AppThemeColors appColors) {
     return data.asMap().entries.map((entry) {
       return BrnDialItem(
         dialText: entry.value.name,
         dialTextStyle: TextStyle(
           fontSize: 10.sp,
-          color: const Color(0xFF9E9E9E),
+          color: appColors.secondaryText, // 适配轴文字颜色
         ),
         value: entry.key.toDouble(),
       );
     }).toList();
   }
 
+  // 生成 Y 轴刻度
   List<BrnDialItem> _generateYAxisLabels(
       List<ChartDataModel> data, double maxVal) {
     double minVal = 0;
@@ -158,11 +137,14 @@ class TrendChartCard extends GetView<ChartsController> {
   }
 
   double _calculateMaxYAxis(List<ChartDataModel> data) {
-    if (data.isEmpty) return 100;
-    double maxDataVal = data
-        .map((e) => e.doubleValue)
-        .fold(0.0, (prev, curr) => max(prev, curr));
-    double targetMax = max(maxDataVal, controller.dailyBudgetValue);
-    return targetMax == 0 ? 100 : targetMax * 1.2;
+    if (data.isEmpty) return 0;
+    // 同时也考虑预算值，防止预算很高但消费很低时，预算线画在图表外面
+    double maxDataVal =
+        data.map((e) => e.doubleValue).reduce((a, b) => a > b ? a : b);
+    double maxVal = maxDataVal > controller.dailyBudgetValue
+        ? maxDataVal
+        : controller.dailyBudgetValue;
+
+    return maxVal * 1.2; // 留出 20% 顶部空间
   }
 }

@@ -16,12 +16,10 @@ class InvitePage extends GetView<InviteController> {
       id: "invite",
       builder: (_) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F7FA), // 浅灰底色衬托深色卡片
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: BrnAppBar(
-            backgroundColor: Colors.transparent, // 导航栏透明，透出背景
-            // 如果背景是深色，这里要把标题改为白色；如果是浅色背景则黑色
-            // 这里我们让头部有一部分深色背景，所以AppBar可以设为无色
-            title: const Text(""), // 标题放到底下的卡片里更美观
+            backgroundColor: Colors.transparent,
+            title: const Text(""),
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new,
                   color: Colors.blueGrey[900], size: 20),

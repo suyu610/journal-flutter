@@ -2,8 +2,8 @@ import 'package:contained_tab_bar_view/contained_tab_bar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/src/components/navbar/brn_appbar.dart';
-import 'package:journal/components/bruno/src/theme/configs/brn_appbar_config.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/util/icons.dart';
 import 'index.dart';
 
@@ -12,27 +12,42 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Get.put 确保 Controller 被加载 (如果你没有在 Binding 中配置的话)
+    // 使用 Get.put 确保 Controller 被加载
     final controller = Get.put(ExpenseTypePickerController());
+    // 2. 获取主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppbar(),
-      body: _buildView(controller),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _buildAppbar(context, appColors),
+      body: _buildView(controller, appColors),
     );
   }
 
-  PreferredSizeWidget _buildAppbar() => BrnAppBar(
-        themeData: BrnAppBarConfig.light(),
-        showDefaultBottom: true,
-        title: const Text(
+  // 替换为标准 AppBar 以适配主题
+  PreferredSizeWidget _buildAppbar(
+          BuildContext context, AppThemeColors appColors) =>
+      AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor, // 与背景一致
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: appColors.primaryText, size: 20),
+          onPressed: () => Get.back(),
+        ),
+        title: Text(
           "选择分类",
           style: TextStyle(
-              fontSize: 17, fontWeight: FontWeight.w600, color: Colors.black87),
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: appColors.primaryText // 适配文字颜色
+              ),
         ),
       );
 
-  Widget _buildView(ExpenseTypePickerController controller) {
+  Widget _buildView(
+      ExpenseTypePickerController controller, AppThemeColors appColors) {
     return ContainedTabBarView(
       tabs: const [
         Text('支出'),
@@ -41,53 +56,65 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
       tabBarProperties: TabBarProperties(
         height: 48,
         background: Container(
-          color: Colors.white,
-          // 增加底部细线，增强层次感
+          // Tab栏背景：适配深色
+          color: appColors.cardBackground,
+          // 增加底部细线，增强层次感 (颜色适配)
           padding: const EdgeInsets.only(bottom: 6),
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border(
+                    bottom: BorderSide(
+                        color: appColors.primaryText.withOpacity(0.05),
+                        width: 1))),
+          ),
         ),
-        indicatorColor: Colors.black,
+        // 指示器颜色
+        indicatorColor: appColors.primaryText,
         indicatorWeight: 3,
-        labelColor: Colors.black,
+        // 选中文字颜色
+        labelColor: appColors.primaryText,
         labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        unselectedLabelColor: Colors.grey,
+        // 未选中文字颜色
+        unselectedLabelColor: appColors.secondaryText,
         unselectedLabelStyle:
             const TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
       ),
       views: [
         // 支出列表
-        Obx(() => _buildGridList(controller.expenseList, isExpense: true)),
+        Obx(() =>
+            _buildGridList(controller.expenseList, appColors, isExpense: true)),
         // 收入列表
-        Obx(() => _buildGridList(controller.incomeList, isExpense: false)),
+        Obx(() =>
+            _buildGridList(controller.incomeList, appColors, isExpense: false)),
       ],
     );
   }
 
-  Widget _buildGridList(List<Map<String, dynamic>> list,
+  Widget _buildGridList(
+      List<Map<String, dynamic>> list, AppThemeColors appColors,
       {required bool isExpense}) {
     return Container(
-      color: Colors.white,
+      // 内容区域背景：适配深色
+      color: appColors.cardBackground,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
       child: GridView.builder(
-        // 使用 builder 性能更好
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 10.h,
+          mainAxisSpacing: 16.h, // 稍微加大间距
           crossAxisSpacing: 0.w,
-          childAspectRatio: 1, // 调整比例让文字显示更宽松
+          childAspectRatio: 0.85, // 调整比例，防止文字太挤
         ),
-        // 列表长度 + 1 是为了放最前面的 "添加" 按钮
         itemCount: list.length + 1,
         itemBuilder: (context, index) {
           if (index == list.length) {
-            return _buildAddButton(isExpense, context);
+            return _buildAddButton(isExpense, context, appColors);
           }
           final item = list[index];
           return _buildCategoryItem(
             label: item['labelName'],
-            iconData:
-                CategoryIconMap.getIcon(item['labelName']), // 假设你用这个方法获取 Icon
+            iconData: CategoryIconMap.getIcon(item['labelName']),
+            appColors: appColors,
             onTap: () {
-              // 选中逻辑
               Get.back(result: {
                 "type": item['labelName'],
                 "positive": isExpense ? 0 : 1
@@ -104,6 +131,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
     required String label,
     required IconData iconData,
     required VoidCallback onTap,
+    required AppThemeColors appColors,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -115,13 +143,14 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
             width: 52.w,
             height: 52.w,
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5), // 柔和的浅灰色背景
-              borderRadius: BorderRadius.circular(20), // 方圆角，比正圆更现代
+              // 背景色：使用 primaryText 的极低透明度，深浅通吃
+              color: appColors.primaryText.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20), // 统一圆角
             ),
             child: Icon(
               iconData,
               size: 26,
-              color: Colors.black87,
+              color: appColors.primaryText, // 图标适配
             ),
           ),
           SizedBox(height: 8.h),
@@ -129,8 +158,8 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.black87,
+            style: TextStyle(
+              color: appColors.primaryText.withOpacity(0.8), // 文字适配
               fontSize: 13,
               height: 1.2,
             ),
@@ -141,7 +170,8 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
   }
 
   // "添加" 按钮组件
-  Widget _buildAddButton(bool isExpense, BuildContext context) {
+  Widget _buildAddButton(
+      bool isExpense, BuildContext context, AppThemeColors appColors) {
     return GestureDetector(
       onTap: () => controller.onAddTapCategory(isExpense, context),
       child: Column(
@@ -151,22 +181,25 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
             width: 52.w,
             height: 52.w,
             decoration: BoxDecoration(
-              color: Colors.white,
+              // 背景透明或极淡
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: const Color(0xFFE0E0E0), width: 1), // 虚线或浅色实线边框
+                  // 边框适配：淡色
+                  color: appColors.primaryText.withOpacity(0.1),
+                  width: 1),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.add,
               size: 26,
-              color: Colors.grey,
+              color: appColors.secondaryText, // 图标适配次要色
             ),
           ),
           SizedBox(height: 8.h),
-          const Text(
+          Text(
             "自定义",
             style: TextStyle(
-              color: Colors.grey,
+              color: appColors.secondaryText, // 文字适配次要色
               fontSize: 13,
             ),
           ),

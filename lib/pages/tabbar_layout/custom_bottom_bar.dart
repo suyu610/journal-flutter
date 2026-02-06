@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:journal/models/app_tab_item.dart';
-import 'package:showcaseview/showcaseview.dart'; // 1. 引入库
+// 引入你的主题颜色类文件
+import 'package:journal/core/app_theme_colors.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class CustomBottomBar extends StatelessWidget {
   final List<AppTabItem> tabs;
   final int currentIndex;
   final Function(int index, AppTabItem tab) onTap;
   final Function(int index, AppTabItem tab)? onLongPress;
-
-  // 2. 新增参数：接收 GlobalKey
   final GlobalKey? specialButtonKey;
 
   const CustomBottomBar({
@@ -17,20 +17,24 @@ class CustomBottomBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     this.onLongPress,
-    this.specialButtonKey, // 3. 构造函数加入
+    this.specialButtonKey,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final double paddingBottom = MediaQuery.of(context).padding.bottom;
     final double height = 60 + paddingBottom;
+    // 【1. 获取当前主题颜色】
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
-          top: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+          // 边框也建议稍微淡一点，适配深色
+          top: BorderSide(
+              color: appColors.secondaryText.withOpacity(0.2), width: 0.5),
         ),
         boxShadow: [
           BoxShadow(
@@ -46,8 +50,9 @@ class CustomBottomBar extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: List.generate(tabs.length, (index) {
+                // 传参 appColors
                 return Expanded(
-                  child: _buildTabItem(context, index, tabs[index]),
+                  child: _buildTabItem(context, index, tabs[index], appColors),
                 );
               }),
             ),
@@ -58,46 +63,40 @@ class CustomBottomBar extends StatelessWidget {
     );
   }
 
-  Widget _buildTabItem(BuildContext context, int index, AppTabItem tab) {
+  Widget _buildTabItem(BuildContext context, int index, AppTabItem tab,
+      AppThemeColors appColors) {
     bool isSpecialTab = tab.id == 'chat';
     bool isSelected = !isSpecialTab && currentIndex == index;
 
-    // 4. 构建具体内容
     Widget iconWidget = isSpecialTab
-        ? _buildSpecialIcon(tab.icon)
-        : _buildNormalItem(tab, isSelected);
+        ? _buildSpecialIcon(tab.icon, appColors)
+        : _buildNormalItem(tab, isSelected, appColors);
 
-    // 5.如果是特殊按钮，并且传入了Key，就包裹 Showcase
     if (isSpecialTab && specialButtonKey != null) {
       iconWidget = Showcase(
         key: specialButtonKey!,
-        title: '👋 试试长按', // 加个Emoji显得更生动
+        title: '👋 试试长按',
         description: '长按中间按钮\n即可快速开启手动记账',
-
-        // 呼吸感
         targetPadding: const EdgeInsets.all(6),
         targetBorderRadius: BorderRadius.circular(24),
 
-        // 【关键：纯白卡片】
-        tooltipBackgroundColor: Colors.white,
+        // 【关键修复】：气泡背景跟随主题（深色模式下变深色卡片）
+        tooltipBackgroundColor: appColors.cardBackground,
         tooltipBorderRadius: BorderRadius.circular(16),
 
-        // 【关键：标题用你的主色调】
+        // 【关键修复】：文字跟随主题
         titleTextStyle: TextStyle(
-          color: Colors.blueGrey[900], // 呼应你的按钮颜色
+          color: appColors.primaryText,
           fontSize: 16,
           fontWeight: FontWeight.w700,
         ),
-        descTextStyle: const TextStyle(
-          color: Colors.grey, // 正文用灰色
+        descTextStyle: TextStyle(
+          color: appColors.secondaryText,
           fontSize: 13,
           fontWeight: FontWeight.w500,
           height: 1.4,
         ),
-
-        // 【高级感细节】调整气泡内部间距
         tooltipPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-
         child: iconWidget,
       );
     }
@@ -113,8 +112,11 @@ class CustomBottomBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNormalItem(AppTabItem tab, bool isSelected) {
-    final Color color = isSelected ? Colors.black : Colors.grey;
+  // 普通按钮：使用 navActive / navInactive
+  Widget _buildNormalItem(
+      AppTabItem tab, bool isSelected, AppThemeColors appColors) {
+    final Color color =
+        isSelected ? appColors.navActive : appColors.navInactive;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -123,22 +125,24 @@ class CustomBottomBar extends StatelessWidget {
     );
   }
 
-  Widget _buildSpecialIcon(IconData icon) {
+  // 特殊按钮：使用 mainButtonBg / mainButtonIcon
+  Widget _buildSpecialIcon(IconData icon, AppThemeColors appColors) {
     return Container(
       width: 48,
       height: 36,
       decoration: BoxDecoration(
-        color: Colors.blueGrey[900],
+        color: appColors.mainButtonBg, // 这里的颜色现在会随主题变化了
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.blueGrey.withOpacity(0.3),
+            // 阴影颜色也用按钮颜色的半透明版，更协调
+            color: appColors.mainButtonBg.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(0, 3),
           )
         ],
       ),
-      child: Icon(icon, color: Colors.white, size: 22),
+      child: Icon(icon, color: appColors.mainButtonIcon, size: 22),
     );
   }
 }

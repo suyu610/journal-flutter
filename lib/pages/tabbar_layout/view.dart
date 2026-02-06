@@ -74,7 +74,7 @@ class _LayoutPageState extends State<LayoutPage>
     LayoutController controller = Get.find<LayoutController>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Obx(() => PageView(
             physics: const NeverScrollableScrollPhysics(),
             controller: controller.pageController,

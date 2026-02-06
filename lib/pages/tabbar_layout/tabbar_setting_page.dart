@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // 用于震动反馈
 import 'package:get/get.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/models/app_tab_item.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 
@@ -24,15 +26,16 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
     _tempTabs = List.from(layoutCtrl.allTabsPool);
   }
 
-  void _onSave() {
+  void _onSave(AppThemeColors appColors) {
     layoutCtrl.updateTabsOrder(_tempTabs);
     Get.back();
     Get.snackbar(
       "设置已生效",
       "底部菜单布局已更新",
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.black87,
-      colorText: Colors.white,
+      // Snackbar 样式适配：使用反色，更显眼
+      backgroundColor: appColors.primaryText,
+      colorText: appColors.cardBackground,
       margin: const EdgeInsets.all(20),
       borderRadius: 12,
     );
@@ -40,25 +43,30 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 2. 获取主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9), // 浅灰背景，突出卡片
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("自定义菜单"),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent, // 沉浸式
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: const TextStyle(
-            color: Colors.black, fontSize: 17, fontWeight: FontWeight.w600),
+        titleTextStyle: TextStyle(
+            color: appColors.primaryText, // 适配标题色
+            fontSize: 17,
+            fontWeight: FontWeight.w600),
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: Icon(Icons.close, color: appColors.primaryText), // 适配图标色
           onPressed: () => Get.back(),
         ),
         actions: [
           TextButton(
-            onPressed: _onSave,
-            child: const Text("保存",
+            onPressed: () => _onSave(appColors),
+            child: Text("保存",
                 style: TextStyle(
-                    color: Colors.black,
+                    color: appColors.primaryText, // 适配按钮色
                     fontWeight: FontWeight.bold,
                     fontSize: 16)),
           )
@@ -71,7 +79,9 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
             child: Text(
               "长按拖拽排序，点击开关隐藏",
-              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              style: TextStyle(
+                  color: appColors.secondaryText, // 适配说明文字
+                  fontSize: 13),
             ),
           ),
           Expanded(
@@ -91,8 +101,9 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
                       scale: scale,
                       child: Material(
                         elevation: elevation,
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        // 拖拽时的卡片颜色，必须适配深色
+                        color: appColors.cardBackground,
+                        borderRadius: BorderRadius.circular(16), // 保持统一圆角
                         shadowColor: Colors.black26,
                         child: child,
                       ),
@@ -111,7 +122,7 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
                 HapticFeedback.lightImpact();
               },
               itemBuilder: (context, index) {
-                return _buildCardItem(index, _tempTabs[index]);
+                return _buildCardItem(index, _tempTabs[index], appColors);
               },
             ),
           ),
@@ -120,7 +131,7 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
     );
   }
 
-  Widget _buildCardItem(int index, AppTabItem item) {
+  Widget _buildCardItem(int index, AppTabItem item, AppThemeColors appColors) {
     // 逻辑：判断是否被锁定 (个人中心 profile 强制不许关)
     bool isProfile = item.id == 'profile';
     // 逻辑：判断是否是VIP功能且用户非VIP
@@ -133,9 +144,10 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
       key: ValueKey(item.id), // 必须有Key
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: appColors.cardBackground, // 适配卡片背景
+        borderRadius: BorderRadius.circular(16), // 稍微圆润一点
         boxShadow: [
+          // 统一弥散阴影
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             offset: const Offset(0, 4),
@@ -150,13 +162,20 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
+            // 禁用状态用次要色淡化，正常状态用主色淡化
             color: isVipFeatureButNotVip
-                ? Colors.grey[100]
-                : Colors.black.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(10),
+                ? appColors.secondaryText.withOpacity(0.1)
+                : appColors.primaryText.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(item.icon,
-              color: isVipFeatureButNotVip ? Colors.grey : Colors.black87),
+          child: Icon(
+            item.icon,
+            // 禁用状态变灰，正常状态跟随主色
+            color: isVipFeatureButNotVip
+                ? appColors.secondaryText
+                : appColors.primaryText,
+            size: 22,
+          ),
         ),
         // 标题
         title: Row(
@@ -166,7 +185,9 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
               style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 15,
-                  color: isVipFeatureButNotVip ? Colors.grey : Colors.black87),
+                  color: isVipFeatureButNotVip
+                      ? appColors.secondaryText
+                      : appColors.primaryText),
             ),
             if (item.isVipOnly) ...[
               const SizedBox(width: 6),
@@ -187,11 +208,12 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
         ),
         // 副标题 (显示锁定原因)
         subtitle: isProfile
-            ? const Text("系统核心模块不可隐藏",
-                style: TextStyle(fontSize: 10, color: Colors.blueGrey))
+            ? Text("系统核心模块不可隐藏",
+                style: TextStyle(fontSize: 11, color: appColors.secondaryText))
             : (isVipFeatureButNotVip
-                ? const Text("需订阅会员解锁",
-                    style: TextStyle(fontSize: 10, color: Colors.grey))
+                ? Text("需订阅会员解锁",
+                    style:
+                        TextStyle(fontSize: 11, color: appColors.secondaryText))
                 : null),
 
         // 右侧操作区
@@ -203,8 +225,11 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
               scale: 0.8,
               child: Switch.adaptive(
                 value: item.isEnabled,
-                activeColor: Colors.black,
-                activeTrackColor: Colors.blueGrey[900],
+                // 开启时的颜色：使用主色
+                activeColor: appColors.cardBackground,
+                activeTrackColor: appColors.primaryText,
+                // 关闭时的轨道颜色适配
+                inactiveTrackColor: appColors.secondaryText.withOpacity(0.2),
                 onChanged: isSwitchDisabled
                     ? null
                     : (val) {
@@ -222,7 +247,8 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 color: Colors.transparent, // 扩大触摸区域
-                child: const Icon(Icons.drag_indicator, color: Colors.grey),
+                child:
+                    Icon(Icons.drag_indicator, color: appColors.secondaryText),
               ),
             ),
           ],

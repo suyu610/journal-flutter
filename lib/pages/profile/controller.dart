@@ -6,7 +6,10 @@ import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:journal/components/bruno/bruno.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
+import 'package:journal/core/theme_controller.dart';
 import 'package:journal/models/user.dart';
 import 'package:journal/pages/ai_config/index.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
@@ -171,7 +174,13 @@ class ProfileController extends GetxController {
     });
   }
 
+  // ---------------------------------------------------------
+  // 改造区域 1: 评分弹窗 (适配主题色)
+  // ---------------------------------------------------------
   void showRatingDialog(BuildContext context) {
+    // 获取主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -181,9 +190,10 @@ class ProfileController extends GetxController {
           width: 300,
           padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: appColors.cardBackground, // 适配深色背景
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
+              // 统一的弥散阴影
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
                 blurRadius: 24,
@@ -198,37 +208,40 @@ class ProfileController extends GetxController {
               Container(
                 width: 72,
                 height: 72,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFF7E6), // 淡金色背景
+                decoration: BoxDecoration(
+                  // 使用主色极低透明度作为背景
+                  color: appColors.primaryText.withOpacity(0.05),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.thumb_up_alt_rounded, // 或者 use Icons.star_rounded
+                  Icons.thumb_up_alt_rounded,
                   size: 36,
-                  color: Color(0xFFFFC107), // 琥珀色
+                  color: Color(0xFFFFC107), // 琥珀色，深浅模式通用
                 ),
               ),
               const SizedBox(height: 24),
 
               // 2. 标题与文案
-              const Text(
+              Text(
                 "喜欢 好享记账 吗？",
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87),
+                    color: appColors.primaryText), // 适配文字颜色
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 "您的支持是我们最大的动力。\n如果觉得好用，请花几秒钟给我们一个好评吧！",
                 textAlign: TextAlign.center,
-                style:
-                    TextStyle(fontSize: 14, color: Colors.black54, height: 1.5),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: appColors.secondaryText, // 适配次要文字
+                    height: 1.5),
               ),
 
               const SizedBox(height: 24),
 
-              // 3. 装饰性的五星 (心理暗示)
+              // 3. 装饰性的五星
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
@@ -251,8 +264,8 @@ class ProfileController extends GetxController {
                       onPressed: () => Get.back(),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        foregroundColor: Colors.grey,
-                        splashFactory: NoSplash.splashFactory, // 去掉水波纹显得更克制
+                        foregroundColor: appColors.secondaryText, // 适配按钮文字
+                        splashFactory: NoSplash.splashFactory,
                       ),
                       child: const Text("下次再说", style: TextStyle(fontSize: 15)),
                     ),
@@ -265,9 +278,9 @@ class ProfileController extends GetxController {
                         _openAppStoreRating(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black87, // 高级黑
-                        foregroundColor: Colors.white,
-                        elevation: 0, // 扁平化
+                        backgroundColor: appColors.mainButtonBg, // 适配主按钮背景
+                        foregroundColor: appColors.mainButtonIcon, // 适配主按钮文字
+                        elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -283,9 +296,9 @@ class ProfileController extends GetxController {
           ),
         ),
       ),
-      barrierDismissible: true, // 点击背景可关闭
-      transitionDuration: const Duration(milliseconds: 200), // 动画时长
-      transitionCurve: Curves.easeOut, // 动画曲线
+      barrierDismissible: true,
+      transitionDuration: const Duration(milliseconds: 200),
+      transitionCurve: Curves.easeOut,
     );
   }
 
@@ -318,5 +331,176 @@ class ProfileController extends GetxController {
     Duration difference = now.difference(lastTime);
 
     return difference.inDays >= 90;
+  }
+
+  // ---------------------------------------------------------
+  // 改造区域 2: 主题设置弹窗 (适配主题色)
+  // ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // 改造区域 2: 主题设置 (底部大卡片直选模式)
+  // ---------------------------------------------------------
+  void showThemeDialog(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+    // 获取当前模式字符串: 'system', 'light', 'dark'
+    final currentMode = SpUtil.getThemeMode();
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: appColors.cardBackground,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. 顶部小把手 (Handle Bar)
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: appColors.secondaryText.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // 2. 标题
+              Text(
+                "外观设置",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: appColors.primaryText,
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // 3. 三个大卡片横向排列
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildThemeCard(
+                      context: context,
+                      title: "跟随系统",
+                      modeKey: "system",
+                      currentKey: currentMode,
+                      icon: Icons.brightness_auto_rounded,
+                      appColors: appColors,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildThemeCard(
+                      context: context,
+                      title: "浅色",
+                      modeKey: "light",
+                      currentKey: currentMode,
+                      icon: Icons.wb_sunny_rounded,
+                      appColors: appColors,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildThemeCard(
+                      context: context,
+                      title: "深色",
+                      modeKey: "dark",
+                      currentKey: currentMode,
+                      icon: Icons.dark_mode_rounded,
+                      appColors: appColors,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+      // 这里的设置让它更像原生 BottomSheet
+      isScrollControlled: true,
+      enterBottomSheetDuration: const Duration(milliseconds: 250),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
+    );
+  }
+
+  // 构建单个主题卡片
+  Widget _buildThemeCard({
+    required BuildContext context,
+    required String title,
+    required String modeKey,
+    required String currentKey,
+    required IconData icon,
+    required AppThemeColors appColors,
+  }) {
+    final bool isSelected = modeKey == currentKey;
+
+    return GestureDetector(
+      onTap: () {
+        // 1. 立即执行切换逻辑
+        ThemeMode themeMode;
+        switch (modeKey) {
+          case 'light':
+            themeMode = ThemeMode.light;
+            break;
+          case 'dark':
+            themeMode = ThemeMode.dark;
+            break;
+          default:
+            themeMode = ThemeMode.system;
+        }
+        ThemeController.to.setThemeMode(themeMode);
+
+        // 2. 关闭弹窗 (稍微延迟一点点，让用户看到点击反馈，体验更好)
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (Get.isBottomSheetOpen ?? false) {
+            Get.back();
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 100,
+        decoration: BoxDecoration(
+          // 选中状态：淡色背景 + 边框；未选中：透明 + 细边框
+          color: isSelected
+              ? appColors.primaryText.withOpacity(0.05)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? appColors.primaryText
+                : appColors.secondaryText.withOpacity(0.2),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color:
+                  isSelected ? appColors.primaryText : appColors.secondaryText,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected
+                    ? appColors.primaryText
+                    : appColors.secondaryText,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

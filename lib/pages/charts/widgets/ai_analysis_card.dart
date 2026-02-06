@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/core/app_theme_colors.dart';
 import '../controller.dart';
 
 class AiAnalysisCard extends GetView<ChartsController> {
@@ -8,33 +9,40 @@ class AiAnalysisCard extends GetView<ChartsController> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return Obx(() {
       // 1. 显示分析结果
       if (controller.judgeString.value.isNotEmpty) {
         return Container(
           width: double.infinity,
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
+            // 使用主色的极低透明度渐变，模拟高级磨砂质感
             gradient: LinearGradient(
-              colors: [Colors.blueGrey[50]!, Colors.white],
+              colors: [
+                appColors.primaryText.withOpacity(0.08),
+                appColors.primaryText.withOpacity(0.02),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: Colors.blueGrey[100]!, width: 0.5),
+            borderRadius: BorderRadius.circular(24.r),
+            border: Border.all(
+                color: appColors.primaryText.withOpacity(0.05), width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.auto_awesome, size: 16.sp, color: Colors.amber),
+                  const Icon(Icons.auto_awesome, size: 16, color: Colors.amber),
                   SizedBox(width: 8.w),
                   Text(
                     "本周 AI 洞察",
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.blueGrey[800],
+                      color: appColors.primaryText,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -45,7 +53,7 @@ class AiAnalysisCard extends GetView<ChartsController> {
                 controller.judgeString.value,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: Colors.black87,
+                  color: appColors.primaryText.withOpacity(0.8), // 稍淡一点的正文
                   height: 1.6,
                 ),
               ),
@@ -62,15 +70,16 @@ class AiAnalysisCard extends GetView<ChartsController> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.blueGrey),
+                      strokeWidth: 2, color: appColors.primaryText),
                 ),
                 SizedBox(width: 12.w),
                 Text("AI 正在分析本周数据...",
-                    style: TextStyle(color: Colors.grey, fontSize: 13.sp)),
+                    style: TextStyle(
+                        color: appColors.secondaryText, fontSize: 13.sp)),
               ],
             ),
           ),

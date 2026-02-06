@@ -83,7 +83,7 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 或者 Color(0xFFF9F9F9) 稍微带点灰更有质感
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -97,7 +97,7 @@ class _SplashPageState extends State<SplashPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // 这里换成你的 Logo
-                    // 如果你的logo只是文字，建议直接用 Image，保证字体渲染一致性
+                    // 如果你的logo只是文字，建议直接用 Image，保证字体渲染大小一致性
                     Image.asset(
                       'assets/images/logo.png',
                       width: 100, // 不宜过大，精致为主

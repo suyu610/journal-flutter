@@ -441,7 +441,7 @@ class ReceiptCard extends StatelessWidget {
                   children: [
                     const Text("额外节省",
                         style: TextStyle(color: Colors.white54, fontSize: 8)),
-                    Text("¥${savings.toStringAsFixed(0)}",
+                    Text("¥${savings.toStringAsFixed(2)}",
                         style: const TextStyle(
                             color: Colors.greenAccent,
                             fontSize: 12,

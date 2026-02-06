@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:journal/util/toast_util.dart';
@@ -18,12 +19,12 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Get.find 放在这里，避免在每个子组件里重复查找
     final logic = Get.find<LoginLogic>();
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Container(
           height: Get.height,
@@ -32,17 +33,17 @@ class LoginPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 100.h),
-              _buildWelcomeText(),
+              _buildWelcomeText(appColors),
               SizedBox(height: 6.h),
-              _buildRegTipText(logic),
-              SizedBox(height: 35.h),
-              _buildInput(logic),
+              _buildRegTipText(logic, appColors),
+              SizedBox(height: 40.h),
+              _buildInput(logic, appColors),
               SizedBox(height: 25.h),
-              _buildAgreeLicense(context, logic),
-              _buildNextStepButton(context, logic),
-              const Spacer(), // 使用 Spacer 自动撑开空间
-              _buildAnotherLoginType(context, logic),
-              SizedBox(height: 20.h),
+              _buildAgreeLicense(context, logic, appColors),
+              _buildNextStepButton(context, logic, appColors),
+              const Spacer(),
+              _buildAnotherLoginType(context, logic, appColors),
+              SizedBox(height: 30.h),
             ],
           ),
         ),
@@ -50,62 +51,98 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  // --- 顶部文字区域 ---
-
-  Widget _buildWelcomeText() {
+  // --- 顶部文字 ---
+  Widget _buildWelcomeText(AppThemeColors appColors) {
     return Text(
       "欢迎登陆 好享记账",
       style: TextStyle(
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         fontSize: 28.sp,
-        color: Colors.black,
+        color: appColors.primaryText,
+        letterSpacing: 1,
       ),
     );
   }
 
-  Widget _buildRegTipText(LoginLogic logic) {
+  Widget _buildRegTipText(LoginLogic logic, AppThemeColors appColors) {
     return Obx(() => Text(
           "未注册的${logic.isEmailMode.value ? "邮箱" : "手机号"}登陆成功后将自动注册",
           style: TextStyle(
             fontSize: 14.sp,
-            color: const Color(0xff848484),
+            color: appColors.secondaryText,
           ),
         ));
   }
 
-  // --- 输入框区域 ---
-
-  Widget _buildInput(LoginLogic logic) {
+  // --- 输入框 ---
+  Widget _buildInput(LoginLogic logic, AppThemeColors appColors) {
     return Obx(() {
       final isEmail = logic.isEmailMode.value;
-      return TDInput(
-        controller: logic.controller,
-        inputAction: TextInputAction.done,
-        inputType: isEmail ? TextInputType.emailAddress : TextInputType.number,
-        leftInfoWidth: 30.w,
-        leftLabelSpace: 0,
-        leftLabel: isEmail ? "邮箱" : "+86",
-        maxLength: isEmail ? 50 : 11,
-        hintText: isEmail ? "请输入邮箱" : "请输入手机号",
-        autofocus: false,
-        hintTextStyle: const TextStyle(
-          color: Color(0xFFAEADAD),
+      return Container(
+        decoration: BoxDecoration(
+            color: appColors.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4))
+            ]),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 50.w,
+              child: Text(
+                isEmail ? "邮箱" : "+86",
+                style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: appColors.primaryText),
+              ),
+            ),
+            Expanded(
+              child: TextField(
+                controller: logic.controller,
+                textInputAction: TextInputAction.done,
+                keyboardType:
+                    isEmail ? TextInputType.emailAddress : TextInputType.number,
+                maxLength: isEmail ? 50 : 11,
+                autofocus: false,
+                cursorColor: appColors.primaryText,
+                style: TextStyle(
+                    fontSize: 16.sp,
+                    color: appColors.primaryText,
+                    fontWeight: FontWeight.w500),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  counterText: "",
+                  hintText: isEmail ? "请输入邮箱" : "请输入手机号",
+                  hintStyle: TextStyle(
+                      color: appColors.secondaryText.withOpacity(0.5),
+                      fontSize: 15.sp),
+                  contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+                ),
+                inputFormatters: [
+                  isEmail
+                      ? FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9@.]'))
+                      : FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                ],
+                onChanged: (value) {
+                  logic.state.phoneNum.value = value;
+                },
+              ),
+            ),
+          ],
         ),
-        inputFormatters: [
-          isEmail
-              ? FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@.]'))
-              : FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-        ],
-        onChanged: (value) {
-          logic.state.phoneNum.value = value;
-        },
       );
     });
   }
 
-  // --- 协议区域 ---
-
-  Widget _buildAgreeLicense(BuildContext context, LoginLogic logic) {
+  // --- 协议 ---
+  Widget _buildAgreeLicense(
+      BuildContext context, LoginLogic logic, AppThemeColors appColors) {
     return InkWell(
       onTap: () => logic.state.isAgree.toggle(),
       splashColor: Colors.transparent,
@@ -117,21 +154,23 @@ class LoginPage extends StatelessWidget {
             final isAgree = logic.state.isAgree.value;
             return Icon(
               isAgree ? Icons.check_circle : Icons.circle_outlined,
-              size: 18.r,
-              color: isAgree ? Colors.blueGrey[900] : Colors.grey,
+              size: 20.r,
+              color: isAgree ? appColors.primaryText : appColors.secondaryText,
             );
           }),
-          SizedBox(width: 5.w),
+          SizedBox(width: 8.w),
           Expanded(
             child: RichText(
               text: TextSpan(
                 text: '我已阅读并同意 ',
                 style:
-                    TextStyle(color: const Color(0xff848484), fontSize: 12.sp),
+                    TextStyle(color: appColors.secondaryText, fontSize: 12.sp),
                 children: [
                   TextSpan(
                     text: '《隐私协议》',
-                    style: const TextStyle(color: Color(0xff22384e)),
+                    style: TextStyle(
+                        color: appColors.primaryText,
+                        fontWeight: FontWeight.bold),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
                         ToastUtil.lightImpact();
@@ -151,29 +190,41 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  // --- 主操作按钮 ---
-
-  Widget _buildNextStepButton(BuildContext context, LoginLogic logic) {
+  // --- 按钮 ---
+  Widget _buildNextStepButton(
+      BuildContext context, LoginLogic logic, AppThemeColors appColors) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 30.w),
       child: Obx(() {
         final isEmail = logic.isEmailMode.value;
         final input = logic.state.phoneNum.value;
-
-        // 简化判断逻辑
         final isValid = isEmail ? input.isEmail : input.isPhoneNumber;
 
-        return TDButton(
-          isBlock: true,
-          height: 44.h, // 稍微加高一点点，更符合现代手感
-          theme: isValid ? TDButtonTheme.primary : TDButtonTheme.defaultTheme,
-          onTap: () => logic.next(context),
-          child: Text(
-            "下一步",
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+        return SizedBox(
+          width: double.infinity,
+          height: 50.h,
+          child: ElevatedButton(
+            onPressed: () => logic.next(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isValid
+                  ? appColors.mainButtonBg
+                  : appColors.secondaryText.withOpacity(0.1),
+              elevation: isValid ? 5 : 0,
+              shadowColor: isValid
+                  ? appColors.mainButtonBg.withOpacity(0.3)
+                  : Colors.transparent,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25)),
+            ),
+            child: Text(
+              "下一步",
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: isValid
+                    ? appColors.mainButtonIcon
+                    : appColors.secondaryText.withOpacity(0.5),
+              ),
             ),
           ),
         );
@@ -181,74 +232,66 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  // --- 底部第三方登录区域 (重构重点) ---
-
-  Widget _buildAnotherLoginType(BuildContext context, LoginLogic logic) {
+  // --- 第三方登录 (恢复图片资源) ---
+  Widget _buildAnotherLoginType(
+      BuildContext context, LoginLogic logic, AppThemeColors appColors) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           "或通过以下方式登录",
-          style: TextStyle(fontSize: 12.sp, color: const Color(0xff848484)),
+          style: TextStyle(fontSize: 12.sp, color: appColors.secondaryText),
         ),
         SizedBox(height: 30.h),
-
-        // 按钮行
         Obx(() => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildSwitchModeButton(logic),
-
-                // iOS 且安装了微信才显示间距
+                _buildSwitchModeButton(logic, appColors),
                 if (Platform.isIOS) SizedBox(width: 60.w),
-
-                if (Platform.isIOS) _buildAppleButton(context, logic),
-
+                if (Platform.isIOS)
+                  _buildAppleButton(context, logic, appColors),
                 if (Platform.isIOS && SpUtil.getWeChatInstalled())
                   SizedBox(width: 60.w),
-
                 if (SpUtil.getWeChatInstalled())
-                  _buildWechatButton(context, logic),
+                  _buildWechatButton(context, logic, appColors),
               ],
             )),
-
-        SizedBox(height: 50.h),
+        SizedBox(height: 40.h),
         TextButton(
           onPressed: () => logic.contact(),
           child: Text(
             "联系我们",
-            style: TextStyle(color: const Color(0xff848484), fontSize: 12.sp),
+            style: TextStyle(color: appColors.secondaryText, fontSize: 12.sp),
           ),
         ),
       ],
     );
   }
 
-  // 1. 切换 手机/邮箱 按钮
-  Widget _buildSwitchModeButton(LoginLogic logic) {
+  // 1. 切换 手机/邮箱 按钮 (恢复图片资源 + 适配颜色)
+  Widget _buildSwitchModeButton(LoginLogic logic, AppThemeColors appColors) {
     bool isEmailMode = logic.isEmailMode.value;
-
-    // 如果当前是邮箱模式，显示“切换到手机”按钮；反之显示“切换到邮箱”
-    // 统一风格：白底 + 彩色图标 + 阴影
     return CustomAuthButton(
       onPressed: () => logic.toggleEmailMode(),
       style: _getCircleButtonStyle(
-        // 手机图标用黑色，邮箱图标用蓝色，区分度更高更美观
-        iconColor: isEmailMode ? Colors.black87 : Colors.blueAccent,
+        bgColor: appColors.cardBackground,
+        iconColor: appColors.primaryText, // 传入主色，用于 Tint 图片
+        appColors: appColors,
       ),
       authIcon: AuthIcon(
         iconSize: 22.r,
-        iconPath: isEmailMode
-            ? "assets/icons/phone.png" // 这是一个切换回手机的按钮
-            : "assets/icons/email.png", // 这是一个切换回邮箱的按钮 (你需要确保有这个资源，或者使用 Icons.email)
-        // 如果没有 email 图片资源，可以使用 Icon 组件：
-        // icon: Icon(isEmailMode ? Icons.phone_android : Icons.email, color: ...),
+        // 恢复原来的图片路径
+        iconPath:
+            isEmailMode ? "assets/icons/phone.png" : "assets/icons/email.png",
+        // 关键点：给图片着色，适配深浅模式
+        color: appColors.primaryText,
       ),
     );
   }
 
-  // 2. Apple 登录按钮
-  Widget _buildAppleButton(BuildContext context, LoginLogic logic) {
+  // 2. Apple 登录按钮 (恢复图片资源 + 适配颜色)
+  Widget _buildAppleButton(
+      BuildContext context, LoginLogic logic, AppThemeColors appColors) {
     return CustomAuthButton(
       onPressed: () {
         try {
@@ -259,43 +302,49 @@ class LoginPage extends StatelessWidget {
         }
       },
       style: _getCircleButtonStyle(
-        // 手机图标用黑色，邮箱图标用蓝色，区分度更高更美观
-        iconColor: Colors.black87,
+        bgColor: appColors.cardBackground,
+        iconColor: appColors.primaryText,
+        appColors: appColors,
       ),
       authIcon: AuthIcon(
-          iconSize: 22.r, iconPath: "assets/icons/apple.png" // 这是一个切换回手机的按钮
-
-          // 如果没有 email 图片资源，可以使用 Icon 组件：
-          // icon: Icon(isEmailMode ? Icons.phone_android : Icons.email, color: ...),
-          ),
+        iconSize: 22.r,
+        iconPath: "assets/icons/apple.png",
+        // Apple 图标也要着色，亮色黑，深色白
+        color: appColors.primaryText,
+      ),
     );
   }
 
-  // 3. 微信登录按钮
-  Widget _buildWechatButton(BuildContext context, LoginLogic logic) {
+  // 3. 微信登录按钮 (恢复图片资源 + 保持白色)
+  Widget _buildWechatButton(
+      BuildContext context, LoginLogic logic, AppThemeColors appColors) {
     return CustomAuthButton(
       onPressed: () => logic.loginWithWechat(context),
       style: _getCircleButtonStyle(
-        bgColor: const Color(0xff5dce87), // 微信绿
+        bgColor: const Color(0xff5dce87), // 微信绿不变
+        iconColor: Colors.white, // 图标始终白色
+        appColors: appColors,
       ),
       authIcon: AuthIcon(
         iconSize: 22.r,
         iconPath: "assets/icons/wechat.png",
+        color: Colors.white, // 微信图标始终白色
       ),
     );
   }
 
-  /// 提取公共样式配置：圆形按钮
-  /// [bgColor] 背景色，默认为白色
-  /// [iconColor] 图标颜色，默认为黑色
   AuthButtonStyle _getCircleButtonStyle({
-    Color bgColor = Colors.black,
-    Color iconColor = Colors.white,
+    required Color bgColor,
+    required Color iconColor,
+    required AppThemeColors appColors,
   }) {
+    // 只有在背景是卡片色（通常是白/深灰）时才显示阴影，彩色背景（如微信绿）不显阴影
+    bool isCardBg = bgColor == appColors.cardBackground;
+
     return AuthButtonStyle(
-      width: 48.r, // 使用 .r 确保正圆
+      width: 48.r,
       height: 48.r,
-      borderRadius: 999, // 足够大的圆角
+      borderRadius: 999,
       padding: EdgeInsets.zero,
       buttonType: AuthButtonType.icon,
       iconType: AuthIconType.secondary,
@@ -305,13 +354,11 @@ class LoginPage extends StatelessWidget {
       iconColor: iconColor,
       iconBackground: Colors.transparent,
 
-      // 阴影配置 (仅白底时显示淡淡的阴影，有色背景通常不需要太重阴影)
-      shadowColor: bgColor == Colors.white
-          ? const Color.fromARGB(40, 0, 0, 0)
-          : Colors.transparent,
-      elevation: bgColor == Colors.white ? 3 : 0,
+      // 阴影配置
+      shadowColor:
+          isCardBg ? Colors.black.withOpacity(0.08) : Colors.transparent,
+      elevation: isCardBg ? 4 : 0,
 
-      // 进度条配置
       progressIndicatorColor: iconColor,
       progressIndicatorStrokeWidth: 2.0,
       progressIndicatorType: AuthIndicatorType.circular,

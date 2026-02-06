@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/src/components/navbar/brn_appbar.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
@@ -11,64 +12,84 @@ class JoinActivityPage extends GetView<JoinActivityController> {
 
   @override
   Widget build(BuildContext context) {
+    // 2. 获取主题色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return GetBuilder<JoinActivityController>(
       init: JoinActivityController(),
       id: "join_activity",
       builder: (_) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F7FA),
-          appBar: BrnAppBar(
-            backgroundColor: Colors.white,
-            automaticallyImplyLeading: true,
-            showDefaultBottom: false,
-            title: Text(
-              "加入账本",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontFamily: "SmileySans",
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          body: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      SizedBox(height: 16.h),
-                      _buildSearchSection(context),
-                      SizedBox(height: 16.h),
-                      // 结果展示区域
-                      Obx(() => controller.activity.value.activityId.isNotEmpty
-                          ? _buildResultCard()
-                          : _buildEmptyHint()),
-                    ],
+          // 背景跟随主题
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: _buildAppBar(context, appColors),
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(), // 点击空白收起键盘
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 16.h),
+                        _buildSearchSection(context, appColors),
+                        SizedBox(height: 16.h),
+                        // 结果展示区域
+                        Obx(() =>
+                            controller.activity.value.activityId.isNotEmpty
+                                ? _buildResultCard(context, appColors)
+                                : _buildEmptyHint(appColors)),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              _buildBottomAction(context),
-            ],
+                _buildBottomAction(context, appColors),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  // 1. 搜索区：修改了 onTextChanged
-  Widget _buildSearchSection(BuildContext context) {
+  // 替换为原生 AppBar 以完美适配颜色
+  PreferredSizeWidget _buildAppBar(
+      BuildContext context, AppThemeColors appColors) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_ios_new,
+            color: appColors.primaryText, size: 20),
+        onPressed: () => Get.back(),
+      ),
+      title: Text(
+        "加入账本",
+        style: TextStyle(
+          fontSize: 18.sp,
+          fontFamily: "SmileySans",
+          fontWeight: FontWeight.w600,
+          color: appColors.primaryText,
+        ),
+      ),
+    );
+  }
+
+  // 1. 搜索区
+  Widget _buildSearchSection(BuildContext context, AppThemeColors appColors) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        color: appColors.cardBackground, // 适配卡片背景
+        borderRadius: BorderRadius.circular(24.r), // 统一 24px 圆角
         boxShadow: [
+          // 统一弥散阴影
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -76,38 +97,54 @@ class JoinActivityPage extends GetView<JoinActivityController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("邀请码 / 口令",
-              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12.h),
+              style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                  color: appColors.primaryText)),
+          SizedBox(height: 16.h),
           Row(
             children: [
               Expanded(
                 child: TDSearchBar(
                   padding: EdgeInsets.zero,
-                  backgroundColor: const Color(0xFFF2F3F5),
+                  // 搜索框背景：使用主色的极低透明度 (深浅通吃)
+                  backgroundColor: appColors.primaryText.withOpacity(0.05),
+                  // 样式适配：TDSearchBar 的文字颜色可能需要通过 Theme 全局控制，或者这里如果支持 style 就传
+                  // 这里主要靠 backgroundColor 适配
                   controller: controller.textEditController,
                   placeHolder: "粘贴或输入邀请码",
                   autoFocus: false,
-                  // 绑定新的输入监听逻辑
                   onTextChanged: controller.onInputChanged,
-                  // 键盘回车也可以触发逻辑
                   onSubmitted: (_) => controller.onMainButtonTap(context),
                 ),
               ),
-              SizedBox(width: 12.w),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 16.h),
+          // 粘贴按钮
           GestureDetector(
             onTap: () => controller.readClipboard(context),
             child: Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
               decoration: BoxDecoration(
-                color: Colors.blueGrey[900],
-                borderRadius: BorderRadius.circular(8.r),
+                  // 按钮背景：次要色的低透明度
+                  color: appColors.primaryText.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                      color: appColors.primaryText.withOpacity(0.1))),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.content_paste_rounded,
+                      size: 20, color: appColors.secondaryText),
+                  SizedBox(width: 8.w),
+                  Text("从剪贴板读取",
+                      style: TextStyle(
+                          color: appColors.secondaryText,
+                          fontWeight: FontWeight.w600))
+                ],
               ),
-              child: const Icon(Icons.content_paste_rounded,
-                  size: 24, color: Colors.white),
             ),
           )
         ],
@@ -115,75 +152,83 @@ class JoinActivityPage extends GetView<JoinActivityController> {
     );
   }
 
-  // 2. 结果卡片 (保持不变，省略部分样式代码以节省空间)
-  Widget _buildResultCard() {
+  // 2. 结果卡片
+  Widget _buildResultCard(BuildContext context, AppThemeColors appColors) {
     final activity = controller.activity.value;
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-            color: TDTheme.of(Get.context!).brandFocusColor, width: 1.5),
+        color: appColors.cardBackground,
+        borderRadius: BorderRadius.circular(24.r),
+        // 选中状态的边框：使用主色
+        border: Border.all(color: appColors.primaryText, width: 1.5),
         boxShadow: [
           BoxShadow(
-              color: TDTheme.of(Get.context!).brandFocusColor.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 12,
               offset: const Offset(0, 4))
         ],
       ),
       child: Column(
         children: [
+          // 图标容器
           Container(
-            width: 60.w,
-            height: 60.w,
+            width: 64.w,
+            height: 64.w,
             decoration: BoxDecoration(
-                color: TDTheme.of(Get.context!).brandColor1,
+                color: appColors.primaryText, // 黑底/白底
                 shape: BoxShape.circle),
             child: Icon(Icons.account_balance_wallet_rounded,
-                size: 32, color: TDTheme.of(Get.context!).brandNormalColor),
+                size: 32, color: appColors.cardBackground), // 反色图标
           ),
           SizedBox(height: 16.h),
           Text(activity.activityName,
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+              style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: appColors.primaryText)),
           SizedBox(height: 8.h),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(4)),
+                color: appColors.primaryText.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(6)),
             child: Text("由 ${activity.creatorName} 创建",
-                style: TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
+                style:
+                    TextStyle(fontSize: 12.sp, color: appColors.secondaryText)),
           ),
         ],
       ),
     );
   }
 
-  // 3. 空状态 (保持不变)
-  Widget _buildEmptyHint() {
+  // 3. 空状态
+  Widget _buildEmptyHint(AppThemeColors appColors) {
     return Padding(
       padding: EdgeInsets.only(top: 40.h),
       child: Column(
         children: [
-          Icon(Icons.search_rounded, size: 48, color: Colors.grey[300]),
+          Icon(Icons.search_rounded,
+              size: 48, color: appColors.secondaryText.withOpacity(0.3)),
           SizedBox(height: 8.h),
           Text("输入邀请码以查找账本",
-              style: TextStyle(color: Colors.grey[400], fontSize: 14.sp)),
+              style: TextStyle(
+                  color: appColors.secondaryText.withOpacity(0.5),
+                  fontSize: 14.sp)),
         ],
       ),
     );
   }
 
-  // 4. 底部按钮区 (核心改动：单按钮逻辑)
-  Widget _buildBottomAction(BuildContext context) {
+  // 4. 底部按钮区
+  Widget _buildBottomAction(BuildContext context, AppThemeColors appColors) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 16.w),
+      padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 34.w), // 适配底部安全区
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.cardBackground, // 底部栏背景
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -193,23 +238,33 @@ class JoinActivityPage extends GetView<JoinActivityController> {
         ],
       ),
       child: Obx(() {
-        // 根据是否有数据，决定按钮文案
         final bool hasData = controller.activity.value.activityId.isNotEmpty;
         final String btnText = hasData ? "确认加入" : "查找账本";
+
+        // 按钮颜色逻辑：有数据用主色，无数据用禁用色
+        final bgColor = hasData
+            ? appColors.mainButtonBg
+            : appColors.secondaryText.withOpacity(0.2);
+        final textColor = hasData
+            ? appColors.mainButtonIcon
+            : appColors.secondaryText.withOpacity(0.5);
 
         return GestureDetector(
           onTap: () => controller.joinActivity(),
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            height: 50.h,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: hasData ? Colors.blueGrey[900] : Colors.grey[300],
-              borderRadius: BorderRadius.circular(8.r),
+              color: bgColor,
+              borderRadius: BorderRadius.circular(25.r), // 圆角胶囊
             ),
             child: Text(
               btnText,
-              style: TextStyle(color: Colors.white, fontSize: 16.sp),
-              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: textColor,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold),
             ),
           ),
         );

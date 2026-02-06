@@ -146,4 +146,13 @@ class SpUtil {
       }
     }
   }
+
+  /// 主题模式
+  static String getThemeMode() {
+    return Get.find<SharedPreferences>().getString(SPKey.themeMode) ?? 'system';
+  }
+
+  static Future<bool> setThemeMode(String mode) {
+    return Get.find<SharedPreferences>().setString(SPKey.themeMode, mode);
+  }
 }

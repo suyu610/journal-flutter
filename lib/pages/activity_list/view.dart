@@ -4,7 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/empty_item.dart';
-import 'package:journal/config/theme_config.dart';
+// 1. 引入主题配置
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/routers.dart';
@@ -24,7 +25,8 @@ class ActivityListPage extends GetView<ActivityListController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          backgroundColor: backgroundColor,
+          // 背景色跟随主题
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: _buildAppbar(context),
           body: _buildView(context),
           // floatingActionButton: _buildFloatingActionButton(),
@@ -35,75 +37,11 @@ class ActivityListPage extends GetView<ActivityListController> {
     );
   }
 
-// 浮动按钮
-  // Widget _buildFloatingActionButton() {
-  //   return GestureDetector(
-  //     onTap: () {
-  //       Get.toNamed(Routers.CreateActivityUrl);
-  //     },
-  //     child: Container(
-  //       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-  //       clipBehavior: Clip.antiAlias,
-  //       decoration: ShapeDecoration(
-  //         color: const Color(0xFF000000),
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(24),
-  //         ),
-  //         shadows: const [
-  //           BoxShadow(
-  //             color: Color(0x19000000),
-  //             blurRadius: 5,
-  //             offset: Offset(0, 5),
-  //             spreadRadius: -3,
-  //           ),
-  //           BoxShadow(
-  //             color: Color(0x0F000000),
-  //             blurRadius: 10,
-  //             offset: Offset(0, 8),
-  //             spreadRadius: 1,
-  //           ),
-  //           BoxShadow(
-  //             color: Color(0x0C000000),
-  //             blurRadius: 14,
-  //             offset: Offset(0, 3),
-  //             spreadRadius: 2,
-  //           )
-  //         ],
-  //       ),
-  //       child: Row(
-  //         mainAxisSize: MainAxisSize.min,
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         crossAxisAlignment: CrossAxisAlignment.center,
-  //         children: [
-  //           Container(
-  //               width: 24,
-  //               height: 24,
-  //               child: const Icon(
-  //                 Icons.add,
-  //                 size: 20,
-  //                 color: Colors.white,
-  //               )),
-  //           const SizedBox(width: 4),
-  //           const Text(
-  //             "新建账本",
-  //             textAlign: TextAlign.center,
-  //             style: TextStyle(
-  //               color: Colors.white,
-  //               fontSize: 14,
-  //               fontFamily: 'PingFang SC',
-  //               fontWeight: FontWeight.w600,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // 浮动按钮
-
 // 尾巴
-  Widget _buildFooter(Activity activity, context) {
+  Widget _buildFooter(Activity activity, BuildContext context) {
+    // 获取主题颜色
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return Padding(
       padding: const EdgeInsets.only(top: 12.0),
       child: Row(
@@ -118,11 +56,15 @@ class ActivityListPage extends GetView<ActivityListController> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
               decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xff000000), width: 1),
+                  // 边框色适配：使用主要文字色
+                  border: Border.all(color: appColors.primaryText, width: 1),
                   borderRadius: BorderRadius.circular(20.r)),
               child: Text(
                 "账单详情",
-                style: TextStyle(fontSize: 12.sp),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: appColors.primaryText, // 文字色适配
+                ),
               ),
             ),
           ),
@@ -137,11 +79,15 @@ class ActivityListPage extends GetView<ActivityListController> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 7.h),
               decoration: BoxDecoration(
-                  color: const Color(0xff000000),
+                  // 背景色适配：使用定义好的主按钮背景
+                  color: appColors.mainButtonBg,
                   borderRadius: BorderRadius.circular(20.r)),
               child: Text(
                 "我记一笔",
-                style: TextStyle(color: Colors.white, fontSize: 12.sp),
+                style: TextStyle(
+                    // 文字色适配：使用定义好的主按钮图标/文字色
+                    color: appColors.mainButtonIcon,
+                    fontSize: 12.sp),
               ),
             ),
           ),
@@ -151,7 +97,7 @@ class ActivityListPage extends GetView<ActivityListController> {
   }
 
   // 主视图
-  Widget _buildView(context) {
+  Widget _buildView(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 12.w, right: 12.w, top: 12.h),
       child: EasyRefresh(
@@ -166,7 +112,8 @@ class ActivityListPage extends GetView<ActivityListController> {
           child: controller.activityList.isEmpty &&
                   controller.joinedActivityList.isEmpty
               ? Container(
-                  color: Colors.white,
+                  // 移除硬编码的 Colors.white，设为透明，让 EmptyItem 自己的卡片样式展示出来
+                  color: Colors.transparent,
                   height: 600.h,
                   padding: const EdgeInsets.only(bottom: 15.0),
                   child: buildEmptyItem(
@@ -199,38 +146,52 @@ class ActivityListPage extends GetView<ActivityListController> {
     );
   }
 
-  PreferredSizeWidget _buildAppbar(context) => TDNavBar(
-          useBorderStyle: true,
-          height: 48,
-          useDefaultBack: false,
-          titleWidget: Text(
-            "账本列表",
-            style: TextStyle(fontSize: 18.sp, fontFamily: "SmileySans"),
+  PreferredSizeWidget _buildAppbar(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    return TDNavBar(
+        useBorderStyle: true,
+        height: 48,
+        useDefaultBack: false,
+        backgroundColor: Colors.transparent, // 沉浸式透明背景
+        titleWidget: Text(
+          "账本列表",
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontFamily: "SmileySans",
+            color: appColors.primaryText, // 标题颜色适配
           ),
-          border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
-          leftBarItems: [
-            TDNavBarItem(
-                iconWidget: Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Text("加入多人账本",
-                      style: TextStyle(
-                        color: const Color(0xff000000).withOpacity(0.8),
-                      )),
-                ),
-                action: () {
-                  Get.toNamed(Routers.JoinActivityPageUrl);
-                  return;
-                }),
-          ],
-          rightBarItems: [
-            TDNavBarItem(
-                iconWidget: Text("新建",
+        ),
+        border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
+        leftBarItems: [
+          TDNavBarItem(
+              iconWidget: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text("加入多人账本",
                     style: TextStyle(
-                      color: const Color(0xff000000).withOpacity(0.8),
+                      // 按钮文字适配
+                      color: appColors.primaryText,
+                      fontFamily: "SmileySans",
+                      fontWeight: FontWeight.w500,
                     )),
-                action: () {
-                  Get.toNamed(Routers.CreateActivityUrl);
-                  return;
-                }),
-          ]);
+              ),
+              action: () {
+                Get.toNamed(Routers.JoinActivityPageUrl);
+                return;
+              }),
+        ],
+        rightBarItems: [
+          TDNavBarItem(
+              iconWidget: Text("新建",
+                  style: TextStyle(
+                    fontFamily: "SmileySans",
+                    color: appColors.primaryText,
+                    fontWeight: FontWeight.w500,
+                  )),
+              action: () {
+                Get.toNamed(Routers.CreateActivityUrl);
+                return;
+              }),
+        ]);
+  }
 }

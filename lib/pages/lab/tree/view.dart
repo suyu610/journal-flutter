@@ -163,7 +163,7 @@ class _SelfGrowingTreeState extends State<SelfGrowingTree> {
 
   void _onRiveInit(Artboard artboard) {
     // 随机延迟启动，错开每棵树的“生日”
-    int delay = _random.nextInt(3000);
+    int delay = _random.nextInt(30000);
 
     Future.delayed(Duration(milliseconds: delay), () {
       if (!mounted) return;
@@ -177,7 +177,7 @@ class _SelfGrowingTreeState extends State<SelfGrowingTree> {
         _progressInput = controller.findInput<double>('input');
 
         // 初始高度随机
-        _progressInput?.value = _random.nextDouble() * 20;
+        _progressInput?.value = _random.nextDouble() * 60;
 
         _startGrowthLoop();
       }
@@ -187,7 +187,7 @@ class _SelfGrowingTreeState extends State<SelfGrowingTree> {
   void _startGrowthLoop() {
     // 【优化建议】把刷新频率从 100ms 提高到 32ms (约30FPS)，
     // 这样速度的差异会表现得更丝滑，不会有“卡顿式”增长的感觉
-    _timer = Timer.periodic(const Duration(milliseconds: 32), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 10000), (timer) {
       if (!mounted || _progressInput == null) return;
 
       // 【核心修改 2】计算当前的增量

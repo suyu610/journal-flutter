@@ -119,7 +119,7 @@ abstract class Routers {
       name: LocalServicePageUrl,
       page: () => const LocalServicePage(),
     ),
-    GetPage(name: LabPageUrl, page: () => LabPage()),
+    GetPage(name: LabPageUrl, page: () => const LabPage()),
     GetPage(
         name: ClassificationRulesPageUrl,
         page: () => const ClassificationRulesPage()),

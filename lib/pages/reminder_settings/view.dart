@@ -10,10 +10,10 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8), // 柔和的背景色
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: BrnAppBar(
         title: "记账提醒",
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       ),
       body: SafeArea(
         child: _buildView(context),

@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/cell_group.dart';
-import 'package:journal/config/theme_config.dart';
+// 1. 引入你的主题颜色定义
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -15,9 +16,6 @@ class ProfilePage extends GetView<ProfileController> {
   ProfilePage({super.key});
 
   @override
-// 在你的 ProfilePage 类中替换以下部分
-
-  @override
   Widget build(BuildContext context) {
     return GetBuilder<ProfileController>(
       init: ProfileController(),
@@ -25,9 +23,8 @@ class ProfilePage extends GetView<ProfileController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          // 稍微调整背景色，使其更融合
-          backgroundColor: backgroundColor,
-          // 隐藏默认 AppBar，为了做沉浸式头部，或者保留透明 AppBar
+          // 背景色跟随主题
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: null,
           body: _buildView(context),
         );
@@ -37,33 +34,38 @@ class ProfilePage extends GetView<ProfileController> {
 
   // --- 重构的主视图 ---
   Widget _buildView(BuildContext context) {
+    // 获取当前主题颜色配置
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(), // 消除回弹的空白，质感更好
+      physics: const ClampingScrollPhysics(),
       child: Column(
         children: [
-          // 1. 头部 (保持不变)
-          _buildHeaderSection(context),
+          // 1. 头部区域 (传入 appColors)
+          _buildHeaderSection(context, appColors),
 
           const SizedBox(height: 12),
 
-          // 3. [新增] 常用功能 - 宫格卡片设计
-          _buildToolsCard(context),
+          // 2. 常用功能 - 宫格卡片
+          _buildToolsCard(context, appColors),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          // 4. 其他设置 - 列表设计 (保留次要功能)
-          _buildSettingsList(context),
+          // 3. 其他设置 - 列表
+          _buildSettingsList(context, appColors),
 
           SizedBox(height: 20.h),
 
-          // 5. 版本号
+          // 4. 版本号
           FutureBuilder(
             future: appVersion(),
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               return Text(
                 "Version ${snapshot.data ?? ""}",
                 style: TextStyle(
-                    color: Colors.grey[400], fontSize: 11, letterSpacing: 0.5),
+                    color: appColors.secondaryText, // 使用次要文本色
+                    fontSize: 11,
+                    letterSpacing: 0.5),
               );
             },
           ),
@@ -73,172 +75,20 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-// --- 新增：常用功能宫格卡片 ---
-  Widget _buildToolsCard(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20), // 内边距大一点，呼吸感
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8), // 圆角大一点
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04), // 极淡的阴影
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 小标题，增加层级感
-          // const Text(
-          //   "常用服务",
-          //   style: TextStyle(
-          //       fontSize: 15,
-          //       fontWeight: FontWeight.bold,
-          //       color: Colors.black87),
-          // ),
-          // const SizedBox(height: 20),
-
-          // 宫格区域
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildGridItem(
-                icon: Icons.supervisor_account_outlined,
-                color: Colors.blueGrey[700]!, // 蓝色
-                label: "AI角色",
-                onTap: () => Get.toNamed(Routers.AIConfigPageV2Url),
-              ),
-              _buildGridItem(
-                icon: Icons.notifications_active_outlined, // 换了个更有动感的图标
-                color: Colors.blueGrey[700]!, // 橙色
-                label: "记账提醒",
-                onTap: () => Get.toNamed(Routers.ReminderSettingsPageUrl),
-              ),
-              _buildGridItem(
-                icon: Icons.category_outlined,
-                color: Colors.blueGrey[700]!, // 绿色
-                label: "分类规则", // 缩短文案，"自定义分类规则"太长容易折行
-                onTap: () => Get.toNamed(Routers.ClassificationRulesPageUrl),
-              ),
-              _buildGridItem(
-                icon: Icons.science_outlined,
-                color: Colors.blueGrey[700]!, // 紫色
-                label: "实验室",
-                onTap: () => Get.toNamed(Routers.LabPageUrl, arguments: {}),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- 宫格单项组件 ---
-  Widget _buildGridItem(
-      {required IconData icon,
-      required Color color,
-      required String label,
-      required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque, // 扩大点击区域
-      child: Column(
-        children: [
-          // 图标容器
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1), // 浅色背景
-              borderRadius: BorderRadius.circular(14), // 方圆形
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 8),
-          // 文字
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- 抽离出的设置列表 (保留列表样式) ---
-  Widget _buildSettingsList(BuildContext context) {
-    return CellGroup(
-      children: [
-        Cell(
-          title: "联系我们",
-          icon: _buildIcon(Icons.headset_mic_outlined, Colors.blueGrey),
-          onTap: () => controller.contact(),
-        ),
-        Cell(
-          icon: _buildIcon(Icons.star_outline_rounded, Colors.blueGrey[700]!),
-          title: "评价我们",
-          onTap: () => controller.showRatingDialog(context),
-        ),
-        Cell(
-          icon: _buildIcon(Icons.privacy_tip_outlined, Colors.blueGrey[700]!),
-          title: "隐私协议",
-          onTap: () {
-            Get.toNamed(Routers.WebViewPageUrl, arguments: {
-              "url": "https://blog.uuorb.com/archives/journal-privacy",
-              "title": "隐私协议"
-            });
-          },
-        ),
-        Cell(
-          icon: _buildIcon(Icons.logout, Colors.blueGrey[700]!),
-          title: "退出登录",
-          onTap: () => controller.logout(context),
-        ),
-        Cell(
-          icon: _buildIcon(Icons.delete_outline, Colors.blueGrey[700]!),
-          title: "注销账号",
-          // titleStyle: const TextStyle(color: Colors.redAccent), // 文字也变红，警示感
-          onTap: () => controller.deleteAccount(context),
-        ),
-      ],
-    );
-  }
-
-  // --- 新增：给 Icon 增加一点背景色，显得不那么单调 ---
-  Widget _buildIcon(IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, size: 18, color: color),
-    );
-  }
-
-  // --- 核心改造：头部区域 ---
-  Widget _buildHeaderSection(BuildContext context) {
+  // --- 头部区域 ---
+  Widget _buildHeaderSection(BuildContext context, AppThemeColors appColors) {
     var user = controller.user.value;
-    bool isVip = user.vip; // 获取 VIP 状态
+    bool isVip = user.vip;
 
     return Container(
       padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + 20,
-          bottom: 10, // 稍微减小底部间距
-          left: 24, // 稍微加大左边距，显得更大气
+          bottom: 20,
+          left: 24,
           right: 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
+      // 移除硬编码的 Colors.white，保持透明以展示页面背景，或者使用 cardBackground
+      // 这里建议透明，显得更通透
+      color: Colors.transparent,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -250,37 +100,41 @@ class ProfilePage extends GetView<ProfileController> {
                 Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    // 边框颜色适配深色模式
                     border: Border.all(
-                        color: Colors.grey.shade100, width: 2), // 极淡的边框
+                        color: appColors.secondaryText.withOpacity(0.2),
+                        width: 2),
                   ),
                   child: ClipOval(
                     child: Image.network(
                       user.avatarUrl,
-                      height: 60.r,
-                      width: 60.r,
+                      height: 64.r, // 稍微加大一点点
+                      width: 64.r,
                       fit: BoxFit.cover,
                       errorBuilder: (c, e, s) => Container(
-                          color: Colors.grey[200], width: 60.r, height: 60.r),
+                          color: appColors.chartPalette[4], // 使用主题盘里的浅色
+                          width: 64.r,
+                          height: 64.r),
                     ),
                   ),
                 ),
-                // 如果是 VIP，可以在头像右下角加个小金标，不喜欢的可以注释掉下面这段 Positioned
                 if (isVip)
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                          color: Colors.white, shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                          color: appColors.cardBackground, // 适配背景
+                          shape: BoxShape.circle),
                       child: const Icon(Icons.verified,
-                          size: 16, color: Color(0xFFD4AF37)),
+                          size: 18, color: Color(0xFFD4AF37)),
                     ),
                   )
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
 
           // 2. 右侧信息区域
           Expanded(
@@ -292,25 +146,23 @@ class ProfilePage extends GetView<ProfileController> {
                 Row(
                   children: [
                     Flexible(
-                      // 防止名字太长溢出
                       child: Text(
                         user.nickname,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.w800, // 字重加粗一点
-                            fontSize: 20.sp,
-                            color: Colors.black87),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 22.sp,
+                            color: appColors.primaryText), // 适配文字颜色
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // --- 插入 VIP 徽章 ---
-                    _buildVipBadge(isVip),
+                    _buildVipBadge(isVip, appColors),
                   ],
                 ),
+                const SizedBox(height: 8),
 
-                const SizedBox(height: 6),
-
+                // 第二行：ID 和 编辑
                 Row(
                   children: [
                     GestureDetector(
@@ -324,32 +176,25 @@ class ProfilePage extends GetView<ProfileController> {
                       },
                       child: Text("ID: ${user.userId}",
                           style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey[500],
-                              fontFamily: "DIN")), // 建议用等宽或数字字体
+                              fontSize: 12,
+                              color: appColors.secondaryText, // 适配次要文字
+                              fontFamily: "DIN")),
                     ),
-
-                    // 一个极小的分割线
                     Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
                         width: 1,
                         height: 10,
-                        color: Colors.grey[300]),
-
-                    // 编辑按钮
+                        color: appColors.secondaryText.withOpacity(0.3)),
                     GestureDetector(
-                      onTap: () {
-                        // 你的修改昵称逻辑...
-                        // 建议封装成 controller.showEditNameDialog(context);
-                        _showEditNameDialog(context, user.nickname);
-                      },
+                      onTap: () => _showEditNameDialog(context, user.nickname),
                       child: Row(
                         children: [
                           Text("编辑",
                               style: TextStyle(
-                                  fontSize: 11, color: Colors.grey[600])),
+                                  fontSize: 12,
+                                  color: appColors.secondaryText)),
                           Icon(Icons.navigate_next,
-                              size: 14, color: Colors.grey[400])
+                              size: 14, color: appColors.secondaryText)
                         ],
                       ),
                     )
@@ -363,41 +208,208 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  // --- 新增：低调质感的身份标识 ---
-  Widget _buildVipBadge(bool isVip) {
+  // --- 常用功能宫格卡片 ---
+  Widget _buildToolsCard(BuildContext context, AppThemeColors appColors) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), // 极小的内边距
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-          // VIP用黑底，非VIP用极浅灰底
-          color: isVip ? const Color(0xFF2B2B2B) : const Color(0xFFF5F5F5),
+        color: appColors.cardBackground, // 适配卡片背景
+        borderRadius: BorderRadius.circular(24), // 大圆角
+        boxShadow: [
+          // 细腻的阴影
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGridItem(
+            icon: Icons.supervisor_account_outlined,
+            label: "AI角色",
+            appColors: appColors,
+            onTap: () => Get.toNamed(Routers.AIConfigPageV2Url),
+          ),
+          _buildGridItem(
+            icon: Icons.notifications_none_rounded,
+            label: "记账提醒",
+            appColors: appColors,
+            onTap: () => Get.toNamed(Routers.ReminderSettingsPageUrl),
+          ),
+          _buildGridItem(
+            icon: Icons.category_outlined,
+            label: "分类规则",
+            appColors: appColors,
+            onTap: () => Get.toNamed(Routers.ClassificationRulesPageUrl),
+          ),
+          _buildGridItem(
+            icon: Icons.science_outlined,
+            label: "实验室",
+            appColors: appColors,
+            onTap: () => Get.toNamed(Routers.LabPageUrl, arguments: {}),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 宫格单项 ---
+  Widget _buildGridItem(
+      {required IconData icon,
+      required String label,
+      required AppThemeColors appColors,
+      required VoidCallback onTap}) {
+    // 统一使用主题色，显得更高级（不再使用花花绿绿的颜色）
+    final itemColor = appColors.primaryText;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              // 背景色使用 primaryText 的极低透明度，这样深浅模式都通用
+              color: itemColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(icon, color: itemColor, size: 26),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: appColors.primaryText.withOpacity(0.8),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 设置列表 ---
+  Widget _buildSettingsList(BuildContext context, AppThemeColors appColors) {
+    // 列表的图标颜色
+    final iconColor = appColors.primaryText;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+          color: appColors.cardBackground,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ]),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: CellGroup(
+          // 如果 CellGroup 有背景色参数，设为透明
+          // backgroundColor: Colors.transparent,
+          children: [
+            Cell(
+              title: "联系我们",
+              icon: _buildIcon(Icons.headset_mic_outlined, iconColor),
+              onTap: () => controller.contact(),
+            ),
+            Cell(
+              icon: _buildIcon(Icons.star_outline_rounded, iconColor),
+              title: "评价我们",
+              onTap: () => controller.showRatingDialog(context),
+            ),
+            Cell(
+              icon: _buildIcon(Icons.dark_mode_outlined, iconColor),
+              title: "主题设置",
+              onTap: () => controller.showThemeDialog(context),
+            ),
+            Cell(
+              icon: _buildIcon(Icons.privacy_tip_outlined, iconColor),
+              title: "隐私协议",
+              onTap: () {
+                Get.toNamed(Routers.WebViewPageUrl, arguments: {
+                  "url": "https://blog.uuorb.com/archives/journal-privacy",
+                  "title": "隐私协议"
+                });
+              },
+            ),
+            Cell(
+              icon: _buildIcon(Icons.logout, iconColor),
+              title: "退出登录",
+              onTap: () => controller.logout(context),
+            ),
+            Cell(
+              icon:
+                  _buildIcon(Icons.delete_outline, Colors.red.withOpacity(0.8)),
+              title: "注销账号",
+              // 如果 Cell 支持 titleStyle，建议在这里加上
+              // titleStyle: TextStyle(color: Colors.red),
+              onTap: () => controller.deleteAccount(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- 图标包装 ---
+  Widget _buildIcon(IconData icon, Color color) {
+    // 这里不再加背景色，保持列表的简洁干净 (Minimalist style)
+    // 如果你喜欢之前的背景块，可以加回去
+    return Icon(icon, size: 20, color: color);
+  }
+
+  // --- VIP 徽章 ---
+  Widget _buildVipBadge(bool isVip, AppThemeColors appColors) {
+    if (!isVip) {
+      // 非VIP：极简灰色胶囊
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: appColors.secondaryText.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          "Basic",
+          style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: appColors.secondaryText,
+              height: 1.1),
+        ),
+      );
+    }
+
+    // VIP：黑金质感 (深色模式下稍微调整背景色)
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+          color: const Color(0xFF2B2B2B), // 保持深色底，显出金色的贵气
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-              // VIP用微弱的金边，非VIP无边框
-              color: isVip
-                  ? const Color(0xFFFFD700).withOpacity(0.3)
-                  : Colors.transparent,
-              width: 0.5)),
-      child: Row(
+              color: const Color(0xFFFFD700).withOpacity(0.4), width: 0.5)),
+      child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 图标
-          Icon(
-            isVip
-                ? Icons.workspace_premium
-                : Icons.person_outline, // VIP用勋章，普通用人头
-            size: 10, // 极小图标
-            color:
-                isVip ? const Color(0xFFFFD700) : Colors.grey[500], // 金色 vs 灰色
-          ),
-          const SizedBox(width: 3),
-          // 文字
+          Icon(Icons.workspace_premium, size: 10, color: Color(0xFFFFD700)),
+          SizedBox(width: 4),
           Text(
-            isVip ? "PRO" : "Basic", // 文案
+            "PRO",
             style: TextStyle(
-                fontSize: 9, // 极小字体
+                fontSize: 10,
                 fontWeight: FontWeight.w900,
-                // VIP用金色字，非VIP用灰色字
-                color: isVip ? const Color(0xFFFFD700) : Colors.grey[500],
+                color: Color(0xFFFFD700),
                 height: 1.1),
           ),
         ],
@@ -405,7 +417,7 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  // 辅助方法：把原来的 Dialog 逻辑提出来，保持代码整洁
+  // 辅助方法
   void _showEditNameDialog(BuildContext context, String currentName) {
     controller.nicknameTextEditController.text = currentName;
     PremiumGlassDialog.show(context,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+// 1. 引入你的主题定义
+import 'package:journal/core/app_theme_colors.dart';
 import 'controller.dart';
 
 class AiConfigV2Page extends GetView<AiConfigV2Controller> {
@@ -10,21 +12,27 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
 
   @override
   Widget build(BuildContext context) {
-    // 注入 Controller
+    // 2. 获取当前主题颜色配置
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     Get.put(AiConfigV2Controller());
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
+      // 这里的背景色其实会被 Stack 里的 AnimatedContainer 盖住，但作为底色兜底
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // 返回按钮：在深色遮罩上白色比较清晰，或者也可以用 primaryText
         leading: const BackButton(color: Colors.white),
       ),
       body: Stack(
         children: [
-          // 1. 动态背景层 (核心修改)
-          _buildAnimatedBackground(),
+          // 1. 动态背景层 (带深色模式压暗逻辑)
+          _buildAnimatedBackground(context),
 
           // 2. Live2D 层
           Positioned.fill(
@@ -38,83 +46,76 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
             ),
           ),
 
-          // 3. 切换按钮
-          // _buildSwitchArrows(),
+          // 3. 角色选择器
           _buildCharacterSelector(),
-          // 4. 底部面板
-          _buildBottomPanel(),
+
+          // 4. 底部面板 (传入 appColors)
+          _buildBottomPanel(context, appColors, isDark),
         ],
       ),
     );
   }
 
-  // 核心修改：带动画的渐变背景
-  Widget _buildAnimatedBackground() {
+  // 核心修改：带动画的渐变背景 + 深色模式“墨镜”处理
+  Widget _buildAnimatedBackground(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Obx(() {
-      // 获取当前角色的渐变色数组
       final bgColors =
           controller.characters[controller.currentIndex.value].bgColors;
 
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 600), // 600ms 平滑过渡
-        curve: Curves.easeInOut, // 缓动曲线
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: bgColors, // 动态颜色
+      return Stack(
+        children: [
+          // 原始渐变层
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: bgColors,
+              ),
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            // 叠加一层顶部的聚光灯 (白色径向渐变)
-            // 这样无论背景是什么颜色，头顶都有光照感
-            Positioned(
-              top: -150,
-              left: 0,
-              right: 0,
-              height: 600,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.topCenter,
-                    radius: 0.7,
-                    colors: [
-                      Colors.white.withOpacity(0.3), // 高光
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 1.0],
-                  ),
-                ),
-              ),
-            ),
 
-            // 叠加一层底部的深色阴影，让白色文字更清晰，同时增加空间纵深
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 300.h,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.2),
-                      Colors.transparent,
-                    ],
-                  ),
+          // 【新增】深色模式滤镜层
+          // 既然觉得粉色太扎眼，就在上面盖一层半透明的黑色
+          // 这样既保留了角色的主题色调，又不会像开灯一样亮
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            color: isDark
+                ? Colors.black.withOpacity(0.4) // 深色模式压暗 40%
+                : Colors.transparent,
+          ),
+
+          // 顶部高光 (保持)
+          Positioned(
+            top: -150,
+            left: 0,
+            right: 0,
+            height: 600,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topCenter,
+                  radius: 0.7,
+                  colors: [
+                    Colors.white.withOpacity(isDark ? 0.1 : 0.3), // 深色模式下高光也弱一点
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 1.0],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     });
   }
 
-  Widget _buildBottomPanel() {
+  Widget _buildBottomPanel(
+      BuildContext context, AppThemeColors appColors, bool isDark) {
     return Positioned(
       left: 0,
       right: 0,
@@ -126,12 +127,17 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
           child: Container(
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 32.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(1), // 稍微透一点背景色出来
+              // 【核心修改】：背景色使用 cardBackground，并带一点透明度
+              color: appColors.cardBackground.withOpacity(isDark ? 0.85 : 0.9),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(32)),
               border: Border(
                   top: BorderSide(
-                      color: Colors.white.withOpacity(0.6), width: 1)),
+                      // 边框颜色适配：深色模式用极淡的白，浅色模式用极淡的黑
+                      color: isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.6),
+                      width: 1)),
               boxShadow: [
                 BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -154,7 +160,8 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                         style: TextStyle(
                             fontSize: 22.sp,
                             fontWeight: FontWeight.w800,
-                            color: Colors.black87),
+                            // 【核心修改】：字体颜色跟随主题
+                            color: appColors.primaryText),
                       ),
                       const Spacer(),
                       AnimatedContainer(
@@ -162,7 +169,7 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                            color: char.themeColor, // 标签颜色也跟随主题
+                            color: char.themeColor,
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
@@ -189,7 +196,10 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                       controller.characters[controller.currentIndex.value]
                           .description,
                       style: TextStyle(
-                          fontSize: 13.sp, color: Colors.black54, height: 1.5),
+                          fontSize: 13.sp,
+                          // 【核心修改】：次要文本颜色
+                          color: appColors.secondaryText,
+                          height: 1.5),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     )),
@@ -200,12 +210,12 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                 Row(
                   children: [
                     Expanded(
-                        child:
-                            _buildGlassInput("称呼", controller.nameController)),
+                        child: _buildGlassInput(
+                            "称呼", controller.nameController, appColors)),
                     SizedBox(width: 16.w),
                     Expanded(
                         child: _buildGlassInput(
-                            "开场白", controller.openingController)),
+                            "开场白", controller.openingController, appColors)),
                   ],
                 ),
 
@@ -215,18 +225,19 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                 Obx(() {
                   final char =
                       controller.characters[controller.currentIndex.value];
-                  final bgColor = char.bgColors[0]; // 提取出背景色
+                  final bgColor = char.bgColors[0];
+                  // 按钮逻辑保持不变，因为它是彩色的，但在深色模式下阴影可以调整一下
                   final bool isLightColor = bgColor.computeLuminance() > 0.5;
                   final Color textColor =
                       isLightColor ? Colors.black87 : Colors.white;
+
                   return GestureDetector(
-                    onTap: () => controller.saveConfig(), // 你的保存逻辑
+                    onTap: () => controller.saveConfig(),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: double.infinity,
                       height: 50.h,
                       decoration: BoxDecoration(
-                          // 按钮也做成渐变，呼应背景
                           color: bgColor,
                           borderRadius: BorderRadius.circular(25),
                           boxShadow: [
@@ -238,10 +249,10 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                           ]),
                       child: Center(
                         child: Text(
-                          "确认签约 ${char.name.split('·').last}", // 只要名字后半部分
+                          "确认签约 ${char.name.split('·').last}",
                           style: TextStyle(
-                              color:
-                                  textColor, // 【这里引用计算好的颜色】                              fontSize: 16.sp,
+                              color: textColor,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -256,8 +267,9 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
     );
   }
 
-  // 磨砂风格输入框
-  Widget _buildGlassInput(String label, TextEditingController controller) {
+  // 磨砂风格输入框 - 适配主题色
+  Widget _buildGlassInput(String label, TextEditingController controller,
+      AppThemeColors appColors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -266,20 +278,24 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
           child: Text(label,
               style: TextStyle(
                   fontSize: 12.sp,
-                  color: Colors.black45,
+                  // 【核心修改】：标签使用次要文本色
+                  color: appColors.secondaryText,
                   fontWeight: FontWeight.bold)),
         ),
         Container(
           height: 44.h,
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.1), // 极淡的灰
+            // 【核心修改】：背景色改为 primaryText 的极低透明度，这样深浅模式下都是淡淡的灰/白
+            color: appColors.primaryText.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.black.withOpacity(0.05)),
+            border: Border.all(color: appColors.primaryText.withOpacity(0.05)),
           ),
           child: TextField(
             controller: controller,
-            style: TextStyle(fontSize: 14.sp, color: Colors.black87),
-            cursorColor: Colors.black54,
+            // 【核心修改】：输入文字颜色
+            style: TextStyle(fontSize: 14.sp, color: appColors.primaryText),
+            // 光标颜色
+            cursorColor: appColors.primaryText,
             decoration: const InputDecoration(
               border: InputBorder.none,
               contentPadding:
@@ -291,14 +307,14 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
     );
   }
 
-  // 2. 新增 _buildCharacterSelector 方法
+  // 角色选择器保持不变，它的白色边框在深色模式下效果很好
   Widget _buildCharacterSelector() {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 300.h, // 这里的数值取决于你的 BottomPanel 高度，根据实际调整
+      bottom: 300.h,
       child: SizedBox(
-        height: 100.w, // 列表高度
+        height: 100.w,
         child: ListView.separated(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
           scrollDirection: Axis.horizontal,
@@ -306,20 +322,19 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
           separatorBuilder: (c, i) => SizedBox(width: 16.w),
           itemBuilder: (context, index) {
             final char = controller.characters[index];
-
             return Obx(() {
               final isSelected = controller.currentIndex.value == index;
               return GestureDetector(
                 onTap: () => controller.selectCharacter(index),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  width: isSelected ? 65.w : 50.w, // 选中变大
+                  width: isSelected ? 65.w : 50.w,
                   height: isSelected ? 65.w : 50.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: char.themeColor, // 使用角色主题色作为头像底色
+                    color: char.themeColor,
                     border: isSelected
-                        ? Border.all(color: Colors.white, width: 3) // 选中加白边
+                        ? Border.all(color: Colors.white, width: 3)
                         : null,
                     boxShadow: [
                       if (isSelected)
@@ -330,11 +345,9 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
                         )
                     ],
                   ),
-                  // 如果有图片资源，这里可以用 Image.asset
-                  // 暂时用首字母代替
                   child: Center(
                     child: Text(
-                      char.name.split('·').last, // 取名字第一个字
+                      char.name.split('·').last,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: isSelected ? 14.sp : 12.sp,
