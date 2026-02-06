@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_button.dart';
 import 'package:journal/components/journal_search_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
@@ -119,29 +120,11 @@ class JoinActivityPage extends GetView<JoinActivityController> {
           ),
           SizedBox(height: 16.h),
           // 粘贴按钮
-          GestureDetector(
+          JournalButton(
+            icon: Icons.content_paste_rounded,
+            text: "从剪贴板读取",
             onTap: () => controller.readClipboard(context),
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                  color: appColors.mainButtonBg,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                      color: appColors.primaryText.withOpacity(0.1))),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.content_paste_rounded,
-                      size: 20, color: appColors.mainButtonIcon),
-                  SizedBox(width: 8.w),
-                  Text("从剪贴板读取",
-                      style: TextStyle(
-                          color: appColors.mainButtonIcon,
-                          fontWeight: FontWeight.w500))
-                ],
-              ),
-            ),
+            width: double.infinity,
           )
         ],
       ),

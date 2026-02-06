@@ -16,13 +16,12 @@ class CellGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     // 获取主题颜色
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
-
     return Container(
-      // 如果你在外部已经包了 padding，这里可以去掉 margin，或者根据需要调整
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       decoration: BoxDecoration(
-        color: backgroundColor ?? appColors.cardBackground, // 适配暗色模式
-        borderRadius: BorderRadius.circular(24), // 与 Profile 页面统一的大圆角
+        color: backgroundColor ?? appColors.cardBackground,
+        borderRadius: BorderRadius.circular(24),
         // 统一的高级阴影
       ),
       // 使用 ClipRRect 确保子元素的点击水波纹不溢出圆角
@@ -88,11 +87,10 @@ class Cell extends StatelessWidget {
         splashColor: appColors.primaryText.withOpacity(0.05),
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 18), // 高度稍微加大，增加呼吸感
+              horizontal: 18, vertical: 18), // 高度稍微加大，增加呼吸感
           child: Row(
             children: [
               if (icon != null) ...[
-                // 这里不对 Icon 强制设色，允许外部传入彩色 Icon
                 icon!,
                 const SizedBox(width: 14), // 图标和文字间距略微加大
               ],

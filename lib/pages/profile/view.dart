@@ -39,41 +39,35 @@ class ProfilePage extends GetView<ProfileController> {
     // 获取当前主题颜色配置
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: Column(
-        children: [
-          // 1. 头部区域 (传入 appColors)
-          _buildHeaderSection(context, appColors),
+    return Column(
+      children: [
+        // 1. 头部区域 (传入 appColors)
+        _buildHeaderSection(context, appColors),
 
-          const SizedBox(height: 12),
+        // 2. 常用功能 - 宫格卡片
+        _buildToolsCard(context, appColors),
 
-          // 2. 常用功能 - 宫格卡片
-          _buildToolsCard(context, appColors),
+        const SizedBox(height: 6),
 
-          const SizedBox(height: 12),
+        // 3. 其他设置 - 列表
+        _buildSettingsList(context, appColors),
 
-          // 3. 其他设置 - 列表
-          _buildSettingsList(context, appColors),
+        SizedBox(height: 12.h),
 
-          SizedBox(height: 20.h),
-
-          // 4. 版本号
-          FutureBuilder(
-            future: appVersion(),
-            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-              return Text(
-                "Version ${snapshot.data ?? ""}",
-                style: TextStyle(
-                    color: appColors.secondaryText, // 使用次要文本色
-                    fontSize: 11,
-                    letterSpacing: 0.5),
-              );
-            },
-          ),
-          SizedBox(height: 30.h),
-        ],
-      ),
+        // 4. 版本号
+        FutureBuilder(
+          future: appVersion(),
+          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+            return Text(
+              "Version ${snapshot.data ?? ""}",
+              style: TextStyle(
+                  color: appColors.secondaryText, // 使用次要文本色
+                  fontSize: 11,
+                  letterSpacing: 0.5),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -305,71 +299,58 @@ class ProfilePage extends GetView<ProfileController> {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-          color: appColors.cardBackground,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ]),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: CellGroup(
-          // 如果 CellGroup 有背景色参数，设为透明
-          // backgroundColor: Colors.transparent,
-          children: [
-            Cell(
-              title: "联系我们",
-              icon: _buildIcon(Icons.headset_mic_outlined, iconColor),
-              onTap: () => controller.contact(),
-            ),
-            Cell(
-              icon: _buildIcon(Icons.star_outline_rounded, iconColor),
-              title: "评价我们",
-              onTap: () => controller.showRatingDialog(context),
-            ),
-            Cell(
-              icon: _buildIcon(Icons.dark_mode_outlined, iconColor),
-              title: "主题设置",
-              onTap: () => controller.showThemeDialog(context),
-            ),
-            Cell(
-              icon: _buildIcon(Icons.privacy_tip_outlined, iconColor),
-              title: "隐私协议",
-              onTap: () {
-                Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                  "url": "https://blog.uuorb.com/archives/journal-privacy",
-                  "title": "隐私协议"
-                });
-              },
-            ),
-            Cell(
-              icon: _buildIcon(Icons.logout, iconColor),
-              title: "退出登录",
-              onTap: () => controller.logout(context),
-            ),
-            Cell(
-              icon:
-                  _buildIcon(Icons.delete_outline, Colors.red.withOpacity(0.8)),
-              title: "注销账号",
-              // 如果 Cell 支持 titleStyle，建议在这里加上
-              // titleStyle: TextStyle(color: Colors.red),
-              onTap: () => controller.deleteAccount(context),
-            ),
-          ],
-        ),
+      child: CellGroup(
+        children: [
+          Cell(
+            title: "联系我们",
+            icon: _buildIcon(Icons.headset_mic_outlined, iconColor),
+            onTap: () => controller.contact(),
+          ),
+          Cell(
+            icon: _buildIcon(Icons.star_outline_rounded, iconColor),
+            title: "评价我们",
+            onTap: () => controller.showRatingDialog(context),
+          ),
+          Cell(
+            icon: _buildIcon(Icons.dark_mode_outlined, iconColor),
+            title: "主题设置",
+            onTap: () => controller.showThemeDialog(context),
+          ),
+          Cell(
+            icon: _buildIcon(Icons.privacy_tip_outlined, iconColor),
+            title: "隐私协议",
+            onTap: () {
+              Get.toNamed(Routers.WebViewPageUrl, arguments: {
+                "url": "https://blog.uuorb.com/archives/journal-privacy",
+                "title": "隐私协议"
+              });
+            },
+          ),
+          Cell(
+            icon: _buildIcon(Icons.logout, iconColor),
+            title: "退出登录",
+            onTap: () => controller.logout(context),
+          ),
+          Cell(
+            icon: _buildIcon(Icons.delete_outline, Colors.red.withOpacity(0.8)),
+            title: "注销账号",
+            onTap: () => controller.deleteAccount(context),
+          ),
+        ],
       ),
     );
   }
 
   // --- 图标包装 ---
   Widget _buildIcon(IconData icon, Color color) {
-    // 这里不再加背景色，保持列表的简洁干净 (Minimalist style)
-    // 如果你喜欢之前的背景块，可以加回去
-    return Icon(icon, size: 20, color: color);
+    return Container(
+      padding: const EdgeInsets.all(6), // 稍微加大内边距
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10), // 圆角稍微圆润一点
+      ),
+      child: Icon(icon, size: 18, color: color),
+    );
   }
 
   // --- VIP 徽章 ---
