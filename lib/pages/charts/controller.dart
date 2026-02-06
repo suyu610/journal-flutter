@@ -11,7 +11,6 @@ import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/pages/charts/models/daily_stats.dart';
-import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/lab/receipt/receipt_card.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';

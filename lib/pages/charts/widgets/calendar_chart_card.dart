@@ -87,6 +87,7 @@ class CalendarChartCard extends GetView<ChartsController> {
     );
   }
 
+  // ignore: unused_element
   Widget _arrowBtn(
       IconData icon, VoidCallback onTap, AppThemeColors appColors) {
     return InkWell(

@@ -43,12 +43,14 @@ class TrendChartCard extends GetView<ChartsController> {
                 size: Size(330.w, 180.h),
                 yDialValues: _generateYAxisLabels(dailyData, maxVal),
                 xDialValues: _generateXAxisLabels(dailyData, appColors),
+                xDialColor: appColors.secondaryText.withOpacity(0.4),
+                hintLineColor: appColors.secondaryText.withOpacity(0.4),
                 isShowYDialText: false,
                 lines: [
                   // 1. 实际消费曲线
                   _buildLineData(dailyData, appColors),
                   // 2. 预算参考线 (修复：加回此逻辑)
-                  _buildBudgetLine(dailyData, appColors),
+                  _buildBudgetLine(dailyData, appColors, context),
                 ],
               )
             ],
@@ -80,12 +82,10 @@ class TrendChartCard extends GetView<ChartsController> {
   }
 
   // 构建预算线 (建议做成淡色或虚线)
-  BrnPointsLine _buildBudgetLine(
-      List<ChartDataModel> data, AppThemeColors appColors) {
+  BrnPointsLine _buildBudgetLine(List<ChartDataModel> data,
+      AppThemeColors appColors, BuildContext context) {
     return BrnPointsLine(
-      // 使用次要颜色的低透明度，防止喧宾夺主，同时适配深色模式
-      lineColor: appColors.secondaryText.withOpacity(0.4),
-      // 如果 Bruno 支持 isDash: true 最好，不支持则靠颜色区分
+      lineColor: Colors.red.withOpacity(0.4),
       points: List.generate(data.length, (index) {
         return BrnPointData(
           pointText: "",

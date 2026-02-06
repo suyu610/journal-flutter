@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:easy_refresh/easy_refresh.dart'; // 1. 引入 EasyRefresh
-// 引入你的工具类 (用于震动)
 import 'package:journal/util/toast_util.dart';
 
 import 'package:journal/core/app_theme_colors.dart';
@@ -32,13 +31,16 @@ class ChartsPage extends GetView<ChartsController> {
             controller: controller,
             actionKey: actionKey,
           ),
+          // 【改动1】将 EasyRefresh 提到最外层，包裹整个 body
+          // 这样无论是“内容”还是“空状态”，都可以下拉刷新
           body: EasyRefresh(
-            controller: controller.refreshController, // 绑定 Controller
+            controller: controller.refreshController,
+            // header: const MaterialHeader(), // 显式指定竖向的 Header，防止歧义
             onRefresh: () async {
-              // 3. 调用刷新逻辑
-              ToastUtil.heavyImpact(); // 震动
-              await controller.initData(); // 调用你的 public 初始化方法
+              ToastUtil.heavyImpact();
+              await controller.initData();
             },
+            // 根据状态切换子视图
             child: _shouldShowEmptyState()
                 ? _buildEmptyState(context)
                 : _buildMainContent(context),
@@ -53,44 +55,44 @@ class ChartsPage extends GetView<ChartsController> {
   }
 
   Widget _buildMainContent(BuildContext context) {
-    return Container(
+    // 【改动2】移除外层的 Container
+    // 直接返回 SingleChildScrollView，让 EasyRefresh 能直接识别到它是竖向滚动的
+    return SingleChildScrollView(
+      // physics: const BouncingScrollPhysics(),
+      // 把 padding 移到这里，或者移到内部的 Column
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      // EasyRefresh 会自动处理这个 SingleChildScrollView
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Obx(() => SizedBox(
-                height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
-            const AiAnalysisCard(),
-            Obx(() => SizedBox(
-                height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
-            const TrendChartCard(),
-            SizedBox(height: 16.h),
-            const CategoryChartCard(),
-            SizedBox(height: 16.h),
-            const CalendarChartCard(),
-            SizedBox(height: 30.h),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Obx(() => SizedBox(
+              height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
+          const AiAnalysisCard(),
+          Obx(() => SizedBox(
+              height: controller.judgeString.value.isEmpty ? 0.h : 16.h)),
+          const TrendChartCard(),
+          SizedBox(height: 16.h),
+          const CategoryChartCard(),
+          SizedBox(height: 16.h),
+          const CalendarChartCard(),
+          SizedBox(height: 30.h),
+        ],
       ),
     );
   }
 
-  // 4. 改造空状态：必须是可滚动的，否则无法触发下拉刷新
   Widget _buildEmptyState(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
-    // 使用 ListView 或 LayoutBuilder + SingleChildScrollView 确保占满屏幕且可滚动
     return CustomScrollView(
       slivers: [
+        // 【改动3】修复崩溃 Bug
+        // Center 不能直接放在 slivers 里，必须用 SliverFillRemaining 包裹
+        // SliverFillRemaining 会占满剩余屏幕空间，保证下拉手势有效
         SliverFillRemaining(
           hasScrollBody: false,
           child: Center(
             child: GestureDetector(
               onTap: () {
-                // 点击也可以刷新，双重保障
                 controller.refreshController.callRefresh();
               },
               child: Column(
@@ -106,7 +108,7 @@ class ChartsPage extends GetView<ChartsController> {
                           fontSize: 16.sp,
                           color: appColors.primaryText)),
                   SizedBox(height: 8.h),
-                  Text("下拉或点击刷新", // 提示文案修改
+                  Text("下拉或点击刷新",
                       style: TextStyle(
                           fontSize: 14.sp, color: appColors.secondaryText)),
                 ],
