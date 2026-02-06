@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_avatar_group.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import '../models/activity.dart';
 
-/// 核心入口：账本卡片
 Widget activityCard(
     Activity activity, BuildContext context, Function refreshFunc,
     {Widget? footerWidget, Widget? topRightWidget}) {
@@ -145,7 +144,11 @@ class _Header extends StatelessWidget {
                 width: 44, // 稍微加大
                 height: 44,
                 decoration: BoxDecoration(
-                  color: appColors.primaryText, // 使用主题文字色作为背景（黑/白反转）
+                  // color: appColors.primaryText, // 使用主题文字色作为背景（黑/白反转）
+                  border: Border.all(
+                    color: appColors.primaryText.withOpacity(0.1),
+                    width: 1,
+                  ),
                   borderRadius: BorderRadius.circular(16), // 圆角方形更现代
                 ),
                 alignment: Alignment.center,
@@ -156,9 +159,8 @@ class _Header extends StatelessWidget {
                           ? activity.activityName
                           : ""),
                   style: TextStyle(
-                      color: appColors.cardBackground, // 反色文字
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                      color: appColors.primaryText, // 反色文字
+                      fontSize: 18),
                 ),
               ),
               const SizedBox(width: 14),
@@ -242,7 +244,7 @@ class _FinanceOverview extends StatelessWidget {
                 children: [
                   Text("总支出",
                       style: TextStyle(
-                          color: appColors.secondaryText, fontSize: 13)),
+                          color: appColors.primaryText, fontSize: 13)),
                   const SizedBox(width: 4),
                   if (activity.budget != 0)
                     Text("/ 限额",
@@ -369,12 +371,10 @@ class _BudgetAnalysis extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         ClipRRect(
-          borderRadius: BorderRadius.circular(6), // 圆润一点
+          borderRadius: BorderRadius.circular(6),
           child: LinearProgressIndicator(
             value: stats.progress,
-            // 背景色：浅淡的主题色
             backgroundColor: appColors.primaryText.withOpacity(0.05),
-            // 进度条颜色：如果爆了就红，没爆就用主色
             valueColor: AlwaysStoppedAnimation<Color>(stats.progress >= 1.0
                 ? const Color(0xFFE34D59)
                 : appColors.primaryText),
@@ -513,19 +513,13 @@ Widget buildOperationAvatar(Activity activity, BuildContext context) {
   return GestureDetector(
     onTap: () => Get.toNamed(Routers.InvitePageUrl, arguments: activity),
     child: Container(
-      alignment: Alignment.centerRight,
-      child: TDAvatar(
-          avatarSize: 32,
-          size: TDAvatarSize.small,
-          type: TDAvatarType.display,
-          displayText: activity.userList.length > 3
-              ? '${activity.userList.length}+'
-              : "+",
-          avatarDisplayList: avatarList,
-          // 可以根据需要调整 avatar 的边框颜色等，但 TDesign 默认封装较好
+        alignment: Alignment.centerRight,
+        child: JournalAvatarGroup(
+          avatarUrls: avatarList,
+          totalCount: activity.userList.length,
           onTap: () {
-            TDToast.showText('点击了操作', context: context);
-          }),
-    ),
+            Get.toNamed(Routers.InvitePageUrl, arguments: activity);
+          },
+        )),
   );
 }

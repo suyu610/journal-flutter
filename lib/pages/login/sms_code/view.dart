@@ -133,8 +133,7 @@ class CodePage extends StatelessWidget {
                   onTap: () {
                     if (isEnabled) logic.next(context);
                   },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                  child: Container(
                     height: 50.h,
                     alignment: Alignment.center,
                     width: double.infinity,

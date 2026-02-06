@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/src/components/toast/brn_toast.dart';
+import 'package:journal/components/journal_date_picker.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
@@ -11,7 +13,6 @@ import 'package:journal/request/request.dart';
 import 'package:journal/util/cos.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/media_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ExpensePageController extends GetxController {
   var expensePriceFocusNode = FocusNode();
@@ -113,15 +114,15 @@ class ExpensePageController extends GetxController {
   }
 
   Future<bool> updateExpense(context) async {
-    TDToast.showLoading(context: context, text: "修改中");
+    JournalToast.showLoading(context, text: "修改中");
     await HttpRequest.request(
       Method.patch,
       "/expense",
       params: expense.value,
       success: (data) {
-        TDToast.dismissLoading();
-        TDToast.showSuccess("修改成功",
-            context: context, duration: const Duration(seconds: 1));
+        JournalToast.dismiss();
+        JournalToast.showSuccess(context, "修改成功",
+            duration: const Duration(seconds: 1));
         eventBus.fire(const NeedRefreshData(
           refreshActivityList: true,
           refreshCurrentActivity: true,
@@ -132,9 +133,9 @@ class ExpensePageController extends GetxController {
         return true;
       },
       fail: (code, msg) {
-        TDToast.dismissLoading();
-        TDToast.showFail(msg,
-            context: context, duration: const Duration(seconds: 1));
+        JournalToast.dismiss();
+        JournalToast.showError(context, msg,
+            duration: const Duration(seconds: 1));
       },
     );
 
@@ -173,7 +174,7 @@ class ExpensePageController extends GetxController {
       Log().d("上传失败: $e");
       BrnToast.show("上传失败", Get.context!);
     } finally {
-      TDToast.dismissLoading();
+      JournalToast.dismiss();
     }
   }
 
@@ -186,32 +187,36 @@ class ExpensePageController extends GetxController {
   }
 
   void showDatePicker(BuildContext context) {
+    // 1. 解析初始时间 (保持你原有的逻辑)
     DateTime initial;
     try {
       initial = DateTime.parse(expense.value.expenseTime);
     } catch (e) {
       initial = DateTime.now();
     }
-    TDPicker.showDatePicker(context, title: '选择时间', onConfirm: (selected) {
-      var str =
-          "${selected['year']}-${selected['month']}-${selected['day']} ${selected['hour']}:${selected['minute']}:${selected['second']}";
-      modifyExpenseTime(str);
-      Navigator.of(context).pop();
-    },
-        useYear: true,
-        useMonth: true,
-        useDay: true,
-        useHour: true,
-        useMinute: true,
-        useSecond: true,
-        initialDate: [
-          initial.year,
-          initial.month,
-          initial.day,
-          initial.hour,
-          initial.minute,
-          initial.second
-        ]);
+
+    // 2. 调用 JournalDatePicker
+    JournalDatePicker.show(
+      context,
+      title: '选择时间',
+      // 关键点：设置为 dateTime 模式，同时选择日期和时间
+      mode: JournalDatePickerMode.dateTime,
+      initialDate: initial,
+      onConfirm: (DateTime selected) {
+        // 3. 格式化时间 (yyyy-MM-dd HH:mm:ss)
+        // 使用 padLeft(2, '0') 确保月份和分钟是两位数 (例如 5 -> 05)
+        String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+        var str =
+            "${selected.year}-${twoDigits(selected.month)}-${twoDigits(selected.day)} "
+            "${twoDigits(selected.hour)}:${twoDigits(selected.minute)}:00"; // 秒数默认归零，体验更好
+
+        modifyExpenseTime(str);
+
+        // 注意：MyDatePicker 内部点击确定后会自动 pop，
+        // 所以这里不需要再写 Navigator.of(context).pop();
+      },
+    );
   }
 
   RxBool isRec = false.obs;
@@ -219,7 +224,7 @@ class ExpensePageController extends GetxController {
     if (isRec.value) return;
     // 防抖
     if (expense.value.label.isEmpty) {
-      // TDToast.showFail("请输入标签", context: context);
+      // JournalToast.showError("请输入标签", context: context);
       return;
     }
     isRec.value = true;
@@ -233,7 +238,7 @@ class ExpensePageController extends GetxController {
     }, fail: (code, msg) {
       isRec.value = false;
       if (context.mounted) {
-        TDToast.showFail(msg, context: context);
+        JournalToast.showError(context, msg);
       }
     });
   }

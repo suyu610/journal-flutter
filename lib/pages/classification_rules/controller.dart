@@ -1,10 +1,10 @@
 // pages/classification_rules/controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/ai_config_model.dart';
 import 'package:journal/request/request.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ClassificationRulesController extends GetxController {
   // 1. 定义文本控制器
@@ -31,12 +31,9 @@ class ClassificationRulesController extends GetxController {
 // 新增：清空逻辑
   void clearRules(context) {
     if (ruleInputController.text.isEmpty) return;
-
-    // 可选：如果内容较多，防止误触，可以加个弹窗确认，这里先直接清空
     ruleInputController.clear();
-    // 强制更新一下UI（虽然TextEditingController通常会自动更，但有时配合Obx需要注意）
     update(["classification_rules"]);
-    TDToast.showSuccess("已清空内容", context: context);
+    JournalToast.showSuccess(context, "已清空内容");
   }
 
   // 2. 保存逻辑
@@ -54,14 +51,14 @@ class ClassificationRulesController extends GetxController {
       // 2. 关闭 Loading
       isSaving.value = false;
       if (context.mounted) {
-        TDToast.showSuccess("配置已更新", context: context);
+        JournalToast.showSuccess(context, "配置已更新");
         // 可选：保存成功后收起键盘
         FocusScope.of(context).unfocus();
       }
     }, fail: (code, msg) {
       // 2. 关闭 Loading (即使失败也要关)
       isSaving.value = false;
-      TDToast.showWarning("保存失败: $msg", context: context);
+      JournalToast.showError(context, "保存失败: $msg");
     });
   }
 }

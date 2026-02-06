@@ -531,14 +531,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "5.9.3"
-  flutter_slidable:
-    dependency: transitive
-    description:
-      name: flutter_slidable
-      sha256: a857de7ea701f276fd6a6c4c67ae885b60729a3449e42766bb0e655171042801
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "3.1.2"
   flutter_svg:
     dependency: transitive
     description:
@@ -547,14 +539,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.2.3"
-  flutter_swiper_null_safety:
-    dependency: transitive
-    description:
-      name: flutter_swiper_null_safety
-      sha256: "5a855e0080d035c08e82f8b7fd2f106344943a30c9ab483b2584860a2f22eaaf"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -1474,22 +1458,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.2.0"
-  tdesign_flutter:
-    dependency: "direct main"
-    description:
-      name: tdesign_flutter
-      sha256: "79c1ed3fc67836426a8a93e5e0dcd764befa1341eae13a904bcf9e7de996f05c"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.2.7"
-  tdesign_flutter_adaptation:
-    dependency: transitive
-    description:
-      name: tdesign_flutter_adaptation
-      sha256: "707bbc52ec8b5872ea808500200f402007acf24c03a1cc823a3be2113c1d813a"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "3.32.0"
   tencentcloud_cos_sdk_plugin:
     dependency: "direct main"
     description:

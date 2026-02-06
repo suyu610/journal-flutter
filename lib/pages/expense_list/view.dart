@@ -232,7 +232,6 @@ class ExpenseListPage extends GetView<ExpenseListController> {
                 )
               ],
             ),
-            // ... 右侧头像部分保持原样或根据需要适配 ...
           ],
         ),
       ),

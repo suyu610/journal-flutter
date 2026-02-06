@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_search_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 
@@ -105,14 +105,11 @@ class JoinActivityPage extends GetView<JoinActivityController> {
           Row(
             children: [
               Expanded(
-                child: TDSearchBar(
-                  padding: EdgeInsets.zero,
-                  // 搜索框背景：使用主色的极低透明度 (深浅通吃)
+                child: JournalSearchBar(
+                  height: 48.h,
                   backgroundColor: appColors.primaryText.withOpacity(0.05),
-                  // 样式适配：TDSearchBar 的文字颜色可能需要通过 Theme 全局控制，或者这里如果支持 style 就传
-                  // 这里主要靠 backgroundColor 适配
                   controller: controller.textEditController,
-                  placeHolder: "粘贴或输入邀请码",
+                  placeholder: "粘贴或输入邀请码",
                   autoFocus: false,
                   onTextChanged: controller.onInputChanged,
                   onSubmitted: (_) => controller.onMainButtonTap(context),
@@ -128,8 +125,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
               decoration: BoxDecoration(
-                  // 按钮背景：次要色的低透明度
-                  color: appColors.primaryText.withOpacity(0.05),
+                  color: appColors.mainButtonBg,
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                       color: appColors.primaryText.withOpacity(0.1))),
@@ -137,11 +133,11 @@ class JoinActivityPage extends GetView<JoinActivityController> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.content_paste_rounded,
-                      size: 20, color: appColors.secondaryText),
+                      size: 20, color: appColors.mainButtonIcon),
                   SizedBox(width: 8.w),
                   Text("从剪贴板读取",
                       style: TextStyle(
-                          color: appColors.secondaryText,
+                          color: appColors.mainButtonIcon,
                           fontWeight: FontWeight.w500))
                 ],
               ),

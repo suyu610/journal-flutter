@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:journal/components/bruno/bruno.dart'; // 假设这是你的引用
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
@@ -17,7 +18,6 @@ import 'package:journal/request/request.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:convert';
 
-import 'package:tdesign_flutter/tdesign_flutter.dart'; // 必须引入，用于 utf8 解码
 // 数据模型保持不变
 
 class ChartDataModel {
@@ -326,7 +326,7 @@ class ChartsController extends GetxController {
     });
   }
 
-  Future<List<Expense>?> getTodayExpenseItemList() async {
+  Future<List<Expense>?> getTodayExpenseItemList(context) async {
     String nowDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
 
     try {
@@ -336,11 +336,7 @@ class ChartsController extends GetxController {
         "/expense/list/${_getCurrentActivityId()}/date?date=$nowDate",
         params: {},
       );
-      // print(data);
-      // 拿到数据直接转
       if (data != null && data["data"] != null && data["data"] is List) {
-        // 【修改点 1】 使用 List<Expense>.from 来强转，这比 map.toList() 更安全
-        // 它会遍历列表并把每个元素都 cast 成 Expense，如果有元素类型不对会报错，比 dynamic 安全
         List<Expense> result = List<Expense>.from(
             (data["data"] as List).map((e) => Expense.fromJson(e)));
 
@@ -351,24 +347,24 @@ class ChartsController extends GetxController {
       return <Expense>[];
     } catch (e) {
       print("获取今日账单失败: $e");
-      TDToast.dismissAll();
+      JournalToast.showError(context, "获取今日账单失败");
       return null;
     }
   }
 
   // 抽离打印逻辑代码，保持 build 整洁
   void handlePrintAction(BuildContext context) async {
-    TDToast.showLoading(context: context);
-    List<Expense> expenseItems = await getTodayExpenseItemList() ?? [];
+    JournalToast.showLoading(context);
+    List<Expense> expenseItems = await getTodayExpenseItemList(context) ?? [];
     Log().d("expenseItems: $expenseItems");
     if (expenseItems.isEmpty) {
       if (context.mounted) {
-        TDToast.dismissAll();
-        TDToast.showFail("暂无数据", context: context);
+        JournalToast.dismiss();
+        JournalToast.showError(context, "暂无数据");
       }
       return;
     }
-    TDToast.dismissAll();
+    JournalToast.dismiss();
 
     List<String> nicknameList =
         expenseItems.map((e) => e.userNickname ?? '').toSet().toList();

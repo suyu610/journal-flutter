@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/pages/classification_rules/controller.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class ClassificationRulesPage extends GetView<ClassificationRulesController> {
   const ClassificationRulesPage({super.key});
@@ -43,17 +43,16 @@ class ClassificationRulesPage extends GetView<ClassificationRulesController> {
 
   PreferredSizeWidget _buildAppbar(
       BuildContext context, AppThemeColors appColors) {
-    return TDNavBar(
-      useBorderStyle: false, // 去掉边框
+    return JournalNavBar(
+      // useBorderStyle: false, // 去掉边框
       backgroundColor: Colors.transparent, // 沉浸式
       height: 48,
       useDefaultBack: false, // 自定义返回，适配颜色
       leftBarItems: [
-        TDNavBarItem(
+        NavBarItem(
           icon: Icons.arrow_back_ios_new,
-          iconColor: appColors.primaryText,
           iconSize: 20,
-          action: () => Get.back(),
+          onTap: () => Get.back(),
         )
       ],
       titleWidget: Text(

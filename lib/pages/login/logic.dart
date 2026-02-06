@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_toast.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
@@ -14,7 +15,6 @@ import 'package:journal/util/sp_util.dart';
 import 'package:journal/util/toast_util.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:slider_captcha/slider_captcha.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'state.dart';
 
@@ -81,13 +81,13 @@ class LoginLogic extends GetxController {
           controller: sliderController,
           onConfirm: (value) async {
             if (value) {
-              TDToast.showSuccess("验证通过", context: context);
+              JournalToast.showSuccess(context, "验证通过");
               Get.back();
               state.verify.value = true;
               next(context);
             } else {
               sliderController.create();
-              TDToast.showFail("请重试", context: context);
+              JournalToast.showError(context, "请重试");
             }
           },
           image: Image.asset(
@@ -110,13 +110,13 @@ class LoginLogic extends GetxController {
     }
     if (isEmailMode.value) {
       if (!RegexUtil.isEmail(state.phoneNum.value)) {
-        TDToast.showFail('请检查邮箱', context: context);
+        JournalToast.showError(context, '请检查邮箱');
         return;
       }
     } else {
       //手机号不符合要求
       if (!RegexUtil.isMobileSimple(state.phoneNum.value)) {
-        TDToast.showFail('请检查手机号', context: context);
+        JournalToast.showError(context, '请检查手机号');
         return;
       }
     }
@@ -251,7 +251,7 @@ class LoginLogic extends GetxController {
   // 用微信code换token
   void handlerWechatLoginWithCode(String? code) {
     if (code == null) {
-      TDToast.dismissLoading();
+      JournalToast.dismiss();
       return;
     }
     String platform = "";
@@ -268,7 +268,7 @@ class LoginLogic extends GetxController {
       Method.post,
       "/user/login/wechat?code=$code&platform=$platform",
       success: (data) async {
-        TDToast.dismissLoading();
+        JournalToast.dismiss();
         await SpUtil.setToken(data.toString());
 
         Future.delayed(const Duration(milliseconds: 300),
@@ -279,7 +279,7 @@ class LoginLogic extends GetxController {
   }
 
   void loginWithApple(BuildContext context) async {
-    TDToast.showLoading(context: context, text: "登陆中", preventTap: false);
+    JournalToast.showLoading(context, text: "登陆中", preventTap: false);
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -293,7 +293,7 @@ class LoginLogic extends GetxController {
         Method.post,
         "/user/login/apple?code=${credential.authorizationCode}",
         success: (data) {
-          TDToast.dismissLoading();
+          JournalToast.dismiss();
           Log().d("apple登录$data");
           SpUtil.setToken(data.toString());
           Get.offAllNamed(Routers.LayoutPageUrl);
@@ -302,7 +302,7 @@ class LoginLogic extends GetxController {
       );
       print(credential);
     } catch (e) {
-      TDToast.dismissLoading();
+      JournalToast.dismiss();
     }
   }
 

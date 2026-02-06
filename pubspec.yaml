@@ -44,7 +44,6 @@ dependencies:
   flutter_chat_types: ^3.6.2
   uuid: ^4.5.1
   intl: ^0.20.2
-  tdesign_flutter: ^0.2.7
   easy_refresh: ^3.4.0
   lottie: ^3.1.2
   permission_handler: ^11.3.1
@@ -96,7 +95,6 @@ flutter:
     - assets/icons/radio/
     - assets/icons/bill_column/
     - assets/chat_bg/
-    - assets/tdtheme.json
     - assets/web.zip
     - assets/rive/
 

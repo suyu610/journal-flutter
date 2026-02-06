@@ -20,14 +20,6 @@ Widget buildEmptyItem({
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor, // 适配深色
           borderRadius: BorderRadius.circular(24), // 统一 24px 圆角
-          boxShadow: [
-            // 统一的弥散阴影
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
         ),
         child: GestureDetector(
           onTap: action.call,

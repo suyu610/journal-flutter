@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 import 'package:journal/core/app_theme_colors.dart'; // 1. 引入主题文件
 import 'package:journal/pages/image_preview_page.dart';
 import 'package:journal/routers.dart';
@@ -33,7 +34,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 0.h),
               child: Column(
                 children: [
                   _buildTypeAndAmountCard(context, appColors),
@@ -52,23 +53,17 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
 
   PreferredSizeWidget _buildAppBar(
       BuildContext context, AppThemeColors appColors) {
-    return AppBar(
-      backgroundColor: Colors.transparent, // 沉浸式
-      elevation: 0,
+    return JournalNavBar(
+      backgroundColor: Colors.transparent,
       centerTitle: true,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios_new,
-            color: appColors.primaryText, size: 20),
-        onPressed: () => Get.back(),
-      ),
-      title: Text(
-        "记一笔",
-        style: TextStyle(
-            color: appColors.primaryText,
-            fontSize: 17,
-            fontWeight: FontWeight.w500),
-      ),
-      actions: [_buildDeleteButton(context)],
+      title: "记一笔",
+      rightBarItems: [
+        NavBarItem(
+          onTap: () => controller.showDeleteDialog(context),
+          icon: Icons.delete_outline_rounded,
+          color: Colors.redAccent,
+        )
+      ],
     );
   }
 
@@ -116,8 +111,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
               ],
             ),
           ),
-          SizedBox(height: 24.h),
-
+          SizedBox(height: 20.h),
           // 2. 金额输入
           Text("金额",
               style: TextStyle(color: appColors.secondaryText, fontSize: 12)),
@@ -202,8 +196,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                       : () {
                           controller.autoCategorizeByLabel(context);
                         },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                  child: Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     decoration: BoxDecoration(
@@ -308,8 +301,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           padding: EdgeInsets.symmetric(vertical: 8.h),
           alignment: Alignment.center,
           decoration: BoxDecoration(
@@ -465,9 +457,9 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
   Widget _buildImageGrid(BuildContext context, AppThemeColors appColors) {
     var expense = controller.expense.value;
     var fileList = expense.fileList ?? [];
-    double totalPadding = 16.w * 2 + 20.w * 2;
+    double totalPadding = 18.w * 2 + 18.w * 2;
     double itemWidth =
-        (MediaQuery.of(context).size.width - totalPadding - 20) / 3;
+        (MediaQuery.of(context).size.width - totalPadding - 50) / 3;
 
     return Wrap(
       spacing: 10,
@@ -562,22 +554,6 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: appColors.mainButtonIcon),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeleteButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => controller.showDeleteDialog(context),
-      child: Container(
-        width: 50.h,
-        height: 50.h,
-        color: Colors.transparent,
-        child: const Icon(
-          Icons.delete_outline_rounded,
-          color: Colors.redAccent,
-          size: 24,
         ),
       ),
     );

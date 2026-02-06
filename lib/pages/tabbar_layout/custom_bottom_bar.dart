@@ -133,14 +133,6 @@ class CustomBottomBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: appColors.mainButtonBg, // 这里的颜色现在会随主题变化了
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            // 阴影颜色也用按钮颜色的半透明版，更协调
-            color: appColors.mainButtonBg.withOpacity(0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          )
-        ],
       ),
       child: Icon(icon, color: appColors.mainButtonIcon, size: 22),
     );

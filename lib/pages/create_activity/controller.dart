@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/bruno/src/components/toast/brn_toast.dart';
+
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
@@ -9,7 +10,6 @@ import 'package:journal/models/user.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/util/dialog_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class CreateActivityController extends GetxController {
   var activityNameController = TextEditingController();
@@ -21,6 +21,8 @@ class CreateActivityController extends GetxController {
   CreateActivityController();
 
   Rx<Activity> activity = Activity.empty().obs;
+
+  FocusNode activityNameFocusNode = FocusNode();
 
   _initData() {
     if (Get.arguments != null) {
@@ -42,7 +44,7 @@ class CreateActivityController extends GetxController {
 
       budgetController.text = "";
     }
-
+    activityNameFocusNode.requestFocus();
     update(["createactivitypage"]);
   }
 
@@ -83,7 +85,7 @@ class CreateActivityController extends GetxController {
 
   void createActivity(context) {
     if (activityNameController.text.isEmpty) {
-      BrnToast.show("请输入名称", context);
+      JournalToast.showError(context, "请输入名称");
       return;
     }
 
@@ -93,19 +95,18 @@ class CreateActivityController extends GetxController {
     // 账本名称
     activity.value.activityName = activityNameController.text;
 
-    TDToast.showLoading(context: context, text: "处理中");
+    JournalToast.showLoading(context, text: "处理中");
 
     // 创建
     if (activity.value.activityId == "") {
       HttpRequest.request(Method.post, "/activity",
           params: activity.value.toJson(), success: (data) {
-        BrnToast.showInCenter(text: "创建成功", context: context);
         eventBus.fire(const NeedRefreshData(
             refreshChartsList: true,
             refreshActivityList: true,
             refreshCurrentActivity: true));
-        TDToast.dismissLoading();
-        TDToast.showSuccess("创建成功", context: context);
+        JournalToast.dismiss();
+        JournalToast.showSuccess(context, "创建成功");
         Get.back(result: true);
       }, fail: (code, msg) {
         Log().d(msg.toString());
@@ -116,15 +117,16 @@ class CreateActivityController extends GetxController {
       HttpRequest.request(Method.patch, "/activity",
           params: activity.value.toJson(), success: (data) {
         Log().d(data.toString());
-        BrnToast.showInCenter(text: "更新成功", context: context);
+        JournalToast.dismiss();
+        JournalToast.showSuccess(context, "更新成功");
         Get.find<LayoutController>().user.value.currentActivityId =
             activity.value.activityId;
         eventBus.fire(const NeedRefreshData(
             refreshChartsList: true,
             refreshActivityList: true,
             refreshCurrentActivity: true));
-        TDToast.dismissLoading();
-        TDToast.showSuccess("修改成功", context: context);
+        JournalToast.dismiss();
+        JournalToast.showSuccess(context, "修改成功");
         Get.back(result: true);
       }, fail: (code, msg) {
         Log().d(msg.toString());
@@ -150,8 +152,7 @@ class CreateActivityController extends GetxController {
           refreshActivityList: true,
           refreshCurrentActivity: true));
     }, fail: (code, msg) {
-      Log().d(msg.toString());
-      BrnToast.show(msg, context);
+      JournalToast.showError(context, msg);
     });
   }
 
@@ -170,7 +171,7 @@ class CreateActivityController extends GetxController {
         },
         fail: (code, msg) {
           Log().d(msg.toString());
-          BrnToast.show(msg, context);
+          JournalToast.showError(context, msg);
         },
       );
     });

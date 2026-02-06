@@ -34,7 +34,6 @@ Widget ActivityExpenseItem(Expense e, BuildContext context) {
             padding: const EdgeInsets.all(10),
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              // 背景色：使用主色的极低透明度，自动适配深浅
               color: appColors.primaryText.withOpacity(0.05),
               shape: BoxShape.circle, // 直接用圆形，代码更干净
             ),
@@ -42,7 +41,7 @@ Widget ActivityExpenseItem(Expense e, BuildContext context) {
               CategoryIconMap.getIcon(e.type),
               size: 20,
               // 图标颜色：跟随主文字色
-              color: appColors.primaryText,
+              color: appColors.primaryText.withOpacity(0.7),
             ),
           ),
           const SizedBox(width: 14), // 间距微调

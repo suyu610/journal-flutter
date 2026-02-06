@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/cell_group.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/pages/lab/controller.dart';
 import 'package:journal/routers.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class LabPage extends GetView<LabController> {
   const LabPage({super.key});
@@ -35,22 +35,21 @@ class LabPage extends GetView<LabController> {
   }
 
   PreferredSizeWidget _navibar(BuildContext context, AppThemeColors appColors) {
-    return TDNavBar(
+    return JournalNavBar(
       backgroundColor: Colors.transparent, // 沉浸式
-      useBorderStyle: false, // 去除边框，更洁净
       height: 48,
       useDefaultBack: false, // 自定义返回
       leftBarItems: [
-        TDNavBarItem(
+        NavBarItem(
           icon: Icons.arrow_back_ios_new,
-          iconColor: appColors.primaryText, // 适配返回按钮颜色
           iconSize: 20,
-          action: () => Get.back(),
+          onTap: () => Get.back(),
         )
       ],
       titleWidget: Text(
         "实验室",
         style: TextStyle(
+          fontFamily: "SmileySans",
           fontSize: 17, // 稍微加大一点
           fontWeight: FontWeight.w500,
           color: appColors.primaryText, // 适配标题颜色

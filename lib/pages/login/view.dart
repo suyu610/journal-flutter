@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:journal/util/toast_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'logic.dart';
 
@@ -298,7 +298,7 @@ class LoginPage extends StatelessWidget {
           logic.loginWithApple(context);
         } catch (e) {
           print(e);
-          TDToast.dismissLoading();
+          JournalToast.dismiss();
         }
       },
       style: _getCircleButtonStyle(

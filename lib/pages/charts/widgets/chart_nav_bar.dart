@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/bruno/bruno.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 import 'package:journal/core/app_theme_colors.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 import '../controller.dart';
 
 class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
@@ -20,13 +20,13 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
-    return TDNavBar(
-      useBorderStyle: false,
+    return JournalNavBar(
+      // useBorderStyle: false,
       backgroundColor: Colors.transparent,
       height: 48,
       useDefaultBack: false,
       leftBarItems: [
-        TDNavBarItem(
+        NavBarItem(
           iconWidget: Obx(() {
             if (controller.allActivityList.isEmpty) return const SizedBox();
             return Padding(
@@ -56,16 +56,14 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
         )
       ],
       rightBarItems: [
-        TDNavBarItem(
+        NavBarItem(
           icon: Icons.auto_awesome_outlined,
-          iconColor: appColors.primaryText,
           padding: EdgeInsets.only(right: 12.w),
-          action: () => controller.judgeActivity(),
+          onTap: () => controller.judgeActivity(),
         ),
-        TDNavBarItem(
+        NavBarItem(
           icon: Icons.print_outlined,
-          iconColor: appColors.primaryText,
-          action: () => controller.handlePrintAction(context),
+          onTap: () => controller.handlePrintAction(context),
         )
       ],
     );

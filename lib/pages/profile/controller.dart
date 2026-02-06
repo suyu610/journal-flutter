@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fluwx/fluwx.dart';
@@ -11,7 +10,6 @@ import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/core/theme_controller.dart';
 import 'package:journal/models/user.dart';
-import 'package:journal/pages/ai_config/index.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 
@@ -75,37 +73,6 @@ class ProfileController extends GetxController {
 
         update(["profile"]);
       },
-    );
-  }
-
-  void generateAiAvatar(context) {
-    BrnLoadingDialog.show(context,
-        content: "大约需要25秒", barrierDismissible: false);
-    Random random = Random();
-    String model = random.nextInt(2) == 0 ? "二次元" : "人像";
-    HttpRequest.request(
-      Method.get,
-      "/ai/image?model=$model&description=${user.value.personality}&role=${user.value.relationship}",
-      success: (data) {
-        user.value.aiAvatarUrl = data as String;
-        HttpRequest.request(
-          Method.patch,
-          "/user",
-          params: {
-            "aiAvatarUrl": user.value.aiAvatarUrl,
-          },
-          success: (data) {},
-        );
-
-        BrnLoadingDialog.dismiss(context);
-
-        AiConfigController aiConfigController = Get.find<AiConfigController>();
-        Get.find<LayoutController>().user.value.aiAvatarUrl =
-            user.value.aiAvatarUrl;
-        aiConfigController.update(["ai_config"]);
-      },
-      fail: (code, msg) =>
-          {BrnLoadingDialog.dismiss(context), BrnToast.show("生成失败", context)},
     );
   }
 
@@ -462,8 +429,7 @@ class ProfileController extends GetxController {
           }
         });
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
         height: 100,
         decoration: BoxDecoration(
           // 选中状态：淡色背景 + 边框；未选中：透明 + 细边框

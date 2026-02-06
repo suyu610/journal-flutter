@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/cell_group.dart';
+import 'package:journal/components/journal_toast.dart';
 // 1. 引入你的主题颜色定义
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 
@@ -152,7 +152,7 @@ class ProfilePage extends GetView<ProfileController> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 22.sp,
+                            fontSize: 20.sp,
                             color: appColors.primaryText), // 适配文字颜色
                       ),
                     ),
@@ -170,7 +170,7 @@ class ProfilePage extends GetView<ProfileController> {
                         Clipboard.setData(ClipboardData(text: user.userId))
                             .then((v) {
                           if (context.mounted) {
-                            TDToast.showSuccess("已复制", context: context);
+                            JournalToast.showSuccess(context, "已复制");
                           }
                         });
                       },
@@ -405,7 +405,7 @@ class ProfilePage extends GetView<ProfileController> {
           Icon(Icons.workspace_premium, size: 10, color: Color(0xFFFFD700)),
           SizedBox(width: 4),
           Text(
-            "PRO",
+            "VIP!!!",
             style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,

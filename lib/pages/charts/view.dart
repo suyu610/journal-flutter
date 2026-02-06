@@ -31,8 +31,6 @@ class ChartsPage extends GetView<ChartsController> {
             controller: controller,
             actionKey: actionKey,
           ),
-          // 【改动1】将 EasyRefresh 提到最外层，包裹整个 body
-          // 这样无论是“内容”还是“空状态”，都可以下拉刷新
           body: EasyRefresh(
             controller: controller.refreshController,
             // header: const MaterialHeader(), // 显式指定竖向的 Header，防止歧义
@@ -40,7 +38,6 @@ class ChartsPage extends GetView<ChartsController> {
               ToastUtil.heavyImpact();
               await controller.initData();
             },
-            // 根据状态切换子视图
             child: _shouldShowEmptyState()
                 ? _buildEmptyState(context)
                 : _buildMainContent(context),

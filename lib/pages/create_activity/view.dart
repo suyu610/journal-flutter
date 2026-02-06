@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/util/dialog_util.dart';
@@ -38,24 +39,11 @@ class CreateActivityPage extends GetView<CreateActivityController> {
 
   PreferredSizeWidget _buildAppbar(
       BuildContext context, AppThemeColors appColors) {
-    return AppBar(
-      backgroundColor: Colors.transparent, // 沉浸式
-      elevation: 0,
-      centerTitle: true,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios_new,
-            color: appColors.primaryText, size: 20),
-        onPressed: () => Get.back(),
-      ),
-      title: Text(
-        controller.activity.value.activityId == "" ? "创建账本" : "更新账本",
-        style: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w500,
-          color: appColors.primaryText,
-        ),
-      ),
-    );
+    return JournalNavBar(
+        backgroundColor: Colors.transparent, // 沉浸式
+        elevation: 0,
+        centerTitle: true,
+        title: controller.activity.value.activityId == "" ? "创建账本" : "更新账本");
   }
 
   // 主视图
@@ -108,6 +96,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
                 isEdit: controller.isOwner.value ||
                     controller.activity.value.activityId == "",
                 hint: "请输入名称",
+                focusNode: controller.activityNameFocusNode,
               ),
 
               _buildDivider(appColors),
@@ -194,6 +183,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
     bool isEdit = true,
     TextInputType inputType = TextInputType.text,
     String? hint,
+    FocusNode? focusNode,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -210,6 +200,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           SizedBox(width: 16.w),
           Expanded(
             child: TextField(
+              focusNode: focusNode,
               controller: controller,
               enabled: isEdit,
               keyboardType: inputType,
@@ -316,7 +307,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 0),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
         decoration: BoxDecoration(
           color: isSelected ? appColors.cardBackground : Colors.transparent,

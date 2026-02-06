@@ -4,13 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/empty_item.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/toast_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 
@@ -149,8 +149,8 @@ class ActivityListPage extends GetView<ActivityListController> {
   PreferredSizeWidget _buildAppbar(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
-    return TDNavBar(
-        useBorderStyle: true,
+    return JournalNavBar(
+        // useBorderStyle: true,
         height: 48,
         useDefaultBack: false,
         backgroundColor: Colors.transparent, // 沉浸式透明背景
@@ -162,9 +162,8 @@ class ActivityListPage extends GetView<ActivityListController> {
             color: appColors.primaryText, // 标题颜色适配
           ),
         ),
-        border: TDNavBarItemBorder(width: 0, color: Colors.transparent),
         leftBarItems: [
-          TDNavBarItem(
+          NavBarItem(
               iconWidget: Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: Text("加入多人账本",
@@ -175,20 +174,20 @@ class ActivityListPage extends GetView<ActivityListController> {
                       fontWeight: FontWeight.w500,
                     )),
               ),
-              action: () {
+              onTap: () {
                 Get.toNamed(Routers.JoinActivityPageUrl);
                 return;
               }),
         ],
         rightBarItems: [
-          TDNavBarItem(
+          NavBarItem(
               iconWidget: Text("新建",
                   style: TextStyle(
                     fontFamily: "SmileySans",
                     color: appColors.primaryText,
                     fontWeight: FontWeight.w500,
                   )),
-              action: () {
+              onTap: () {
                 Get.toNamed(Routers.CreateActivityUrl);
                 return;
               }),

@@ -7,6 +7,7 @@ import 'package:journal/components/activity_card.dart';
 import 'package:journal/components/custom_floating_action_button_location.dart';
 import 'package:journal/components/empty_item.dart';
 import 'package:journal/components/expense_item.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题扩展
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/models/activity.dart';
@@ -15,7 +16,6 @@ import 'package:journal/models/expense_date_group.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
 import 'package:journal/util/toast_util.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 import 'index.dart';
 
@@ -72,8 +72,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
     // 获取主题色用于标题
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
-    return TDNavBar(
-        useBorderStyle: false, // 去掉默认边框，更洁净
+    return JournalNavBar(
         height: 48,
         useDefaultBack: false,
         backgroundColor: Colors.transparent, // 沉浸式
@@ -172,11 +171,11 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
               children: [
                 Text("账单列表", style: inactiveTextStyle),
                 GestureDetector(
+                  behavior: HitTestBehavior.translucent,
                   onTap: () {
                     controller.switchExpenseListShowMode();
                   },
                   child: Container(
-                    // 增加点击区域，体验更好
                     color: Colors.transparent,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -294,8 +293,6 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
               return Column(
                 children: [
                   const SizedBox(height: 10),
-                  // 这里假设 ActivityExpenseItem 内部也处理了文字颜色
-                  // 如果没有，你需要进去改一下 Text style color 为 appColors.primaryText
                   ...expenseDateGroup.expenses
                       .map((e) => ActivityExpenseItem(e, context)),
                   const SizedBox(height: 8),
@@ -382,7 +379,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
                               fontSize: 14,
                               color: appColors.primaryText, // 适配深色
                               fontFamily: 'SourceCodePro',
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],

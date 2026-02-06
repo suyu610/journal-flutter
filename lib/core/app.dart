@@ -1,6 +1,5 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -14,9 +13,6 @@ import 'package:journal/routers.dart';
 import 'package:journal/services/notification_service.dart';
 import 'package:journal/util/keyboard_util.dart';
 import 'package:journal/util/sp_util.dart';
-
-// 【关键修改】隐藏冲突的类，使用 Flutter 原生的 ThemeData 和 CardTheme
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 /// 环境类型
 enum Env { qa, beta, mp }
@@ -33,7 +29,6 @@ bool get isNeedUme {
 Future<void> initApp(Env env) async {
   appEnv = env;
   await Injection.init();
-  TDTheme.needMultiTheme();
 
   EasyRefresh.defaultHeaderBuilder = () => ClassicHeader(
         dragText: 'Pull to refresh'.tr,
@@ -55,13 +50,11 @@ Future<void> initApp(Env env) async {
         failedText: 'Failed'.tr,
         messageText: 'Last updated at %T'.tr,
       );
-  var jsonString = await rootBundle.loadString('assets/tdtheme.json');
-  var _themeData = TDThemeData.fromJson('black', jsonString);
 
-  runApp(_myApp(_themeData));
+  runApp(_myApp());
 }
 
-Widget _myApp(TDThemeData? tDesignTheme) {
+Widget _myApp() {
   return ScreenUtilInit(
     designSize: const Size(375, 812),
     minTextAdapt: true,
@@ -121,10 +114,7 @@ Widget _myApp(TDThemeData? tDesignTheme) {
                     borderRadius: BorderRadius.circular(24)),
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              extensions: [
-                if (tDesignTheme != null) tDesignTheme,
-                _darkAppColors
-              ],
+              extensions: const [_darkAppColors],
             ),
 
             // 2. 亮色主题 (Light Theme)
@@ -150,10 +140,7 @@ Widget _myApp(TDThemeData? tDesignTheme) {
                     borderRadius: BorderRadius.circular(24)),
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              extensions: [
-                if (tDesignTheme != null) tDesignTheme,
-                _lightAppColors
-              ],
+              extensions: const [_lightAppColors],
             ),
 
             builder: (context, child) {
