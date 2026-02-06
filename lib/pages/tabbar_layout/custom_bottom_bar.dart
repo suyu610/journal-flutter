@@ -30,7 +30,7 @@ class CustomBottomBar extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: appColors.backgroundColor,
         border: Border(
           // 边框也建议稍微淡一点，适配深色
           top: BorderSide(

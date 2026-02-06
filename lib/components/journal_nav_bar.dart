@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:journal/core/app_theme_colors.dart';
 
 /// 定义操作项的数据模型
 class NavBarItem {
@@ -179,12 +180,12 @@ class _MyNavBarState extends State<JournalNavBar> {
         (Theme.of(context).brightness == Brightness.dark
             ? SystemUiOverlayStyle.light
             : SystemUiOverlayStyle.dark);
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlayStyle,
       child: Container(
-        color:
-            widget.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+        color: widget.backgroundColor ?? appColors.backgroundColor,
         child: SafeArea(
           bottom: false,
           child: Column(

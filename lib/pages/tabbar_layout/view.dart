@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:journal/core/app_theme_colors.dart';
 
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/pages/tabbar_layout/custom_bottom_bar.dart';
@@ -72,9 +73,10 @@ class _LayoutPageState extends State<LayoutPage>
   Widget build(BuildContext context) {
     super.build(context);
     LayoutController controller = Get.find<LayoutController>();
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       body: Obx(() => PageView(
             physics: const NeverScrollableScrollPhysics(),
             controller: controller.pageController,

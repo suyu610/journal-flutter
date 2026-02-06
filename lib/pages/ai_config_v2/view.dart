@@ -22,7 +22,7 @@ class AiConfigV2Page extends GetView<AiConfigV2Controller> {
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
       // 这里的背景色其实会被 Stack 里的 AnimatedContainer 盖住，但作为底色兜底
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

@@ -165,6 +165,9 @@ InitialBinding() {
 
 // 1. 亮色模式配置
 const _lightAppColors = AppThemeColors(
+  // 新增
+  backgroundColor: Color(0xFFF5F7FA),
+  // 原有
   primaryText: Color(0xFF2D3436),
   secondaryText: Color(0xFF9EAAB7),
   cardBackground: Color(0xFFFFFFFF),
@@ -208,6 +211,9 @@ const _lightAppColors = AppThemeColors(
 
 // 2. 暗色模式配置
 const _darkAppColors = AppThemeColors(
+  // 新增
+  backgroundColor: Color(0xFF2D3436),
+  // 原有
   primaryText: Color(0xFFECF0F1),
   secondaryText: Color(0xFF95A5A6),
   cardBackground: Color.fromARGB(255, 44, 57, 63), // 你的深青灰背景

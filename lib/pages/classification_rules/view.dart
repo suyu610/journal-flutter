@@ -24,7 +24,7 @@ class ClassificationRulesPage extends GetView<ClassificationRulesController> {
             onTap: () => FocusScope.of(context).unfocus(),
             child: Scaffold(
               // 跟随主题背景
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: appColors.backgroundColor,
               appBar: _buildAppbar(context, appColors),
               body: Column(
                 children: [

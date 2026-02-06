@@ -18,7 +18,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       appBar: _buildAppbar(context, appColors),
       body: _buildView(controller, appColors),
     );
@@ -28,7 +28,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
   PreferredSizeWidget _buildAppbar(
           BuildContext context, AppThemeColors appColors) =>
       AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor, // 与背景一致
+        backgroundColor: appColors.backgroundColor, // 与背景一致
         elevation: 0,
         centerTitle: true,
         leading: IconButton(

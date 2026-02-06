@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // 自定义颜色扩展类
 class AppThemeColors extends ThemeExtension<AppThemeColors> {
   // === 1. 你原有的基础字段 ===
+  final Color backgroundColor; // 背景颜色
   final Color primaryText; // 主要文字
   final Color secondaryText; // 次要文字
   final Color cardBackground; // 卡片背景
@@ -20,6 +21,8 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
   final Color outlineBorder; // 默认边框颜色 (非激活状态)
 
   const AppThemeColors({
+    // 新增
+    required this.backgroundColor,
     // 原有
     required this.primaryText,
     required this.secondaryText,
@@ -39,6 +42,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
 
   @override
   ThemeExtension<AppThemeColors> copyWith({
+    // 新增
+    Color? backgroundColor,
+    // 原有
     Color? primaryText,
     Color? secondaryText,
     Color? cardBackground,
@@ -55,6 +61,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
     Color? outlineBorder,
   }) {
     return AppThemeColors(
+      // 新增
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      // 原有
       primaryText: primaryText ?? this.primaryText,
       secondaryText: secondaryText ?? this.secondaryText,
       cardBackground: cardBackground ?? this.cardBackground,
@@ -77,6 +86,9 @@ class AppThemeColors extends ThemeExtension<AppThemeColors> {
       ThemeExtension<AppThemeColors>? other, double t) {
     if (other is! AppThemeColors) return this;
     return AppThemeColors(
+      // 新增
+      backgroundColor: Color.lerp(backgroundColor, other.backgroundColor, t)!,
+      // 原有
       primaryText: Color.lerp(primaryText, other.primaryText, t)!,
       secondaryText: Color.lerp(secondaryText, other.secondaryText, t)!,
       cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,

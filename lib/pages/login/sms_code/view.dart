@@ -18,7 +18,7 @@ class CodePage extends StatelessWidget {
 
     return Scaffold(
       // 背景色适配
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       // 使用 SafeArea 保证不被刘海遮挡
       body: SafeArea(
         child: SingleChildScrollView(

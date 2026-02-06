@@ -25,7 +25,7 @@ class CalendarChartCard extends GetView<ChartsController> {
             children: [
               _buildHeader(appColors),
               Padding(
-                padding: EdgeInsets.fromLTRB(10.w, 0, 10.w, 16.h),
+                padding: EdgeInsets.fromLTRB(10.w, 0, 10.w, 0),
                 child: TableCalendar(
                   rowHeight: 58,
                   availableGestures: AvailableGestures.horizontalSwipe,
@@ -37,17 +37,16 @@ class CalendarChartCard extends GetView<ChartsController> {
                   headerVisible: false,
                   calendarFormat: CalendarFormat.month,
                   startingDayOfWeek: StartingDayOfWeek.monday,
-
                   // 星期栏样式
-                  daysOfWeekHeight: 30.h,
+                  daysOfWeekHeight: 15,
                   daysOfWeekStyle: DaysOfWeekStyle(
                     weekdayStyle: TextStyle(
                         color: appColors.secondaryText,
-                        fontSize: 12.sp,
+                        fontSize: 10,
                         fontWeight: FontWeight.w500),
                     weekendStyle: TextStyle(
                         color: appColors.secondaryText,
-                        fontSize: 12.sp,
+                        fontSize: 10,
                         fontWeight: FontWeight.w500),
                   ),
 
@@ -82,7 +81,7 @@ class CalendarChartCard extends GetView<ChartsController> {
   // 头部月份
   Widget _buildHeader(AppThemeColors appColors) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      padding: EdgeInsets.only(left: 16.w, top: 16.h, bottom: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

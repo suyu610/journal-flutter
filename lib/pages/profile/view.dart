@@ -17,6 +17,8 @@ class ProfilePage extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return GetBuilder<ProfileController>(
       init: ProfileController(),
       id: "profile",
@@ -24,7 +26,7 @@ class ProfilePage extends GetView<ProfileController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: null,
           body: _buildView(context),
         );

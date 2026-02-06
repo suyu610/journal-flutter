@@ -27,7 +27,7 @@ class ExpenseListPage extends GetView<ExpenseListController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: _buildAppBar(context, appColors),
           body: _buildView(context, appColors),
         );

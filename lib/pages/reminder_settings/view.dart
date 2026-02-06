@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/journal_nav_bar.dart';
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/pages/reminder_settings/controller.dart';
 
 class ReminderSettingsPage extends GetView<ReminderSettingsController> {
@@ -9,8 +10,9 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       appBar: const JournalNavBar(title: "记账提醒"),
       body: SafeArea(
         child: _buildView(context),

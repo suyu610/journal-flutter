@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // 用于控制状态栏
 import 'package:get/get.dart';
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 
 class SplashPage extends StatefulWidget {
@@ -82,8 +83,9 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       body: Stack(
         fit: StackFit.expand,
         children: [

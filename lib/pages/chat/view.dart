@@ -35,7 +35,7 @@ class ChatPage extends GetView<ChatController> {
       builder: (_) {
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           extendBodyBehindAppBar: true,
           appBar: buildTransparentAppBar(context, appColors, isDark),
           body: Stack(
@@ -49,8 +49,8 @@ class ChatPage extends GetView<ChatController> {
                   final List<Color> bgColors =
                       controller.currentCharacter.value?.bgColors ??
                           [
-                            Theme.of(context).scaffoldBackgroundColor,
-                            Theme.of(context).scaffoldBackgroundColor,
+                            appColors.backgroundColor,
+                            appColors.backgroundColor,
                           ];
 
                   return Stack(

@@ -25,7 +25,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: _buildAppbar(context, appColors),
           body: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),

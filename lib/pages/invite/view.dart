@@ -23,7 +23,7 @@ class InvitePage extends GetView<InviteController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: const JournalNavBar(title: "邀请成员"), // 假设你的 NavBar 支持传入 title
           body: SafeArea(
             child: Column(

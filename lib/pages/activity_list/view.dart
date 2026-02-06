@@ -19,6 +19,8 @@ class ActivityListPage extends GetView<ActivityListController> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return GetBuilder<ActivityListController>(
       init: ActivityListController(),
       id: "activity_list",
@@ -26,7 +28,7 @@ class ActivityListPage extends GetView<ActivityListController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: _buildAppbar(context),
           body: _buildView(context),
           // floatingActionButton: _buildFloatingActionButton(),

@@ -47,7 +47,7 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: appColors.backgroundColor,
       appBar: AppBar(
         title: const Text("自定义菜单"),
         backgroundColor: Colors.transparent, // 沉浸式

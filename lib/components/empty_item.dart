@@ -18,7 +18,7 @@ Widget buildEmptyItem({
         padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 24.w),
         // 升级为高端卡片样式
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor, // 适配深色
+          color: appColors.backgroundColor, // 适配深色
           borderRadius: BorderRadius.circular(24), // 统一 24px 圆角
         ),
         child: GestureDetector(

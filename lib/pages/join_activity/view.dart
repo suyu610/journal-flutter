@@ -21,7 +21,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
       builder: (_) {
         return Scaffold(
           // 背景跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: _buildAppBar(context, appColors),
           body: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(), // 点击空白收起键盘

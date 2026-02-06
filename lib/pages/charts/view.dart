@@ -19,6 +19,7 @@ class ChartsPage extends GetView<ChartsController> {
   @override
   Widget build(BuildContext context) {
     final GlobalKey actionKey = GlobalKey();
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return GetBuilder<ChartsController>(
       init: ChartsController(),
@@ -26,7 +27,7 @@ class ChartsPage extends GetView<ChartsController> {
       autoRemove: false,
       builder: (_) {
         return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: ChartNavBar(
             controller: controller,
             actionKey: actionKey,

@@ -27,7 +27,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题 (亮色:冷灰 / 暗色:深蓝灰)
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: _buildAppBar(context, appColors),
           body: GestureDetector(
             // 点击空白处收起键盘
@@ -58,11 +58,12 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
       centerTitle: true,
       title: "记一笔",
       rightBarItems: [
-        NavBarItem(
-          onTap: () => controller.showDeleteDialog(context),
-          icon: Icons.delete_outline_rounded,
-          color: Colors.redAccent,
-        )
+        if (controller.expense.value.expenseId.isNotEmpty)
+          NavBarItem(
+            onTap: () => controller.showDeleteDialog(context),
+            icon: Icons.delete_outline_rounded,
+            color: Colors.redAccent,
+          )
       ],
     );
   }

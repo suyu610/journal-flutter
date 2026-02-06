@@ -24,6 +24,8 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return GetBuilder<CurrentActivityController>(
       init: CurrentActivityController(),
       id: "current_activity",
@@ -31,7 +33,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
       builder: (_) {
         return Obx(() => Scaffold(
               // 背景色跟随主题
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              backgroundColor: appColors.backgroundColor,
               appBar: _navibar(context),
               body: _buildView(context),
               floatingActionButtonAnimator:

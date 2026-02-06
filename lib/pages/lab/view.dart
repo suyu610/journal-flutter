@@ -24,7 +24,7 @@ class LabPage extends GetView<LabController> {
       builder: (_) {
         return Scaffold(
           // 背景色跟随主题
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: appColors.backgroundColor,
           appBar: _navibar(context, appColors),
           body: SafeArea(
             child: _buildView(context, appColors),
