@@ -255,7 +255,7 @@ class _BrnSelectTagsWithInputPickerWidgetState
                   .commonConfig
                   .colorTextBase,
               fontSize: 18.0,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
           GestureDetector(
@@ -334,7 +334,7 @@ class _BrnSelectTagsWithInputPickerWidgetState
               labelPadding: const EdgeInsets.only(left: 8, right: 8),
               labelStyle: TextStyle(
                   color: titleColor,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
                   fontSize: widget.tagPickerBean!.tagTitleFontSize),
               label: Container(
                 width: preferredWidthWithText(textToDisplay),
@@ -446,7 +446,7 @@ class _BrnSelectTagsWithInputPickerWidgetState
                 style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
-                    fontWeight: FontWeight.w600),
+                    fontWeight: FontWeight.w500),
               ),
             ),
           ),

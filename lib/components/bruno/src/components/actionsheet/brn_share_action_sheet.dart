@@ -219,7 +219,7 @@ class BrnShareActionSheet extends StatelessWidget {
         textAlign: TextAlign.left,
         style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             color: BrnThemeConfigurator.instance
                 .getConfig()
                 .commonConfig
@@ -277,7 +277,7 @@ class BrnShareActionSheet extends StatelessWidget {
             child: Text(
               cancelTitle ?? BrnIntl.of(context).localizedResource.cancel,
               style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600, color: textColor),
+                  fontSize: 16, fontWeight: FontWeight.w500, color: textColor),
             ),
           ),
         ),

@@ -111,7 +111,7 @@ class _BrnGallerySummaryPageState extends State<BrnGallerySummaryPage> {
             style: const TextStyle(
                 color: Color(0xFF222222),
                 fontSize: 18,
-                fontWeight: FontWeight.w600),
+                fontWeight: FontWeight.w500),
           ),
         ),
       ));

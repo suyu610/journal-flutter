@@ -377,7 +377,7 @@ class BrnFormUtil {
       {bool isBold = false}) {
     if (isBold) {
       return themeData.headTitleTextStyle
-          .merge(BrnTextStyle(fontWeight: FontWeight.w600))
+          .merge(BrnTextStyle(fontWeight: FontWeight.w500))
           .generateTextStyle();
     }
     return themeData.headTitleTextStyle.generateTextStyle();

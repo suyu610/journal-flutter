@@ -56,7 +56,7 @@ class LoginPage extends StatelessWidget {
     return Text(
       "欢迎登陆 好享记账",
       style: TextStyle(
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         fontSize: 28.sp,
         color: appColors.primaryText,
         letterSpacing: 1,
@@ -220,7 +220,7 @@ class LoginPage extends StatelessWidget {
               "下一步",
               style: TextStyle(
                 fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: isValid
                     ? appColors.mainButtonIcon
                     : appColors.secondaryText.withOpacity(0.5),

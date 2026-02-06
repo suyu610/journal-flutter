@@ -19,15 +19,16 @@ class CalendarChartCard extends GetView<ChartsController> {
     return ChartCardContainer(
       padding: EdgeInsets.zero, // 移除容器默认内边距
       child: GetBuilder<ChartsController>(
-          id: 'calendar_card',
+          id: 'calendar_chart',
           builder: (_) {
             return Column(
               children: [
                 _buildHeader(appColors),
                 Padding(
                   padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 0.h),
                   child: TableCalendar(
+                    rowHeight: 65,
                     availableGestures: AvailableGestures.horizontalSwipe,
                     locale: 'zh_CN',
                     firstDay: DateTime.utc(2020, 1, 1),
@@ -37,14 +38,21 @@ class CalendarChartCard extends GetView<ChartsController> {
                     headerVisible: false, // 隐藏默认头部，使用自定义
                     calendarFormat: CalendarFormat.month,
                     startingDayOfWeek: StartingDayOfWeek.monday,
-                    // 自定义构建器
                     calendarBuilders: CalendarBuilders(
-                      defaultBuilder: (context, day, focusedDay) =>
-                          _buildCell(context, day, appColors, isDark),
-                      todayBuilder: (context, day, focusedDay) =>
-                          _buildCell(context, day, appColors, isDark),
+                      defaultBuilder: (context, day, focusedDay) => _buildCell(
+                          context,
+                          day,
+                          appColors,
+                          isDark,
+                          controller.dailyBudgetValue),
+                      todayBuilder: (context, day, focusedDay) => _buildCell(
+                          context,
+                          day,
+                          appColors,
+                          isDark,
+                          controller.dailyBudgetValue),
                       outsideBuilder: (context, day, focusedDay) =>
-                          const SizedBox(), // 隐藏非本月日期
+                          const SizedBox(),
                       disabledBuilder: (context, day, focusedDay) =>
                           const SizedBox(),
                     ),
@@ -63,69 +71,49 @@ class CalendarChartCard extends GetView<ChartsController> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            DateFormat('yyyy年MM月').format(controller.focusedDay.value),
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: appColors.primaryText,
-            ),
-          ),
-          Row(
-            children: [
-              // _arrowBtn(Icons.chevron_left,
-              //     () => controller.mont(previous: true), appColors),
-              SizedBox(width: 16.w),
-              // _arrowBtn(Icons.chevron_right,
-              //     () => controller.changeMonth(previous: false), appColors),
-            ],
-          )
+          Obx(() => Text(
+                DateFormat('yyyy年MM月').format(controller.focusedDay.value),
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: appColors.primaryText,
+                ),
+              )),
         ],
-      ),
-    );
-  }
-
-  // ignore: unused_element
-  Widget _arrowBtn(
-      IconData icon, VoidCallback onTap, AppThemeColors appColors) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Icon(icon, size: 24, color: appColors.secondaryText),
       ),
     );
   }
 
   // 自定义日期格子
   Widget _buildCell(BuildContext context, DateTime day,
-      AppThemeColors appColors, bool isDark) {
+      AppThemeColors appColors, bool isDark, num? budget) {
     DailyStats? stats = controller.getStatsForDay(day);
     bool hasData = stats != null && (stats.income > 0 || stats.expense > 0);
-
-    // 计算背景色
+    // Color? bgColor = isDark ? const Color(0xFF5D4037) : const Color(0xFFFFFAF0);
     Color? bgColor;
     if (hasData) {
-      bool hasExpense = stats.expense > 0;
-      bool hasIncome = stats.income > 0;
-
-      if (hasExpense && hasIncome) {
-        // 混合：深色模式用深橙色，亮色模式用米色
-        bgColor = isDark ? const Color(0xFF5D4037) : const Color(0xFFFFFAF0);
-      } else if (hasExpense) {
-        // 支出：深色模式用深红半透明，亮色模式用浅粉
+      // bool hasExpense = stats.expense > 0;
+      // bool hasIncome = stats.income > 0;
+      bool isBudgetExceeded = budget != null && stats.expense > budget;
+      bgColor = isDark ? const Color(0xFF5D4037) : const Color(0xFFFFFAF0);
+      if (isBudgetExceeded) {
         bgColor = isDark
             ? const Color(0xFFE53935).withOpacity(0.2)
             : const Color(0xFFFFF5F5);
-      } else {
-        // 收入：深色模式用深蓝半透明，亮色模式用浅蓝
-        bgColor = isDark
-            ? const Color(0xFF1E88E5).withOpacity(0.2)
-            : const Color(0xFFF0FAFF);
       }
+
+      // if (hasExpense && hasIncome) {
+      // } else if (hasExpense) {
+      //   bgColor = isDark
+      //       ? const Color(0xFFE53935).withOpacity(0.2)
+      //       : const Color(0xFFFFF5F5);
+      // } else {
+      //   bgColor = isDark
+      //       ? const Color(0xFF1E88E5).withOpacity(0.2)
+      //       : const Color(0xFFF0FAFF);
+      // }
     }
 
     // 字体颜色
@@ -135,20 +123,16 @@ class CalendarChartCard extends GetView<ChartsController> {
         isDark ? const Color(0xFF82B1FF) : const Color(0xFF4DA9FF);
 
     return Container(
-      margin: const EdgeInsets.all(2),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      margin: const EdgeInsets.only(top: 6, bottom: 6),
       width: 40,
-      height: 50,
       decoration: BoxDecoration(
         color: bgColor ?? Colors.transparent,
         borderRadius: BorderRadius.circular(8),
-        // border: isSameDay(day, DateTime.now())
-        //     ? Border.all(color: appColors.primaryText, width: 1) // 今天加个框
-        //     : null,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(height: 4.h),
           Text(
             '${day.day}',
             style: TextStyle(
@@ -157,27 +141,20 @@ class CalendarChartCard extends GetView<ChartsController> {
             ),
           ),
           if (hasData) ...[
-            SizedBox(height: 2.h),
-            if (stats.income > 0)
-              Text(
-                "+${_formatNum(stats.income)}",
-                style: TextStyle(
-                    fontSize: 8.sp,
-                    color: textIncome,
-                    fontWeight: FontWeight.w500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            if (stats.expense > 0)
-              Text(
-                "-${_formatNum(stats.expense)}",
-                style: TextStyle(
-                    fontSize: 8.sp,
-                    color: textExpense,
-                    fontWeight: FontWeight.w500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+            Text(
+              "+${_formatNum(stats.income)}",
+              style: TextStyle(
+                  fontSize: 8, color: textIncome, fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              "-${_formatNum(stats.expense)}",
+              style: TextStyle(
+                  fontSize: 8, color: textExpense, fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ] else ...[
             SizedBox(height: 22.h), // 占位
           ]

@@ -141,7 +141,7 @@ Widget _myApp(TDThemeData? tDesignTheme) {
                 titleTextStyle: TextStyle(
                     color: Color(0xFF2D3436),
                     fontSize: 18,
-                    fontWeight: FontWeight.w600),
+                    fontWeight: FontWeight.w500),
               ),
               cardTheme: CardThemeData(
                 color: _lightAppColors.cardBackground,

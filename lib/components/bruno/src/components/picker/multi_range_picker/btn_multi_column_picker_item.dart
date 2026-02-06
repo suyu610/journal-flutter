@@ -106,11 +106,11 @@ class BrnMultiRangePickerCommonItem extends StatelessWidget {
   FontWeight _getItemFontWeight() {
     FontWeight fontWeight =
         (item.isUnLimit() ? isCurrentFocused : item.isSelected)!
-            ? FontWeight.w600
+            ? FontWeight.w500
             : FontWeight.normal;
 
     if (!item.isInLastLevel()) {
-      fontWeight = isCurrentFocused! ? FontWeight.w600 : FontWeight.normal;
+      fontWeight = isCurrentFocused! ? FontWeight.w500 : FontWeight.normal;
     }
     return fontWeight;
   }

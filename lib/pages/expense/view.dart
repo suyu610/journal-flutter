@@ -66,7 +66,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
         style: TextStyle(
             color: appColors.primaryText,
             fontSize: 17,
-            fontWeight: FontWeight.w600),
+            fontWeight: FontWeight.w500),
       ),
       actions: [_buildDeleteButton(context)],
     );
@@ -239,7 +239,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                           style: TextStyle(
                               fontSize: 12.sp,
                               color: appColors.primaryText,
-                              fontWeight: FontWeight.w600),
+                              fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -287,7 +287,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                     expense.type.isEmpty ? "选择分类" : expense.type,
                     style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: appColors.primaryText),
                   ),
                   const Spacer(),
@@ -329,7 +329,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
             text,
             style: TextStyle(
               fontSize: 14.sp,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
               // 选中跟随主色，未选中跟随次要色
               color:
                   isSelected ? appColors.primaryText : appColors.secondaryText,

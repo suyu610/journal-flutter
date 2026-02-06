@@ -48,7 +48,7 @@ Widget buildEmptyItem({
               Text(
                 title,
                 style: TextStyle(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   fontSize: 16.sp,
                   color: appColors.primaryText, // 适配文字颜色
                 ),
@@ -72,7 +72,7 @@ Widget buildEmptyItem({
                       operateText,
                       style: TextStyle(
                         fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: appColors.primaryText,
                       ),
                     ),

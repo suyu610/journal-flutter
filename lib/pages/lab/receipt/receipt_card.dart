@@ -236,7 +236,7 @@ class ReceiptCard extends StatelessWidget {
       fontFamily: 'Courier',
       fontSize: 14,
       color: Colors.grey[850],
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w500,
       height: 1.4,
     );
 
@@ -338,7 +338,6 @@ class ReceiptCard extends StatelessWidget {
                       ),
                     ),
 
-                  // 2. 总支出 (大号字体)
                   if (totalExpense > 0)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

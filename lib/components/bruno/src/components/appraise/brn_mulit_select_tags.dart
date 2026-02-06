@@ -242,7 +242,7 @@ class _BrnMultiSelectTagsState extends State<BrnMultiSelectTags> {
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
             fontSize: 12,
             color: titleColor,
           ),

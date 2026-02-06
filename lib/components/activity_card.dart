@@ -170,8 +170,8 @@ class _Header extends StatelessWidget {
                     activity.activityName,
                     style: TextStyle(
                         color: appColors.primaryText,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -266,9 +266,9 @@ class _FinanceOverview extends StatelessWidget {
                   Text(
                     expense.toStringAsFixed(2),
                     style: TextStyle(
-                        fontSize: 36, // 字体加大
+                        fontSize: 32, // 字体加大
                         fontFamily: 'SourceCodePro',
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: appColors.primaryText),
                   ),
                   const SizedBox(width: 6),
@@ -327,7 +327,7 @@ class _FinanceOverview extends StatelessWidget {
               style: TextStyle(
                   fontSize: 18,
                   fontFamily: 'SourceCodePro',
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: valueColor),
             ),
           ),
@@ -442,7 +442,10 @@ class _BudgetAnalysis extends StatelessWidget {
                   width: 3,
                   height: 12,
                   // 装饰条颜色
-                  color: appColors.primaryText,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: appColors.primaryText,
+                  ),
                   margin: const EdgeInsets.only(right: 6)),
               Text(title,
                   style: TextStyle(
@@ -461,7 +464,7 @@ class _BudgetAnalysis extends StatelessWidget {
             style: TextStyle(
                 fontSize: 20,
                 fontFamily: 'SourceCodePro',
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: remainColor),
           ),
 

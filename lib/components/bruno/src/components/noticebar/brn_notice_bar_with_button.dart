@@ -116,7 +116,7 @@ class BrnNoticeBarWithButton extends StatelessWidget {
           style: TextStyle(
               color: leftTagTextColor ?? Colors.white,
               fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               height: 1),
         ),
       ),
@@ -185,7 +185,7 @@ class BrnNoticeBarWithButton extends StatelessWidget {
               color: rightButtonTextColor ?? const Color(0xFFFA5741),
               fontSize: 12,
               height: 1,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

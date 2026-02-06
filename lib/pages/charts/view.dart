@@ -104,7 +104,7 @@ class ChartsPage extends GetView<ChartsController> {
                   SizedBox(height: 16.h),
                   Text("暂无数据",
                       style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                           fontSize: 16.sp,
                           color: appColors.primaryText)),
                   SizedBox(height: 8.h),

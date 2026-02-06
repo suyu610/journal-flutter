@@ -60,7 +60,7 @@ class BrnActionSheetConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorLink],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemTitleStyleLink;
 
@@ -69,7 +69,7 @@ class BrnActionSheetConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandError],
   ///   fontSize: [BrnCommonConfig.fontSizeBase],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemTitleStyleAlert;
 
@@ -78,7 +78,7 @@ class BrnActionSheetConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeCaption],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemDescStyle;
 
@@ -87,7 +87,7 @@ class BrnActionSheetConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorLink],
   ///   fontSize: [BrnCommonConfig.fontSizeCaption],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemDescStyleLink;
 
@@ -96,7 +96,7 @@ class BrnActionSheetConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandError],
   ///   fontSize: [BrnCommonConfig.fontSizeCaption],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemDescStyleAlert;
 
@@ -105,7 +105,7 @@ class BrnActionSheetConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _cancelStyle;
 

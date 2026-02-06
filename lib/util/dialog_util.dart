@@ -340,7 +340,7 @@ class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
           style: TextStyle(
             color: textColor,
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             decoration: TextDecoration.none,
           ),
         ),

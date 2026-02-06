@@ -103,7 +103,7 @@ Widget buildExpenseMessage(types.Message message, controller, context) {
                       style: const TextStyle(
                         color: kTextPrimary, // 纯白
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 2),

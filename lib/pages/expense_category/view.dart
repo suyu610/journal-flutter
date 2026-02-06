@@ -40,7 +40,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
           "选择分类",
           style: TextStyle(
               fontSize: 17,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               color: appColors.primaryText // 适配文字颜色
               ),
         ),

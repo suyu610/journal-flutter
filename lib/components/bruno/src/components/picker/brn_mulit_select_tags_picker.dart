@@ -143,8 +143,8 @@ class BrnMultiSelectTagsPicker extends CommonTagsPicker {
             .getConfig()
             .commonConfig
             .colorTextImportant;
-    Color tagBackgroundColor =
-        tagPickerConfig.tagBackgroudColor ?? const Color.fromARGB(0, 248, 248, 248);
+    Color tagBackgroundColor = tagPickerConfig.tagBackgroudColor ??
+        const Color.fromARGB(0, 248, 248, 248);
     Color selectedTagBackgroundColor =
         tagPickerConfig.selectedTagBackgroudColor ??
             BrnThemeConfigurator.instance
@@ -196,7 +196,7 @@ class BrnMultiSelectTagsPicker extends CommonTagsPicker {
                 style: TextStyle(
                     height: 1,
                     color: titleColor,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
                     fontSize: tagPickerConfig.tagTitleFontSize),
               ),
             ),
@@ -230,7 +230,7 @@ class BrnMultiSelectTagsPicker extends CommonTagsPicker {
             height: 1,
             color: tagPickerConfig.selectedTagTitleColor,
             fontSize: tagPickerConfig.tagTitleFontSize,
-            fontWeight: FontWeight.w600),
+            fontWeight: FontWeight.w500),
         tagTextStyle: BrnTextStyle(
             height: 1,
             color: tagPickerConfig.tagTitleColor,
@@ -268,7 +268,7 @@ class BrnMultiSelectTagsPicker extends CommonTagsPicker {
                 style: TextStyle(
                     height: 1,
                     color: titleColor,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
                     fontSize: tagPickerConfig.tagTitleFontSize),
               ),
               onSelected: (bool value) {

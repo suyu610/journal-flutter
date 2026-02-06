@@ -59,7 +59,7 @@ class BrnPageLoading extends StatelessWidget {
           text: loadingText,
           style: const TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               color: Colors.white,
               decoration: TextDecoration.none)),
     )..layout(
@@ -97,7 +97,7 @@ class BrnPageLoading extends StatelessWidget {
                     maxLines: 1,
                     style: const TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
                         decoration: TextDecoration.none),
                     overflow: TextOverflow.ellipsis,

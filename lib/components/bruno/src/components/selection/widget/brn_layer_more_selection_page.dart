@@ -55,8 +55,8 @@ class _BrnLayerMoreSelectionPageState extends State<BrnLayerMoreSelectionPage>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _animation =
-        Tween(end: Offset.zero, begin: const Offset(1.0, 0.0)).animate(_controller);
+    _animation = Tween(end: Offset.zero, begin: const Offset(1.0, 0.0))
+        .animate(_controller);
     _controller.forward();
     _originalSelectedItemsList = widget.entityData.selectedList();
 
@@ -155,7 +155,7 @@ class _BrnLayerMoreSelectionPageState extends State<BrnLayerMoreSelectionPage>
                           .commonConfig
                           .colorTextBase,
                       fontSize: 16,
-                      fontWeight: FontWeight.w600),
+                      fontWeight: FontWeight.w500),
                 ),
               ),
               BrnLine(),

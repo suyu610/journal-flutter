@@ -65,7 +65,7 @@ class BrnSmallOutlineButton extends StatelessWidget {
     this.radius,
     this.width,
     this.fontSize = 14,
-    this.fontWeight = FontWeight.w600,
+    this.fontWeight = FontWeight.w500,
     this.themeData,
   });
 

@@ -146,7 +146,7 @@ class InvitePage extends GetView<InviteController> {
                         fontSize: 17,
                         fontFamily: "Monospace", // 等宽字体更有“码”的感觉
                         letterSpacing: 2,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w500),
                   ),
                   Icon(Icons.copy_rounded, color: Colors.white70, size: 18.sp),
                 ],

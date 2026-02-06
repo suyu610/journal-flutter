@@ -98,7 +98,7 @@ class _BrnSubSwitchTitleState extends State<BrnSubSwitchTitle>
           : BrnThemeConfigurator.instance.getConfig().commonConfig.brandPrimary,
       labelStyle: const TextStyle(
         //选中态
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         fontSize: 14,
       ),
       labelPadding: const EdgeInsets.all(0),

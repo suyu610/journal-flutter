@@ -30,10 +30,10 @@ class BrnSwitchTitle extends StatefulWidget {
   /// 只在需要外部控制tab切换时传递
   final TabController? controller;
 
-  /// 选中时的标题样式，默认 `TextStyle(fontWeight: FontWeight.w600,fontSize: 18)`
+  /// 选中时的标题样式，默认 `TextStyle(fontWeight: FontWeight.w500,fontSize: 18)`
   final TextStyle? selectedTextStyle;
 
-  /// 未选中时的标题样式，默认 `TextStyle(fontWeight: FontWeight.w600,fontSize: 18)`
+  /// 未选中时的标题样式，默认 `TextStyle(fontWeight: FontWeight.w500,fontSize: 18)`
   final TextStyle? unselectedTextStyle;
 
   const BrnSwitchTitle(
@@ -149,7 +149,7 @@ class _BrnSwitchTitleState extends State<BrnSwitchTitle>
         labelStyle: widget.selectedTextStyle ??
             const TextStyle(
               //选中态
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               fontSize: 18,
             ),
         // 设置为 0 完全由外部的 padding 控制间距
@@ -159,10 +159,11 @@ class _BrnSwitchTitleState extends State<BrnSwitchTitle>
         //未选中态样式
         unselectedLabelStyle: widget.unselectedTextStyle ??
             const TextStyle(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               fontSize: 18,
             ),
-        indicator: widget.nameList.length == 1 ? const BoxDecoration() : _indicator,
+        indicator:
+            widget.nameList.length == 1 ? const BoxDecoration() : _indicator,
         // weight 设置为0，让外部通过 padding 设置下划线和标题间的距离
         indicatorWeight: 0,
         onTap: (index) {

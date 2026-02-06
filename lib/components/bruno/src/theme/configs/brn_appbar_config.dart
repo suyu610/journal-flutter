@@ -66,13 +66,13 @@ class BrnAppBarConfig extends BrnBaseConfig {
         );
     _titleStyle = BrnTextStyle(
       fontSize: BrnAppBarTheme.titleFontSize,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w500,
       color: BrnAppBarTheme.darkTextColor,
     );
     _actionsStyle = BrnTextStyle(
       color: BrnAppBarTheme.darkTextColor,
       fontSize: BrnAppBarTheme.actionFontSize,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w500,
     );
     _systemOverlayStyle = SystemUiOverlayStyle.light;
   }
@@ -101,13 +101,13 @@ class BrnAppBarConfig extends BrnBaseConfig {
         );
     _titleStyle = BrnTextStyle(
       fontSize: BrnAppBarTheme.titleFontSize,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w500,
       color: BrnAppBarTheme.lightTextColor,
     );
     _actionsStyle = BrnTextStyle(
       color: BrnAppBarTheme.lightTextColor,
       fontSize: BrnAppBarTheme.actionFontSize,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w500,
     );
     _systemOverlayStyle = SystemUiOverlayStyle.dark;
   }
@@ -147,7 +147,7 @@ class BrnAppBarConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: AppBarBrightness(brightness).textColor,
   ///   fontSize: BrnAppBarTheme.actionFontSize,
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _actionsStyle;
 

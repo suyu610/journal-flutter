@@ -52,7 +52,7 @@ class LabPage extends GetView<LabController> {
         "实验室",
         style: TextStyle(
           fontSize: 17, // 稍微加大一点
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: appColors.primaryText, // 适配标题颜色
         ),
       ),

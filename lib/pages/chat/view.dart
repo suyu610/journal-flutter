@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
+import 'package:journal/pages/chat/widgets/appbar.dart';
 import 'package:journal/pages/chat/widgets/bottom.dart';
 
 import 'package:journal/services/local_server.dart';
@@ -36,7 +37,7 @@ class ChatPage extends GetView<ChatController> {
           resizeToAvoidBottomInset: false,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           extendBodyBehindAppBar: true,
-          appBar: _buildTransparentAppBar(context, appColors, isDark),
+          appBar: buildTransparentAppBar(context, appColors, isDark),
           body: Stack(
             children: [
               // ==============================
@@ -192,7 +193,7 @@ class ChatPage extends GetView<ChatController> {
                               style: TextStyle(
                                 color: appColors.primaryText,
                                 fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w500,
                                 fontFamily: "ZCOOLKuaiLle",
                               ),
                               textAlign: TextAlign.center,
@@ -267,26 +268,6 @@ class ChatPage extends GetView<ChatController> {
           ),
         );
       },
-    );
-  }
-
-  // --------------------------------------------------------------------------
-  // 透明 AppBar
-  // --------------------------------------------------------------------------
-  PreferredSizeWidget _buildTransparentAppBar(
-      BuildContext context, AppThemeColors appColors, bool isDark) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      forceMaterialTransparency: true,
-      elevation: 0,
-      centerTitle: true,
-      leading: IconButton(
-        // 深色模式下固定用白色，或者跟随 primaryText (通常也是白色)
-        icon: Icon(Icons.arrow_back_ios_new, color: appColors.primaryText),
-        onPressed: () {
-          Get.back();
-        },
-      ),
     );
   }
 

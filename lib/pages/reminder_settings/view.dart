@@ -127,7 +127,7 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
                 '开启每日提醒',
                 style: TextStyle(
                   fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: const Color(0xFF333333),
                 ),
               ),
@@ -235,7 +235,7 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
                     time,
                     style: TextStyle(
                       fontSize: 24.sp,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: const Color(0xFF333333),
                       fontFamily: 'D-DIN', // 如果有数字字体更好
                     ),
@@ -287,7 +287,7 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

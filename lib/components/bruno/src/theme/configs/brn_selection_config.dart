@@ -79,7 +79,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeBase],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _menuSelectedTextStyle;
 
@@ -97,7 +97,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeCaption],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _tagSelectedTextStyle;
 
@@ -118,7 +118,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _rangeTitleTextStyle;
 
@@ -151,7 +151,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeBase],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemSelectedTextStyle;
 
@@ -160,7 +160,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeBase],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _itemBoldTextStyle;
 
@@ -201,7 +201,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeBase],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _titleForMoreTextStyle;
 
@@ -235,7 +235,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _flayerSelectedTextStyle;
 
@@ -244,7 +244,7 @@ class BrnSelectionConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600
+  ///   fontWeight: FontWeight.w500
   /// )
   BrnTextStyle? _flayerBoldTextStyle;
 

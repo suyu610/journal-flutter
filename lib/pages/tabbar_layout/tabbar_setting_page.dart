@@ -56,7 +56,7 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
         titleTextStyle: TextStyle(
             color: appColors.primaryText, // 适配标题色
             fontSize: 17,
-            fontWeight: FontWeight.w600),
+            fontWeight: FontWeight.w500),
         leading: IconButton(
           icon: Icon(Icons.close, color: appColors.primaryText), // 适配图标色
           onPressed: () => Get.back(),
@@ -183,7 +183,7 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
             Text(
               item.label,
               style: TextStyle(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   fontSize: 15,
                   color: isVipFeatureButNotVip
                       ? appColors.secondaryText

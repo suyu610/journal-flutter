@@ -98,7 +98,7 @@ class BrnPadThemeConfig {
   static BrnTagConfig tagConfig = BrnTagConfig(
       tagRadius: 6,
       tagMinWidth: 110,
-      tagTextStyle: BrnTextStyle(fontSize: 12, fontWeight: FontWeight.w600));
+      tagTextStyle: BrnTextStyle(fontSize: 12, fontWeight: FontWeight.w500));
 
   /// 数字信息展示默认配置
   static BrnEnhanceNumberCardConfig numberInfoConfig =
@@ -133,11 +133,11 @@ class BrnPadThemeConfig {
     titleMaxLength: 20,
     titleStyle: BrnTextStyle(
         color: const Color(0xff222222),
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         fontSize: 24),
     actionsStyle: BrnTextStyle(
         color: const Color(0xFF3072F6),
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
         fontSize: 18),
   );
 
@@ -154,7 +154,7 @@ class BrnPadThemeConfig {
           rowSpacing: 6,
           itemSpacing: 8,
           valueTextStyle:
-              BrnTextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              BrnTextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           keyTextStyle: BrnTextStyle(fontSize: 16),
           linkTextStyle: BrnTextStyle(fontSize: 16));
 

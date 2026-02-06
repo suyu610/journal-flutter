@@ -231,7 +231,7 @@ class _CustomCalendarViewState extends State<BrnCalendarView> {
                           .dateFormatYYYYMM)
                       .format(_currentDate),
                   style: TextStyle(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       fontSize: 16,
                       color: BrnThemeConfigurator.instance
                           .getConfig()

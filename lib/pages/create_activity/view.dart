@@ -51,7 +51,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
         controller.activity.value.activityId == "" ? "创建账本" : "更新账本",
         style: TextStyle(
           fontSize: 17,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: appColors.primaryText,
         ),
       ),
@@ -336,7 +336,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           style: TextStyle(
             fontSize: 13.sp,
             color: isSelected ? appColors.primaryText : appColors.secondaryText,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
           ),
         ),
       ),
@@ -402,7 +402,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
           text,
           style: TextStyle(
             fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
             color: Colors.redAccent,
           ),
         ),

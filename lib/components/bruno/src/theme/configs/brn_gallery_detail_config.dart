@@ -90,7 +90,7 @@ class BrnGalleryDetailConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBaseInverse],
   ///   fontSize: [BrnCommonConfig.fontSizeHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _appbarTitleStyle;
 
@@ -99,7 +99,7 @@ class BrnGalleryDetailConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: AppBarBrightness(brightness).textColor,
   ///   fontSize: BrnAppBarTheme.actionFontSize,
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _appbarActionStyle;
 
@@ -124,7 +124,7 @@ class BrnGalleryDetailConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBaseInverse],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _tabBarLabelStyle;
 
@@ -145,7 +145,7 @@ class BrnGalleryDetailConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBaseInverse],
   ///   fontSize: [BrnCommonConfig.fontSizeHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _titleStyle;
 

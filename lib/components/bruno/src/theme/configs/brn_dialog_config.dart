@@ -108,7 +108,7 @@ class BrnDialogConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _titleTextStyle;
 
@@ -230,7 +230,7 @@ class BrnDialogConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _mainActionTextStyle;
 
@@ -250,7 +250,7 @@ class BrnDialogConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _assistActionsTextStyle;
 

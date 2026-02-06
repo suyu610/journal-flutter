@@ -59,7 +59,7 @@ class _BrnAppraiseStarListViewState extends State<BrnAppraiseStarListView> {
                     .getConfig()
                     .commonConfig
                     .colorTextSecondary,
-                fontWeight: FontWeight.w600),
+                fontWeight: FontWeight.w500),
           ),
         );
       }

@@ -66,7 +66,7 @@ class BrnSmallMainButton extends StatelessWidget {
     this.isEnable = true,
     this.bgColor,
     this.textColor = Colors.white,
-    this.fontWeight = FontWeight.w600,
+    this.fontWeight = FontWeight.w500,
     this.fontSize,
     this.radius,
     this.maxWidth,

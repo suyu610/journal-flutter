@@ -44,8 +44,9 @@ class TrendChartCard extends GetView<ChartsController> {
                 yDialValues: _generateYAxisLabels(dailyData, maxVal),
                 xDialValues: _generateXAxisLabels(dailyData, appColors),
                 xDialColor: appColors.secondaryText.withOpacity(0.4),
-                hintLineColor: appColors.secondaryText.withOpacity(0.4),
+                hintLineColor: appColors.secondaryText.withOpacity(0.2),
                 isShowYDialText: false,
+                isTipWindowAutoDismiss: true,
                 lines: [
                   // 1. 实际消费曲线
                   _buildLineData(dailyData, appColors),
@@ -64,21 +65,19 @@ class TrendChartCard extends GetView<ChartsController> {
   BrnPointsLine _buildLineData(
       List<ChartDataModel> data, AppThemeColors appColors) {
     return BrnPointsLine(
-      // 使用主题色盘的主色
-      lineColor: appColors.chartPalette[0],
-      points: data.map((e) {
-        return BrnPointData(
-          x: data.indexOf(e).toDouble(),
-          y: e.doubleValue,
-          lineTouchData: BrnLineTouchData(
-            onTouch: () =>
-                "${e.name}\n${e.doubleValue.toStringAsFixed(0)}", // 显示日期+金额
-            tipWindowSize: const Size(60, 40),
-          ),
-        );
-      }).toList(),
-      isShowPointText: false,
-    );
+        isCurve: true,
+        // 使用主题色盘的主色
+        lineColor: appColors.chartPalette[0],
+        points: data.map((e) {
+          return BrnPointData(
+            x: data.indexOf(e).toDouble(),
+            y: e.doubleValue,
+            lineTouchData: BrnLineTouchData(
+              tipWindowSize: const Size(0, 0),
+            ),
+          );
+        }).toList(),
+        isShowPointText: false);
   }
 
   // 构建预算线 (建议做成淡色或虚线)
@@ -88,13 +87,10 @@ class TrendChartCard extends GetView<ChartsController> {
       lineColor: Colors.red.withOpacity(0.4),
       points: List.generate(data.length, (index) {
         return BrnPointData(
-          pointText: "",
           x: index.toDouble(),
           y: controller.dailyBudgetValue,
           lineTouchData: BrnLineTouchData(
-            onTouch: () =>
-                "预算\n${controller.dailyBudgetValue.toStringAsFixed(0)}",
-            tipWindowSize: const Size(80, 50),
+            tipWindowSize: const Size(0, 0),
           ),
         );
       }),

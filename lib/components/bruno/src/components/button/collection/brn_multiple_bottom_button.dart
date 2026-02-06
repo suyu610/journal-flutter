@@ -293,7 +293,7 @@ class _BrnMultipleBottomButtonState extends State<BrnMultipleBottomButton> {
                                     ? Colors.white
                                     : const Color(0xAAFFFFFF),
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600),
+                                fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ))
@@ -337,7 +337,7 @@ class _BrnMultipleBottomButtonState extends State<BrnMultipleBottomButton> {
                                     ? Colors.white
                                     : const Color(0xAAFFFFFF),
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600),
+                                fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ))

@@ -58,7 +58,7 @@ class ChartsController extends GetxController {
   RxDouble currentMonthIncome = 0.0.obs;
 
   void loadCalendarData(DateTime month) async {
-    // 模拟构造 API 请求参数：获取整月的每一天数据
+    focusedDay.value = month;
     String monthStr = DateFormat('yyyy-MM').format(month);
     String activityId = _getCurrentActivityId();
 

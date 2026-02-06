@@ -274,7 +274,7 @@ class MultiSelectPickerWidgetState extends State<MultiSelect> {
                       child: Text(widget.conditions[index].content,
                           style: TextStyle(
                               fontWeight: widget.conditions[index].isChecked
-                                  ? FontWeight.w600
+                                  ? FontWeight.w500
                                   : FontWeight.normal,
                               fontSize: 16,
                               color: widget.conditions[index].isChecked

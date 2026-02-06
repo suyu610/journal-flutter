@@ -30,7 +30,7 @@ class BrnConvertUtil {
     FontWeight defaultWeight = FontWeight.normal;
     switch (fontWeight) {
       case 'Bold':
-        defaultWeight = FontWeight.w600;
+        defaultWeight = FontWeight.w500;
         break;
       case 'Medium':
         defaultWeight = FontWeight.w500;

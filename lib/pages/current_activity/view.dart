@@ -382,7 +382,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
                               fontSize: 14,
                               color: appColors.primaryText, // 适配深色
                               fontFamily: 'SourceCodePro',
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],

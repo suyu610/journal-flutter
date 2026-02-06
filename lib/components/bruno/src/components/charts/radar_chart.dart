@@ -153,7 +153,7 @@ class BrnRadarChart extends MultiChildRenderObjectWidget {
                     style: const TextStyle(
                         color: Color(0xFF222222),
                         fontSize: 12,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w500),
                   ),
                 ));
               }

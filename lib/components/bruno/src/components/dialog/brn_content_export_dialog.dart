@@ -144,7 +144,7 @@ class BrnContentExportWidget extends StatelessWidget {
                     child: Text(submitText ?? "",
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                             color: Colors.white,
                             fontSize: 18))),
                 onTap: () {

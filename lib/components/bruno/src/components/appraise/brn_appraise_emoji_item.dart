@@ -110,7 +110,7 @@ class _BrnAppraiseEmojiItemState extends State<BrnAppraiseEmojiItem>
                       ? const Color(0xffffc300)
                       : const Color(0xff999999),
                   fontSize: 12.0,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

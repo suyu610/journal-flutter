@@ -210,7 +210,7 @@ class BrnTipInfoWidget extends StatelessWidget {
               style: const TextStyle(
                   fontSize: 14,
                   color: Color(0XFF222222),
-                  fontWeight: FontWeight.w600),
+                  fontWeight: FontWeight.w500),
             ),
           ),
           Positioned(

@@ -64,7 +64,7 @@ Widget ActivityExpenseItem(Expense e, BuildContext context) {
                           color: appColors.primaryText, // 适配深色
                           fontSize: 15,
                           fontFamily: 'PingFang SC',
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -126,7 +126,7 @@ Widget ActivityExpenseItem(Expense e, BuildContext context) {
                             : const Color(0xFF00A870),
                         fontSize: 17, // 稍微加大一点，突出金额
                         fontFamily: 'SourceCodePro',
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         height: 1.2,
                       ),
                     ),

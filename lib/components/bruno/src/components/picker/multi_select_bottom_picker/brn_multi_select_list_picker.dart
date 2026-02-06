@@ -154,7 +154,7 @@ class MultiSelectDialogWidgetState<T extends BrnMultiSelectBottomPickerItem>
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: widget.items[index].isChecked
-                                  ? FontWeight.w600
+                                  ? FontWeight.w500
                                   : FontWeight.normal,
                               color: widget.items[index].isChecked
                                   ? BrnThemeConfigurator.instance

@@ -40,7 +40,7 @@ class BrnTagConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeCaption],
-  ///   fontWeight: FontWeight.w600,
+  ///   fontWeight: FontWeight.w500,
   /// )
   BrnTextStyle? _selectTagTextStyle;
 

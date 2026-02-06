@@ -217,7 +217,7 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
                 text.value,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
               )),
@@ -281,7 +281,7 @@ class _VoiceMessageSendWidget extends State<VoiceMessageSendWidget>
                     title,
                     style: const TextStyle(
                       color: Color(0xff5f5f5f),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       fontSize: 14,
                     ),
                   )

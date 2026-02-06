@@ -60,7 +60,7 @@ class BrnPickerConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.colorTextBase],
   ///   fontSize: [BrnCommonConfig.fontSizeSubHead],
-  ///   fontWidget:FontWeight.w600,
+  ///   fontWidget:FontWeight.w500,
   /// )
   BrnTextStyle? _titleTextStyle;
 
@@ -89,7 +89,7 @@ class BrnPickerConfig extends BrnBaseConfig {
   /// BrnTextStyle(
   ///   color: [BrnCommonConfig.brandPrimary],
   ///   fontSize: [BrnCommonConfig.fontSizeHead],
-  ///   fontWidget: FontWeight.w600,
+  ///   fontWidget: FontWeight.w500,
   /// )
   BrnTextStyle? _itemTextSelectedStyle;
 

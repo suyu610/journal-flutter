@@ -49,7 +49,7 @@ class CodePage extends StatelessWidget {
                 "请输入验证码",
                 style: TextStyle(
                   fontSize: 28.sp,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: appColors.primaryText, // 适配标题色
                   letterSpacing: 1,
                 ),
@@ -159,7 +159,7 @@ class CodePage extends StatelessWidget {
                       "下一步",
                       style: TextStyle(
                         fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         // 适配按钮文字色
                         color: isEnabled
                             ? appColors.mainButtonIcon

@@ -60,7 +60,7 @@ class BrnAppraiseHeader extends StatelessWidget {
               .commonConfig
               .colorTextBase,
           fontSize: 18.0,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -90,7 +90,7 @@ class BrnAppraiseHeader extends StatelessWidget {
                         .colorTextBase,
                     fontSize: 18.0,
                     height: 1,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

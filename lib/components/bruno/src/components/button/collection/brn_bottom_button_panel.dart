@@ -201,7 +201,8 @@ class BrnBottomButtonPanel extends StatelessWidget {
           },
           child: Container(
               height: 48,
-              padding: const EdgeInsets.only(left: 8, right: 8, top: 6, bottom: 6),
+              padding:
+                  const EdgeInsets.only(left: 8, right: 8, top: 6, bottom: 6),
               decoration: BoxDecoration(
                 color: enableSecondaryButton
                     ? BrnThemeConfigurator.instance
@@ -219,7 +220,7 @@ class BrnBottomButtonPanel extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16.0,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     color: enableSecondaryButton
                         ? Colors.white
                         : BrnThemeConfigurator.instance
@@ -262,7 +263,7 @@ class BrnBottomButtonPanel extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 16.0,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: enableMainButton
                     ? Colors.white
                     : BrnThemeConfigurator.instance

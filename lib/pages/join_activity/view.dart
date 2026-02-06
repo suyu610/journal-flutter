@@ -69,7 +69,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
         style: TextStyle(
           fontSize: 18.sp,
           fontFamily: "SmileySans",
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: appColors.primaryText,
         ),
       ),
@@ -142,7 +142,7 @@ class JoinActivityPage extends GetView<JoinActivityController> {
                   Text("从剪贴板读取",
                       style: TextStyle(
                           color: appColors.secondaryText,
-                          fontWeight: FontWeight.w600))
+                          fontWeight: FontWeight.w500))
                 ],
               ),
             ),
