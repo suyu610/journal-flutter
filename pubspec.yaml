@@ -78,6 +78,8 @@ dependencies:
   # 日历
   table_calendar: ^3.1.2
   fl_chart: ^1.1.1
+  remixicon: ^1.4.1
+  reorderable_grid_view: ^2.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

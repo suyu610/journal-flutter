@@ -81,7 +81,7 @@ class CalendarChartCard extends GetView<ChartsController> {
   // 头部月份
   Widget _buildHeader(AppThemeColors appColors) {
     return Padding(
-      padding: EdgeInsets.only(left: 16.w, top: 16.h, bottom: 6),
+      padding: EdgeInsets.only(left: 16.w, top: 16.h, bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -91,7 +91,7 @@ class CalendarChartCard extends GetView<ChartsController> {
               Obx(() => Text(
                     DateFormat('yyyy年MM月').format(controller.focusedDay.value),
                     style: TextStyle(
-                      fontSize: 16.sp,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
                       color: appColors.primaryText,
                     ),

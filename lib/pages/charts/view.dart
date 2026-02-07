@@ -53,11 +53,8 @@ class ChartsPage extends GetView<ChartsController> {
   }
 
   Widget _buildMainContent(BuildContext context) {
-    // 【改动2】移除外层的 Container
-    // 直接返回 SingleChildScrollView，让 EasyRefresh 能直接识别到它是竖向滚动的
     return SingleChildScrollView(
-      // physics: const BouncingScrollPhysics(),
-      // 把 padding 移到这里，或者移到内部的 Column
+      controller: controller.scrollController,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

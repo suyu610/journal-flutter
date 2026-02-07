@@ -4,6 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// 键值对存储
 class SpUtil {
+  /// 写入 StringList
+  static Future<bool>? putStringList(String key, List<String> value) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.setStringList(key, value);
+  }
+
+  /// 读取 StringList
+  static List<String>? getStringList(String key) {
+    SharedPreferences sp = Get.find<SharedPreferences>();
+    return sp.getStringList(key);
+  }
+
   /// 刚打开app
   static bool isFirstOpenApp() {
     SharedPreferences sp = Get.find<SharedPreferences>();

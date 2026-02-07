@@ -173,71 +173,41 @@ const _lightAppColors = AppThemeColors(
   cardBackground: Color(0xFFFFFFFF),
   chartLine: Color(0xFF2D3436),
   chartPalette: [
-    // 1. 核心主色 (冷暖平衡)
-    Color(0xFF7B8D8E), // 莫兰迪绿 (Sage Green) - 沉稳治愈
-    Color(0xFFD4A5A5), // 干燥玫瑰 (Dusty Rose) - 温柔不俗
-    Color(0xFF9FB1BC), // 雾霾蓝 (Haze Blue) - 经典高级灰蓝
-
-    // 2. 大地色系 (百搭耐看)
-    Color(0xFFC7B198), // 燕麦拿铁 (Oat Latte)
-    Color(0xFFA99C92), // 暖灰褐 (Warm Taupe)
-    Color(0xFFDFD3C3), // 杏仁白 (Almond) - 用作对比
-
-    // 3. 气质辅色 (增加层次)
-    Color(0xFF949FB3), // 钢蓝灰 (Steel Blue)
-    Color(0xFFBFA6A2), // 藕粉 (Lotus Pink)
-    Color(0xFF8A9A9A), // 青灰 (Cyan Grey)
-
-    // 4. 深色点缀 (压住阵脚)
-    Color(0xFF6B7B8C), // 深岩蓝 (Slate)
-    Color(0xFF8C8078), // 可可棕 (Cocoa)
-    Color(0xFF9E9E9E), // 中性灰 (Neutral Grey)
+    Color(0xFF6E93D6), // 矢车菊蓝
+    Color(0xFFA6C8FF), // 浅天蓝
+    Color(0xFFFFD88C), // 奶酪黄
+    Color(0xFFFF9C6E), // 软糖橙
+    Color(0xFFFF85C0), // 樱花粉
+    Color(0xFFB37FEB), // 薰衣草紫
+    Color(0xFF95DE64), // 嫩草绿
+    Color(0xFF5CDBD3), // 薄荷青
   ],
   navActive: Color(0xFF2D3436),
   navInactive: Color(0xFFB2B2B2),
   mainButtonBg: Color(0xFF2D3436),
   mainButtonIcon: Color(0xFFFFFFFF),
-
-  // === 新增语义化配置 ===
-  // 品牌色：直接复用你喜欢的深灰 (0xFF2D3436)
   brandColor: Color(0xFF2D3436),
-  // 品牌文字色：白色
   onBrandColor: Color(0xFFFFFFFF),
-  // 危险色：选用了 Flat UI 中的 "Chi-Gong" 红，比纯红更有质感，配你的深灰很搭
   dangerColor: Color(0xFFFF4757),
-  // 边框色：选用了浅灰色，比 navInactive 稍淡
   outlineBorder: Color(0xFFDFE6E9),
 );
 
 // 2. 暗色模式配置
 const _darkAppColors = AppThemeColors(
-  // 新增
   backgroundColor: Color(0xFF2D3436),
-  // 原有
   primaryText: Color(0xFFECF0F1),
   secondaryText: Color(0xFF95A5A6),
   cardBackground: Color.fromARGB(255, 44, 57, 63), // 你的深青灰背景
   chartLine: Color(0xFFECF0F1),
   chartPalette: [
-    // 1. 核心主色 (冷暖平衡)
-    Color(0xFF7B8D8E), // 莫兰迪绿 (Sage Green) - 沉稳治愈
-    Color(0xFFD4A5A5), // 干燥玫瑰 (Dusty Rose) - 温柔不俗
-    Color(0xFF9FB1BC), // 雾霾蓝 (Haze Blue) - 经典高级灰蓝
-
-    // 2. 大地色系 (百搭耐看)
-    Color(0xFFC7B198), // 燕麦拿铁 (Oat Latte)
-    Color(0xFFA99C92), // 暖灰褐 (Warm Taupe)
-    Color(0xFFDFD3C3), // 杏仁白 (Almond) - 用作对比
-
-    // 3. 气质辅色 (增加层次)
-    Color(0xFF949FB3), // 钢蓝灰 (Steel Blue)
-    Color(0xFFBFA6A2), // 藕粉 (Lotus Pink)
-    Color(0xFF8A9A9A), // 青灰 (Cyan Grey)
-
-    // 4. 深色点缀 (压住阵脚)
-    Color(0xFF6B7B8C), // 深岩蓝 (Slate)
-    Color(0xFF8C8078), // 可可棕 (Cocoa)
-    Color(0xFF9E9E9E), // 中性灰 (Neutral Grey)
+    Color(0xFF6E93D6), // 矢车菊蓝
+    Color(0xFFA6C8FF), // 浅天蓝
+    Color(0xFFFFD88C), // 奶酪黄
+    Color(0xFFFF9C6E), // 软糖橙
+    Color(0xFFFF85C0), // 樱花粉
+    Color(0xFFB37FEB), // 薰衣草紫
+    Color(0xFF95DE64), // 嫩草绿
+    Color(0xFF5CDBD3), // 薄荷青
   ],
   navActive: Color(0xFFECF0F1),
   navInactive: Color(0xFF636E72),

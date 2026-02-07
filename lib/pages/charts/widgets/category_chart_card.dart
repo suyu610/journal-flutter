@@ -30,9 +30,14 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
 
         final totalValue =
             groupData.fold(0.0, (prev, curr) => prev + curr.doubleValue);
-
         final bool showPercentageOnChart =
             controller.showTitleWhenSelected.value;
+
+        // 获取当前选中的数据对象（如果没选中则为 null）
+        ChartDataModel? selectedItem;
+        if (touchedIndex != -1 && touchedIndex < groupData.length) {
+          selectedItem = groupData[touchedIndex];
+        }
 
         return ChartCardContainer(
           child: Column(
@@ -41,7 +46,7 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "消费分类",
+                    "本周消费分类",
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14.sp,
@@ -75,16 +80,24 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
                         pieTouchData: PieTouchData(
                           touchCallback:
                               (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                touchedIndex = -1;
-                                return;
-                              }
-                              touchedIndex = pieTouchResponse
+                            if (event is FlTapUpEvent &&
+                                pieTouchResponse != null &&
+                                pieTouchResponse.touchedSection != null) {
+                              final newIndex = pieTouchResponse
                                   .touchedSection!.touchedSectionIndex;
-                            });
+
+                              setState(() {
+                                if (touchedIndex == newIndex) {
+                                  touchedIndex = -1;
+                                } else {
+                                  touchedIndex = newIndex;
+                                  // 拿到当前的type
+                                  final typeName = groupData[newIndex].name;
+                                  // 滚动到对应的位置
+                                  controller.loadExpenseList(typeName);
+                                }
+                              });
+                            }
                           },
                         ),
                         borderData: FlBorderData(show: false),
@@ -101,7 +114,7 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
                       curve: Curves.easeInOut,
                     ),
                     // 中间文字 (总额)
-                    _buildCenterInfo(totalValue, appColors),
+                    _buildCenterInfo(totalValue, selectedItem, appColors),
                   ],
                 ),
               ),
@@ -110,6 +123,16 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
 
               // 3. 底部图例列表 (Legend)
               _buildLegendList(groupData, totalValue, appColors),
+              // 4. (新) 账单明细列表区域
+              // 使用 AnimatedSize 让展开收起更丝滑
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                alignment: Alignment.topCenter,
+                curve: Curves.easeInOut,
+                child: selectedItem != null
+                    ? _buildDetailList(selectedItem, appColors)
+                    : const SizedBox.shrink(), // 没选中时不占位
+              ),
             ],
           ),
         );
@@ -153,14 +176,114 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
     });
   }
 
+  // --- 构建明细列表 (核心需求) ---
+  Widget _buildDetailList(ChartDataModel item, AppThemeColors appColors) {
+    ChartsController controller = Get.find();
+    return Container(
+      margin: EdgeInsets.only(top: 20.h),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: appColors.secondaryText.withOpacity(0.05), // 浅灰色背景
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 列表头：比如 "餐饮美食 的支出明细"
+          Row(
+            children: [
+              Icon(Icons.list_alt_rounded,
+                  size: 16.sp, color: appColors.secondaryText),
+              SizedBox(width: 6.w),
+              Text(
+                "${item.name} 明细",
+                style: TextStyle(
+                    fontSize: 12.sp,
+                    color: appColors.secondaryText,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          Divider(
+              height: 16.h,
+              thickness: 0.5,
+              color: appColors.secondaryText.withOpacity(0.2)),
+
+          // 遍历明细
+          if (controller.expenseList.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10.h),
+              child: Center(
+                  child: Text("暂无明细",
+                      style: TextStyle(
+                          fontSize: 12.sp, color: appColors.secondaryText))),
+            )
+          else
+            ListView.separated(
+              physics:
+                  const NeverScrollableScrollPhysics(), // 嵌套在Column里，禁止自身滚动
+              shrinkWrap: true, // 根据内容高度自适应
+              itemCount: controller.expenseList.length,
+              separatorBuilder: (_, __) => SizedBox(height: 12.h),
+              itemBuilder: (context, index) {
+                final detail = controller.expenseList[index];
+                return Row(
+                  children: [
+                    // 日期
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        // color: Colors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        detail.expenseTime.substring(5, 16),
+                        style: TextStyle(
+                            fontSize: 10.sp,
+                            color: appColors.secondaryText,
+                            fontFamily: 'SourceCodePro'),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    // 备注
+                    Expanded(
+                      child: Text(
+                        detail.label,
+                        style: TextStyle(
+                            fontSize: 13.sp, color: appColors.primaryText),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // 金额
+                    Text(
+                      detail.positive == 0
+                          ? "-${detail.price.toStringAsFixed(1)}"
+                          : "+${detail.price.toStringAsFixed(1)}", // 加上负号
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: appColors.primaryText,
+                        fontFamily: 'SourceCodePro',
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
   // 3. 底部图例列表 (支持按金额排序 + 保持与饼图联动)
   Widget _buildLegendList(
     List<ChartDataModel> data,
     double totalValue,
     AppThemeColors appColors,
   ) {
-    // A. 预处理：生成排序后的索引列表
-    // 1. 生成 [0, 1, 2, ... length-1]
+    ChartsController controller = Get.find<ChartsController>();
     List<int> sortedIndices = List.generate(data.length, (index) => index);
 
     // 2. 根据金额降序排序 (从大到小)
@@ -191,9 +314,26 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
 
             return GestureDetector(
               // 关键：点击时设置的是 originalIndex
-              onTapDown: (_) => setState(() => touchedIndex = originalIndex),
-              onTapUp: (_) => setState(() => touchedIndex = -1),
-              onTapCancel: () => setState(() => touchedIndex = -1),
+              onTap: () {
+                setState(() {
+                  if (touchedIndex == originalIndex) {
+                    touchedIndex = -1; // 再次点击取消
+                  } else {
+                    touchedIndex = originalIndex;
+                    final typeName = item.name;
+                    // 滚动到对应的位置
+                    controller.loadExpenseList(typeName);
+                    // Future.delayed(const Duration(milliseconds: 300), () {
+                    //   controller.scrollController.animateTo(
+                    //     // 当前位置+100，确保能看到当前项
+                    //     controller.scrollController.position.pixels + 100,
+                    //     duration: const Duration(milliseconds: 300),
+                    //     curve: Curves.easeInOut,
+                    //   );
+                    // });
+                  }
+                });
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 width: itemWidth,
@@ -278,29 +418,33 @@ class _CategoryChartCardState extends State<CategoryChartCard> {
   }
 
   // 中间文字只显示总额，不再变来变去，保持稳定
-  Widget _buildCenterInfo(double totalValue, AppThemeColors appColors) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          "总支出",
-          style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w500,
-            color: appColors.secondaryText,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          totalValue.toStringAsFixed(0), // 取整显示，更简洁
-          style: TextStyle(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'SourceCodePro',
-            color: appColors.primaryText,
-          ),
-        ),
-      ],
+  // 中间文字
+  Widget _buildCenterInfo(double totalValue, ChartDataModel? selectedItem,
+      AppThemeColors appColors) {
+    String label = selectedItem?.name ?? "总支出";
+    String valueStr = selectedItem?.doubleValue.toStringAsFixed(0) ??
+        totalValue.toStringAsFixed(0);
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      child: Column(
+        key: ValueKey(label), // Key 变化触发动画
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                  color: appColors.secondaryText)),
+          SizedBox(height: 4.h),
+          Text(valueStr,
+              style: TextStyle(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'SourceCodePro',
+                  color: appColors.primaryText)),
+        ],
+      ),
     );
   }
 }

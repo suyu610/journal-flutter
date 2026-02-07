@@ -18,17 +18,15 @@ import 'package:journal/request/request.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:convert';
 
-// 数据模型保持不变
-
 class ChartDataModel {
   String? value;
-
   String name;
 
   ChartDataModel(this.value, this.name);
 
   factory ChartDataModel.fromJson(Map<String, dynamic> json) {
-    return ChartDataModel(json['value']?.toString(), json['name']);
+    return ChartDataModel(
+        json['value']?.toString(), json['name']?.toString() ?? "");
   }
 
   double get doubleValue => double.tryParse(value ?? '0') ?? 0.0;
@@ -55,6 +53,24 @@ class ChartsController extends GetxController {
   RxMap<String, DailyStats> calendarData = <String, DailyStats>{}.obs; // 日历数据源
   RxDouble currentMonthExpense = 0.0.obs;
   RxDouble currentMonthIncome = 0.0.obs;
+  ScrollController scrollController = ScrollController();
+
+  RxList<Expense> expenseList = RxList<Expense>.empty(growable: true);
+
+  void loadExpenseList(String typeName) async {
+    var data = await HttpRequest.request(
+      Method.get,
+      "/expense/list/${_getCurrentActivityId()}/type?type=$typeName",
+      params: {},
+    );
+    if (data != null && data["data"] != null && data["data"] is List) {
+      List<Expense> result = List<Expense>.from(
+          (data["data"] as List).map((e) => Expense.fromJson(e)));
+
+      expenseList.value = result;
+      update(["expense_list", "charts"]);
+    }
+  }
 
   void loadCalendarData(DateTime month) async {
     focusedDay.value = month;
