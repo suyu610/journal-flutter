@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -12,7 +11,7 @@ import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/pages/charts/models/daily_stats.dart';
-import 'package:journal/pages/lab/receipt/receipt_card.dart';
+import 'package:journal/pages/lab/medical_card/view.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -32,7 +31,23 @@ class ChartDataModel {
   double get doubleValue => double.tryParse(value ?? '0') ?? 0.0;
 }
 
+enum ChartDimension { week, month, year } // 定义枚举
+
 class ChartsController extends GetxController {
+  // 1. 定义当前选中的维度，默认为周
+  final currentDimension = ChartDimension.week.obs;
+
+  // 2. 切换维度的方法
+  void changeDimension(ChartDimension dimension) {
+    if (currentDimension.value == dimension) return;
+
+    currentDimension.value = dimension;
+
+    // 3. 这里触发刷新数据逻辑，比如：
+    // updateParams(dimension);
+    // initData();
+  }
+
   RxString judgeString = "".obs;
   double dailyBudgetValue = 0.0;
   RxList<ChartDataModel> charts = RxList<ChartDataModel>.empty(growable: true);
@@ -366,15 +381,17 @@ class ChartsController extends GetxController {
     }
   }
 
-  // 抽离打印逻辑代码，保持 build 整洁
+// 替换原来的 handlePrintAction
   void handlePrintAction(BuildContext context) async {
     JournalToast.showLoading(context);
+
+    // 1. 获取数据
     List<Expense> expenseItems = await getTodayExpenseItemList(context) ?? [];
-    Log().d("expenseItems: $expenseItems");
+
     if (expenseItems.isEmpty) {
       if (context.mounted) {
         JournalToast.dismiss();
-        JournalToast.showError(context, "暂无数据");
+        JournalToast.showError(context, "今日暂无账单数据");
       }
       return;
     }
@@ -382,32 +399,37 @@ class ChartsController extends GetxController {
 
     List<String> nicknameList =
         expenseItems.map((e) => e.userNickname ?? '').toSet().toList();
-    Get.dialog(Material(
-      type: MaterialType.transparency,
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              PrintingReceiptAnim(
-                onPrintFinished: () {},
-                child: ReceiptCard(
-                  nickname: nicknameList.join(' | '),
-                  budget: dailyBudgetValue,
-                  items: expenseItems,
-                  date: DateTime.now().toString().substring(0, 10),
-                ),
-              ),
-              SizedBox(height: 30.h),
-              IconButton(
-                onPressed: () => Get.back(),
-                icon: const Icon(Icons.cancel, color: Colors.white, size: 36),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ));
+
+    final receiptData = ReceiptData(
+      nickname: nicknameList.join(' | '),
+      budget: dailyBudgetValue,
+      items: expenseItems,
+      date: DateTime.now().toString().substring(0, 10),
+    );
+
+    // 3. 使用自定义弹性动画路由跳转
+    if (context.mounted) {
+      Navigator.of(context).push(_createPrinterRoute(receiptData));
+    }
+  }
+
+  Route _createPrinterRoute(ReceiptData data) {
+    return PageRouteBuilder(
+      opaque: false, // 必须是 false，否则看不到下面的页面
+      barrierColor: Colors.black26, // 【修改这里】去掉默认的半透明黑底
+      barrierDismissible: true, // 保持点击背景关闭
+      transitionDuration: const Duration(milliseconds: 600),
+
+      reverseTransitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return FadeTransition(
+          opacity: animation,
+          child: MedicalPrinterCard(data: data),
+        );
+      },
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+    );
   }
 }

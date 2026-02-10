@@ -133,4 +133,6 @@ abstract class Routers {
   static const String ClassificationRulesPageUrl = "/classification_rules";
 
   static const String GrowingTreeUrl = "/growing_tree";
+
+  static const String MedicalCardUrl = "/medical_card";
 }

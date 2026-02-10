@@ -76,7 +76,6 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
       tabBarProperties: TabBarProperties(
         height: 48,
         background: Container(
-          // Tab栏背景：适配深色
           color: appColors.cardBackground,
           padding: const EdgeInsets.only(bottom: 6),
         ),
@@ -92,11 +91,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
             const TextStyle(fontWeight: FontWeight.normal, fontSize: 16),
       ),
       views: [
-        // 支出列表
-
         _buildGridList(controller.expenseList, appColors, isExpense: true),
-        // 收入列表
-
         _buildGridList(controller.incomeList, appColors, isExpense: false),
       ],
     );

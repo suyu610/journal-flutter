@@ -173,14 +173,14 @@ const _lightAppColors = AppThemeColors(
   cardBackground: Color(0xFFFFFFFF),
   chartLine: Color(0xFF2D3436),
   chartPalette: [
-    Color(0xFF6E93D6), // 矢车菊蓝
-    Color(0xFFA6C8FF), // 浅天蓝
-    Color(0xFFFFD88C), // 奶酪黄
-    Color(0xFFFF9C6E), // 软糖橙
-    Color(0xFFFF85C0), // 樱花粉
-    Color(0xFFB37FEB), // 薰衣草紫
-    Color(0xFF95DE64), // 嫩草绿
-    Color(0xFF5CDBD3), // 薄荷青
+    Color(0xFF1677FF), // 1. 核心蓝 (最深)
+    Color(0xFF3388FF), // 2.
+    Color(0xFF519AFF), // 3.
+    Color(0xFF6FACFF), // 4.
+    Color(0xFF8CBEFF), // 5.
+    Color(0xFFAAD0FF), // 6.
+    Color(0xFFC8E2FF), // 7.
+    Color(0xFFE6F4FF), // 8. 冰川蓝 (最浅)
   ],
   navActive: Color(0xFF2D3436),
   navInactive: Color(0xFFB2B2B2),
@@ -200,14 +200,14 @@ const _darkAppColors = AppThemeColors(
   cardBackground: Color.fromARGB(255, 44, 57, 63), // 你的深青灰背景
   chartLine: Color(0xFFECF0F1),
   chartPalette: [
-    Color(0xFF6E93D6), // 矢车菊蓝
-    Color(0xFFA6C8FF), // 浅天蓝
-    Color(0xFFFFD88C), // 奶酪黄
-    Color(0xFFFF9C6E), // 软糖橙
-    Color(0xFFFF85C0), // 樱花粉
-    Color(0xFFB37FEB), // 薰衣草紫
-    Color(0xFF95DE64), // 嫩草绿
-    Color(0xFF5CDBD3), // 薄荷青
+    Color(0xFF1677FF), // 1. 核心蓝 (最深)
+    Color(0xFF3388FF), // 2.
+    Color(0xFF519AFF), // 3.
+    Color(0xFF6FACFF), // 4.
+    Color(0xFF8CBEFF), // 5.
+    Color(0xFFAAD0FF), // 6.
+    Color(0xFFC8E2FF), // 7.
+    Color(0xFFE6F4FF), // 8. 冰川蓝 (最浅)
   ],
   navActive: Color(0xFFECF0F1),
   navInactive: Color(0xFF636E72),

@@ -98,6 +98,13 @@ class LabPage extends GetView<LabController> {
                 },
               ),
               Cell(
+                icon: _buildIcon(Icons.fitbit_sharp, appColors),
+                title: "打印机",
+                onTap: () {
+                  Get.toNamed(Routers.MedicalCardUrl, arguments: {});
+                },
+              ),
+              Cell(
                 icon: _buildIcon(Icons.wysiwyg_outlined, appColors),
                 title: "存钱罐",
                 onTap: () {

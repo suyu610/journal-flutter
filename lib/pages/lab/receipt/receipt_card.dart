@@ -8,12 +8,14 @@ import 'package:journal/models/expense.dart'; // 假设你用了 screenutil，�
 // ==========================================
 class PrintingReceiptAnim extends StatefulWidget {
   final Widget child;
+  final double width;
   final VoidCallback? onPrintFinished;
 
   const PrintingReceiptAnim({
     Key? key,
     required this.child,
     this.onPrintFinished,
+    required this.width,
   }) : super(key: key);
 
   @override
@@ -90,7 +92,7 @@ class _PrintingReceiptAnimState extends State<PrintingReceiptAnim>
       children: [
         // A. 打印机出口 (拟物黑条)
         Container(
-          width: 310.w, // 比小票稍宽
+          width: widget.width, // 比小票稍宽
           height: 12,
           decoration: BoxDecoration(
             color: const Color(0xFF2D2D2D),
@@ -203,7 +205,10 @@ class ReceiptCard extends StatelessWidget {
     required this.budget,
     required this.date,
     this.randomSeed,
+    required this.width,
   }) : super(key: key);
+
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -254,8 +259,8 @@ class ReceiptCard extends StatelessWidget {
       alignment: Alignment.center,
       child: Center(
         child: Container(
-          width: 300.w,
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          width: 999,
+          margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
