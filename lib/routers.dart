@@ -125,6 +125,11 @@ abstract class Routers {
         name: ClassificationRulesPageUrl,
         page: () => const ClassificationRulesPage()),
     GetPage(name: GrowingTreeUrl, page: () => const ForestPage()),
+    // GetPage(
+    //     name: SankeyChartPageUrl,
+    //     page: () => const SankeyChartView(
+    //           expenses: [],
+    //         )),
   ];
 
   static const String LabPageUrl = "/lab";
@@ -137,4 +142,5 @@ abstract class Routers {
 
   static const String MedicalCardUrl = "/medical_card";
   static const String MoreFunctionPageUrl = "/more_function";
+  // static const String SankeyChartPageUrl = "/sankey_chart";
 }

@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/journal_nav_bar.dart';
 
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -10,7 +9,6 @@ class WebviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var url = Get.arguments['url'];
-    var title = Get.arguments['title'];
     WebViewController controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))

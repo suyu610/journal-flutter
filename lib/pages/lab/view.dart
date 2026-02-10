@@ -91,6 +91,12 @@ class LabPage extends GetView<LabController> {
                 onTap: () => controller.resetGuide(),
               ),
               Cell(
+                  title: "桑基图",
+                  icon: _buildIcon(Icons.refresh, appColors),
+                  onTap: () {
+                    controller.nav2SankeyChart();
+                  }),
+              Cell(
                 icon: _buildIcon(Icons.fitbit_sharp, appColors),
                 title: "鱼缸",
                 onTap: () {

@@ -80,6 +80,8 @@ dependencies:
   fl_chart: ^1.1.1
   remixicon: ^1.4.1
   reorderable_grid_view: ^2.2.0
+  sankey_flutter: ^0.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
