@@ -44,7 +44,7 @@ class JournalNavBar extends StatefulWidget implements PreferredSizeWidget {
     this.title = '',
     this.titleWidget,
     this.titleColor,
-    this.titleSize = 18,
+    this.titleSize = 16,
     this.titleFontWeight = FontWeight.w600,
     this.centerTitle = true,
     this.backgroundColor,

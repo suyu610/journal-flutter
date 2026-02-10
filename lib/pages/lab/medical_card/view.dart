@@ -82,7 +82,6 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
                     Positioned(
                       top: _cardHeight - 14, // 初始位置在出纸口附近
                       child: ClipRect(
-                        // 裁剪：防止纸张向上移动时从打印机顶部冒出来
                         child: AnimatedBuilder(
                           animation: _printAnimation,
                           builder: (context, child) {

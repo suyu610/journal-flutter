@@ -33,39 +33,43 @@ class WebviewPage extends StatelessWidget {
     controller.loadRequest(Uri.parse(url));
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: JournalNavBar(title: title),
-      body: GestureDetector(
-          onLongPressStart: (LongPressStartDetails longPress) async {
-            String imgUrl =
-                'document.elementFromPoint(${longPress.localPosition.dx}, ${longPress.localPosition.dy}).src';
-            controller.runJavaScriptReturningResult(imgUrl).then((value) async {
-              String _value = value.toString().replaceAll("\"", "");
-              if (_value.isNotEmpty) {
-                // Log().d('我获取到了====$_value');
-                // List<String> itemList = ["保存图片", "转发到微信"];
+      // appBar: JournalNavBar(title: title),
+      body: SafeArea(
+        child: GestureDetector(
+            onLongPressStart: (LongPressStartDetails longPress) async {
+              String imgUrl =
+                  'document.elementFromPoint(${longPress.localPosition.dx}, ${longPress.localPosition.dy}).src';
+              controller
+                  .runJavaScriptReturningResult(imgUrl)
+                  .then((value) async {
+                String _value = value.toString().replaceAll("\"", "");
+                if (_value.isNotEmpty) {
+                  // Log().d('我获取到了====$_value');
+                  // List<String> itemList = ["保存图片", "转发到微信"];
 
-                // ToastUtil.showBottomSheet(context, itemList, (index) {
-                //   if (index == 0) {
-                //     Log().d("index:$index");
-                //     // 保存图片
-                //     saveImage(_value);
-                //   }
+                  // ToastUtil.showBottomSheet(context, itemList, (index) {
+                  //   if (index == 0) {
+                  //     Log().d("index:$index");
+                  //     // 保存图片
+                  //     saveImage(_value);
+                  //   }
 
-                //   if (index == 1) {
-                //     Navigator.pop(context);
-                //     fluwx.share(WeChatShareImageModel(
-                //         WeChatImage.network(_value),
-                //         scene: WeChatScene.session,
-                //         title: "图片分享"));
-                //   }
-                // });
-              }
-            });
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: WebViewWidget(controller: controller),
-          )),
+                  //   if (index == 1) {
+                  //     Navigator.pop(context);
+                  //     fluwx.share(WeChatShareImageModel(
+                  //         WeChatImage.network(_value),
+                  //         scene: WeChatScene.session,
+                  //         title: "图片分享"));
+                  //   }
+                  // });
+                }
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: WebViewWidget(controller: controller),
+            )),
+      ),
     );
   }
 

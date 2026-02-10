@@ -9,6 +9,7 @@ import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'index.dart';
 
@@ -72,135 +73,162 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   // --- 头部区域 ---
+// --- 头部区域 ---
   Widget _buildHeaderSection(BuildContext context, AppThemeColors appColors) {
     var user = controller.user.value;
     bool isVip = user.vip;
 
-    return Container(
-      padding: EdgeInsets.only(
-          top: MediaQuery.of(context).padding.top + 20,
-          bottom: 20,
-          left: 24,
-          right: 24),
-      // 移除硬编码的 Colors.white，保持透明以展示页面背景，或者使用 cardBackground
-      // 这里建议透明，显得更通透
-      color: Colors.transparent,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 1. 头像区域
-          GestureDetector(
-            onTap: () => controller.changeUserAvatar(context),
-            child: Stack(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    // 边框颜色适配深色模式
-                    border: Border.all(
-                        color: appColors.secondaryText.withOpacity(0.2),
-                        width: 2),
-                  ),
-                  child: ClipOval(
-                    child: Image.network(
-                      user.avatarUrl,
-                      height: 64.r, // 稍微加大一点点
-                      width: 64.r,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                          color: appColors.chartPalette[4], // 使用主题盘里的浅色
-                          width: 64.r,
-                          height: 64.r),
-                    ),
-                  ),
-                ),
-                if (isVip)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                          color: appColors.cardBackground, // 适配背景
-                          shape: BoxShape.circle),
-                      child: const Icon(Icons.verified,
-                          size: 18, color: Color(0xFFD4AF37)),
-                    ),
-                  )
-              ],
-            ),
-          ),
-          const SizedBox(width: 20),
+    // 获取顶部安全区域高度，用于定位右上角按钮
+    final double paddingTop = MediaQuery.of(context).padding.top;
 
-          // 2. 右侧信息区域
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 第一行：昵称 + VIP徽章
-                Row(
+    return Stack(
+      children: [
+        // 1. 原有的内容容器
+        Container(
+          padding: EdgeInsets.only(
+              top: paddingTop + 20, // 保持原有的顶部内边距
+              bottom: 20,
+              left: 24,
+              right: 24),
+          color: Colors.transparent,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // --- 头像区域 (保持不变) ---
+              GestureDetector(
+                onTap: () => controller.changeUserAvatar(context),
+                child: Stack(
                   children: [
-                    Flexible(
-                      child: Text(
-                        user.nickname,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20.sp,
-                            color: appColors.primaryText), // 适配文字颜色
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: appColors.secondaryText.withOpacity(0.2),
+                            width: 2),
+                      ),
+                      child: ClipOval(
+                        child: Image.network(
+                          user.avatarUrl,
+                          height: 64.r,
+                          width: 64.r,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => Container(
+                              color: appColors.chartPalette[4],
+                              width: 64.r,
+                              height: 64.r),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    _buildVipBadge(isVip, appColors),
+                    if (isVip)
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                              color: appColors.cardBackground,
+                              shape: BoxShape.circle),
+                          child: const Icon(Icons.verified,
+                              size: 18, color: Color(0xFFD4AF37)),
+                        ),
+                      )
                   ],
                 ),
-                const SizedBox(height: 8),
+              ),
+              const SizedBox(width: 20),
 
-                // 第二行：ID 和 编辑
-                Row(
+              // --- 右侧信息区域 (保持不变) ---
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: user.userId))
-                            .then((v) {
-                          if (context.mounted) {
-                            JournalToast.showSuccess(context, "已复制");
-                          }
-                        });
-                      },
-                      child: Text("ID: ${user.userId}",
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: appColors.secondaryText, // 适配次要文字
-                              fontFamily: "DIN")),
+                    // 第一行：昵称 + VIP
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user.nickname,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20.sp,
+                                color: appColors.primaryText),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildVipBadge(isVip, appColors),
+                      ],
                     ),
-                    Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        width: 1,
-                        height: 10,
-                        color: appColors.secondaryText.withOpacity(0.3)),
-                    GestureDetector(
-                      onTap: () => _showEditNameDialog(context, user.nickname),
-                      child: Row(
-                        children: [
-                          Text("编辑",
+                    const SizedBox(height: 8),
+
+                    // 第二行：ID 和 编辑
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: user.userId))
+                                .then((v) {
+                              if (context.mounted) {
+                                JournalToast.showSuccess(context, "已复制");
+                              }
+                            });
+                          },
+                          child: Text("ID: ${user.userId}",
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: appColors.secondaryText)),
-                          Icon(Icons.navigate_next,
-                              size: 14, color: appColors.secondaryText)
-                        ],
-                      ),
-                    )
+                                  color: appColors.secondaryText,
+                                  fontFamily: "DIN")),
+                        ),
+                        Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            width: 1,
+                            height: 10,
+                            color: appColors.secondaryText.withOpacity(0.3)),
+                        GestureDetector(
+                          onTap: () =>
+                              _showEditNameDialog(context, user.nickname),
+                          child: Row(
+                            children: [
+                              Text("编辑",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: appColors.secondaryText)),
+                              Icon(Icons.navigate_next,
+                                  size: 14, color: appColors.secondaryText)
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+
+        // 2. 新增：右上角的主题切换按钮
+        Positioned(
+          top: paddingTop + 30, // 稍微向下偏移一点，避免贴着状态栏
+          right: 16, // 靠右距离
+          child: Opacity(
+            opacity: 0.5,
+            child: GestureDetector(
+              onTap: () => controller.showThemeDialog(context),
+              // 根据当前模式显示 太阳/月亮 图标
+              child: Icon(
+                Get.isDarkMode
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                size: 20,
+                color: appColors.primaryText.withOpacity(0.7), // 稍微淡一点的颜色
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -248,7 +276,7 @@ class ProfilePage extends GetView<ProfileController> {
             label: "实验室",
             appColors: appColors,
             onTap: () => Get.toNamed(Routers.LabPageUrl, arguments: {}),
-          ),
+          )
         ],
       ),
     );
@@ -302,39 +330,35 @@ class ProfilePage extends GetView<ProfileController> {
       child: CellGroup(
         children: [
           Cell(
-            title: "联系我们",
-            icon: _buildIcon(Icons.headset_mic_outlined, iconColor),
-            onTap: () => controller.contact(),
-          ),
-          Cell(
             icon: _buildIcon(Icons.star_outline_rounded, iconColor),
             title: "评价我们",
             onTap: () => controller.showRatingDialog(context),
           ),
           Cell(
-            icon: _buildIcon(Icons.dark_mode_outlined, iconColor),
-            title: "主题设置",
-            onTap: () => controller.showThemeDialog(context),
+            title: "联系我们",
+            icon: _buildIcon(Icons.headset_mic_outlined, iconColor),
+            onTap: () => controller.contact(),
           ),
           Cell(
-            icon: _buildIcon(Icons.privacy_tip_outlined, iconColor),
-            title: "隐私协议",
-            onTap: () {
-              Get.toNamed(Routers.WebViewPageUrl, arguments: {
-                "url": "https://blog.uuorb.com/archives/journal-privacy",
-                "title": "隐私协议"
-              });
-            },
+            title: "小组件",
+            icon: _buildIcon(Icons.widgets_outlined, iconColor),
+            onTap: () => Get.toNamed(Routers.WebViewPageUrl, arguments: {
+              "url": "https://journal.uuorb.com/widget_guide/",
+              "title": "小组件使用指南"
+            }),
           ),
           Cell(
-            icon: _buildIcon(Icons.logout, iconColor),
-            title: "退出登录",
-            onTap: () => controller.logout(context),
+            title: "开源地址",
+            icon: _buildIcon(Icons.card_giftcard_outlined, iconColor),
+            onTap: () => launchUrl(
+              Uri.parse("https://www.bilibili.com/video/BV1WbGBzcEec/"),
+              mode: LaunchMode.externalApplication,
+            ),
           ),
           Cell(
-            icon: _buildIcon(Icons.delete_outline, Colors.red.withOpacity(0.8)),
-            title: "注销账号",
-            onTap: () => controller.deleteAccount(context),
+            title: "更多功能",
+            icon: _buildIcon(Icons.zoom_out_map, iconColor),
+            onTap: () => Get.toNamed(Routers.MoreFunctionPageUrl),
           ),
         ],
       ),

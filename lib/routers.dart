@@ -8,7 +8,6 @@ import 'package:journal/pages/create_activity/view.dart';
 import 'package:journal/pages/expense/view.dart';
 import 'package:journal/pages/expense_category/view.dart';
 import 'package:journal/pages/expense_list/index.dart';
-import 'package:journal/pages/invite/index.dart';
 import 'package:journal/pages/join_activity/view.dart';
 import 'package:journal/pages/lab/bottle/view.dart';
 import 'package:journal/pages/lab/fish_tank/view.dart';
@@ -19,6 +18,7 @@ import 'package:journal/pages/login/binding.dart';
 import 'package:journal/pages/login/index.dart';
 import 'package:journal/pages/login/sms_code/binding.dart';
 import 'package:journal/pages/login/sms_code/view.dart';
+import 'package:journal/pages/more/view.dart';
 import 'package:journal/pages/splash/view.dart';
 import 'package:journal/pages/tabbar_layout/binding.dart';
 import 'package:journal/pages/tabbar_layout/view.dart';
@@ -88,7 +88,7 @@ abstract class Routers {
         page: () => const CodePage(),
         binding: CodeBinding()),
     GetPage(name: JoinActivityPageUrl, page: () => const JoinActivityPage()),
-    GetPage(name: InvitePageUrl, page: () => const InvitePage()),
+    GetPage(name: InvitePageUrl, page: () => const ReminderSettingsPage()),
     GetPage(name: ExpenseListPageUrl, page: () => const ExpenseListPage()),
     GetPage(
         name: LoginPageUrl,
@@ -120,6 +120,7 @@ abstract class Routers {
       page: () => const LocalServicePage(),
     ),
     GetPage(name: LabPageUrl, page: () => const LabPage()),
+    GetPage(name: MoreFunctionPageUrl, page: () => const MoreFunctionPage()),
     GetPage(
         name: ClassificationRulesPageUrl,
         page: () => const ClassificationRulesPage()),
@@ -135,4 +136,5 @@ abstract class Routers {
   static const String GrowingTreeUrl = "/growing_tree";
 
   static const String MedicalCardUrl = "/medical_card";
+  static const String MoreFunctionPageUrl = "/more_function";
 }

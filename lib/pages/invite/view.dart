@@ -24,7 +24,16 @@ class InvitePage extends GetView<InviteController> {
         return Scaffold(
           // 背景色跟随主题
           backgroundColor: appColors.backgroundColor,
-          appBar: const JournalNavBar(title: "邀请成员"), // 假设你的 NavBar 支持传入 title
+          appBar: JournalNavBar(
+            titleWidget: Text(
+              "邀请成员",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: "SmileySans",
+                  fontWeight: FontWeight.w500,
+                  color: appColors.primaryText), // 适配标题色
+            ),
+          ), // 假设你的 NavBar 支持传入 title
           body: SafeArea(
             child: Column(
               children: [
