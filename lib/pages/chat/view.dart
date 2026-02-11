@@ -104,60 +104,66 @@ class ChatPage extends GetView<ChatController> {
               // ==============================
               // 1.1 氛围光 (优化版)
               // ==============================
-              Positioned(
-                top: 80.h,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Obx(() {
-                    final originColor =
-                        controller.currentCharacter.value?.themeColor ??
-                            const Color(0xFFFF9A9E);
+              // ==============================
+              // 1.1 氛围光 (优化版)
+              // ==============================
+              Obx(() {
+                final char = controller.currentCharacter.value;
+                // 🔥 如果是 Empty，不显示氛围光
+                if (char?.id == "Empty") return const SizedBox.shrink();
 
-                    // 计算光晕颜色
-                    Color glowColor;
-                    double glowOpacity;
+                return Positioned(
+                  top: 80.h,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Builder(builder: (context) {
+                      // 使用 Builder 获取 context 里的 theme
+                      final originColor =
+                          char?.themeColor ?? const Color(0xFFFF9A9E);
+                      // ... (原本的颜色计算逻辑保持不变)
+                      Color glowColor = isDark
+                          ? Color.lerp(originColor, Colors.black, 0.5)!
+                          : originColor;
+                      double glowOpacity = isDark ? 0.2 : 0.4;
 
-                    if (isDark) {
-                      // 深色模式：颜色与黑色混合，降低饱和度
-                      glowColor = Color.lerp(originColor, Colors.black, 0.5)!;
-                      glowOpacity = 0.2; // 极其微弱的光，避免光污染
-                    } else {
-                      glowColor = originColor;
-                      glowOpacity = 0.4;
-                    }
-
-                    return ImageFiltered(
-                      imageFilter:
-                          ImageFilter.blur(sigmaX: 60, sigmaY: 60), // 模糊度加大
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeOut,
-                        width: 300.w,
-                        height: 300.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: glowColor.withOpacity(glowOpacity),
+                      return ImageFiltered(
+                        imageFilter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeOut,
+                          width: 300.w,
+                          height: 300.w,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: glowColor.withOpacity(glowOpacity),
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-
+                      );
+                    }),
+                  ),
+                );
+              }),
               // ==============================
               // 2. Live2D 人物层
               // ==============================
-              Obx(() => Positioned(
-                    top: 120.h,
-                    left: 0,
-                    right: 0,
-                    height: 0.65.sh,
-                    child: controller.isModelLoaded.value
-                        ? live2D("${LocalServer.baseUrl}/index.html")
-                        : const SizedBox(),
-                  )),
+              Obx(() {
+                final char = controller.currentCharacter.value;
+                // 🔥 如果是 Empty，彻底隐藏 Live2D
+                if (char?.id == "Empty") return const SizedBox.shrink();
 
+                return Positioned(
+                  top: 100.h,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: controller.isModelLoaded.value
+                      ? IgnorePointer(
+                          child: live2D("${LocalServer.baseUrl}/index.html"),
+                        )
+                      : const SizedBox(),
+                );
+              }),
               // ==================== 顶部状态气泡 ====================
               Positioned(
                 top: 60.h,

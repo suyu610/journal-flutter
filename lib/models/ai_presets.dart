@@ -28,6 +28,19 @@ class AICharacter {
 class CharacterPresets {
   static const List<AICharacter> list = [
     AICharacter(
+      id: "Empty",
+      name: "默认", // 或者叫 "智能助手" / "默认"
+      description: "剔除一切情感干扰，以绝对的理性和逻辑，为您提供最高效的财务支持。",
+      // 银灰渐变，给人冷静、客观的感觉，与粉色的 Hiyori 形成对比
+      bgColors: [Color(0xFFE0EAFC), Color(0xFFCFDEF3)],
+
+      themeColor: Color(0xFF546E7A), // 蓝灰色，稳重、专业
+      defaultSalutation: "主人", // 或者直接用 "您"
+      defaultRelationship: "记账助手",
+      defaultPersonality: "绝对理性", // 或者 "严谨"
+      defaultOpening: "系统已就绪。请下达记账指令。", // 简短、机械感、无废话
+    ),
+    AICharacter(
       id: "Hiyori",
       name: "元气管家·小日和",
       description: "充满活力的邻家妹妹，治愈你的每一笔烂账。",

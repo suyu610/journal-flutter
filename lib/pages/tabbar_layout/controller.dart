@@ -8,10 +8,12 @@ import 'package:journal/pages/activity_list/view.dart';
 import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/chat/view.dart';
 import 'package:journal/pages/current_activity/view.dart';
+import 'package:journal/pages/expense/view.dart';
 import 'package:journal/pages/profile/view.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/sp_util.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 class LayoutController extends GetxController {
   late PageController pageController;
@@ -34,7 +36,7 @@ class LayoutController extends GetxController {
 
   RxBool hideTabbar = false.obs;
 
-  void longPress(int index, AppTabItem tab) {
+  void longPress(int index, AppTabItem tab, BuildContext context) {
     if (tab.id == 'chat') {
       // 震动
       HapticFeedback.mediumImpact();
@@ -42,10 +44,23 @@ class LayoutController extends GetxController {
       if (user.value.currentActivityId == "") {
         Get.toNamed(Routers.CreateActivityUrl);
       } else {
-        Get.toNamed(Routers.ExpenseItemPageUrl, arguments: {
-          "mode": "create",
-          "activityId": user.value.currentActivityId
-        });
+        // Get.toNamed(Routers.ExpenseItemPageUrl, arguments: {
+        //   "mode": "create",
+        //   "activityId": user.value.currentActivityId
+        // });
+
+        showCupertinoModalBottomSheet(
+          expand: true, // 是否全屏展开
+          context: context,
+          barrierColor: Colors.black38,
+          settings: RouteSettings(
+            arguments: {
+              "mode": "create",
+              "activityId": user.value.currentActivityId
+            },
+          ),
+          builder: (context) => const ExpenseItemPage(),
+        );
       }
       return;
     } else {

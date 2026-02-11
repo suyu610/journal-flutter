@@ -172,12 +172,10 @@ class ChartsController extends GetxController {
     try {
       // 并行请求：个人列表 和 加入的列表
       final results = await Future.wait([
-        _getAsync("/activity/list"),
-        _getAsync("/activity/list/joined"),
+        _getAsync("/activity/list/all"),
       ]);
 
       var selfListRaw = results[0];
-      var joinedListRaw = results[1];
 
       List<Activity> mergedList = [];
 
@@ -187,10 +185,6 @@ class ChartsController extends GetxController {
       if (selfListRaw != null) {
         mergedList
             .addAll((selfListRaw as List).map((e) => Activity.fromJson(e)));
-      }
-      if (joinedListRaw != null) {
-        mergedList
-            .addAll((joinedListRaw as List).map((e) => Activity.fromJson(e)));
       }
 
       // 更新 currentActivity 对象状态
@@ -251,7 +245,30 @@ class ChartsController extends GetxController {
     }
   }
 
-  var isAnalyzing = false.obs; // 【新增】标记是否正在请求中
+  var isAnalyzing = false.obs;
+
+// 模拟数据源
+  bool hasClickedPrintToday = false; // 用户是否点击过
+
+  bool hasRecordToday = true; // 用户今日是否有记账
+
+  // 【核心逻辑】判断是否需要提醒
+  bool get shouldRemindPrint {
+    return false;
+    final now = DateTime.now();
+
+    // 1. 时间是否超过 21 点
+    bool isLate = now.hour >= 21;
+
+    // 2. 且用户没有点击过
+    bool notClicked = !hasClickedPrintToday;
+
+    // 3. 且用户今日有记账 (如果没有记账，打印也没数据，就不提醒了)
+    bool hasData = hasRecordToday;
+
+    return isLate && notClicked && hasData;
+  }
+
   void judgeActivity() {
     String currentId = _getCurrentActivityId();
     if (currentId.isEmpty) return;
@@ -384,7 +401,7 @@ class ChartsController extends GetxController {
 // 替换原来的 handlePrintAction
   void handlePrintAction(BuildContext context) async {
     JournalToast.showLoading(context);
-
+    hasClickedPrintToday = true;
     // 1. 获取数据
     List<Expense> expenseItems = await getTodayExpenseItemList(context) ?? [];
 

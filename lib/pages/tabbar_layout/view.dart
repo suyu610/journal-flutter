@@ -98,7 +98,7 @@ class _LayoutPageState extends State<LayoutPage>
               controller.jumpToPage(index, tab);
             },
             onLongPress: (index, tab) {
-              controller.longPress(index, tab);
+              controller.longPress(index, tab, context);
             },
           ));
     });

@@ -54,6 +54,8 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
   PreferredSizeWidget _buildAppBar(
       BuildContext context, AppThemeColors appColors) {
     return JournalNavBar(
+      height: 60,
+      useDefaultBack: true,
       backgroundColor: Colors.transparent,
       centerTitle: true,
       title: "记一笔",
@@ -61,8 +63,18 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
         if (controller.expense.value.expenseId.isNotEmpty)
           NavBarItem(
             onTap: () => controller.showDeleteDialog(context),
-            icon: Icons.delete_outline_rounded,
-            color: Colors.redAccent,
+            iconWidget: Container(
+              width: 60,
+              height: 35,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: Colors.redAccent,
+              ),
+            ),
           )
       ],
     );
@@ -170,7 +182,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                       cursorColor: appColors.primaryText,
                       controller: controller.expenseLabelTextEditController,
                       style: TextStyle(
-                          fontSize: 18.sp,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.w500,
                           color: appColors.primaryText),
                       decoration: InputDecoration(
@@ -180,7 +192,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                             color: appColors.secondaryText.withOpacity(0.5),
                             fontSize: 16.sp),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8.h),
+                        contentPadding: EdgeInsets.symmetric(vertical: 6.h),
                       ),
                       onChanged: (v) => controller.modifyExpenseLabel(v),
                     ),
@@ -458,7 +470,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
   Widget _buildImageGrid(BuildContext context, AppThemeColors appColors) {
     var expense = controller.expense.value;
     var fileList = expense.fileList ?? [];
-    double totalPadding = 18.w * 2 + 18.w * 2;
+    double totalPadding = 18.w * 2 + 18.w * 4.5;
     double itemWidth =
         (MediaQuery.of(context).size.width - totalPadding - 50) / 3;
 

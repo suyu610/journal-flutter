@@ -3,11 +3,12 @@ import 'package:get/get.dart';
 
 import 'package:journal/core/log.dart';
 import 'package:journal/models/expense.dart';
-import 'package:journal/routers.dart';
+import 'package:journal/pages/expense/view.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/icons.dart';
 import 'package:journal/util/toast_util.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 // 记账消息 - 暗黑科技风改造
 Widget buildExpenseMessage(types.Message message, controller, context) {
@@ -145,8 +146,19 @@ Widget buildExpenseMessage(types.Message message, controller, context) {
               onTap: () {
                 item['userNickname'] = "temp";
                 item['userAvatar'] = "";
-                Get.toNamed(Routers.ExpenseItemPageUrl,
-                    arguments: Expense.fromJson(item));
+
+                showCupertinoModalBottomSheet(
+                  expand: true, // 是否全屏展开
+                  context: context,
+                  barrierColor: Colors.black38,
+                  settings: RouteSettings(
+                    arguments: Expense.fromJson(item),
+                  ),
+                  builder: (context) => const ExpenseItemPage(),
+                );
+
+                // Get.toNamed(Routers.ExpenseItemPageUrl,
+                //     arguments: Expense.fromJson(item));
                 Log().d(item['expenseId']);
               },
             ),

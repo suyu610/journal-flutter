@@ -9,7 +9,8 @@ import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
-import 'package:journal/routers.dart';
+import 'package:journal/pages/expense/view.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 import 'index.dart';
 
@@ -175,7 +176,17 @@ class ExpenseListPage extends GetView<ExpenseListController> {
       Expense e, BuildContext context, AppThemeColors appColors) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(Routers.ExpenseItemPageUrl, arguments: e);
+        showCupertinoModalBottomSheet(
+          expand: true, // 是否全屏展开
+          context: context,
+          barrierColor: Colors.black38,
+          settings: RouteSettings(
+            arguments: e,
+          ),
+          builder: (context) => const ExpenseItemPage(),
+        );
+
+        // Get.toNamed(Routers.ExpenseItemPageUrl, arguments: e);
       },
       child: Container(
         color: appColors.cardBackground,

@@ -81,7 +81,8 @@ dependencies:
   remixicon: ^1.4.1
   reorderable_grid_view: ^2.2.0
   sankey_flutter: ^0.0.3
-
+  modal_bottom_sheet: ^3.0.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -92,6 +93,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/live2d/
     - assets/images/flame/
     - assets/images/
     - assets/images/playstore-icon.png

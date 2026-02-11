@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/models/expense.dart';
-import 'package:journal/routers.dart';
+import 'package:journal/pages/expense/index.dart';
 import 'package:journal/util/icons.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 // ignore: non_constant_identifier_names
 Widget ActivityExpenseItem(Expense e, BuildContext context) {
@@ -17,12 +17,20 @@ Widget ActivityExpenseItem(Expense e, BuildContext context) {
   return GestureDetector(
     behavior: HitTestBehavior.translucent,
     onTap: () {
-      Get.toNamed(Routers.ExpenseItemPageUrl, arguments: e);
+      showCupertinoModalBottomSheet(
+        topRadius: const Radius.circular(28),
+        expand: true, // 是否全屏展开
+        context: context,
+        barrierColor: Colors.black38,
+        settings: RouteSettings(
+          arguments: e, // 把参数放这里
+        ),
+        builder: (context) => const ExpenseItemPage(),
+      );
     },
     child: Container(
       width: double.infinity,
       color: Colors.transparent,
-      // 稍微增加底部间距，配合大圆角卡片
       margin: const EdgeInsets.only(bottom: 18),
       child: Row(
         mainAxisSize: MainAxisSize.min,

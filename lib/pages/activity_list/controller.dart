@@ -14,8 +14,9 @@ class ActivityListController extends GetxController {
   late ScrollController scrollController;
 
   initData() {
-    fetchSelfActivityList();
-    fetchJoinedActivityList();
+    // fetchSelfActivityList();
+    // fetchJoinedActivityList();
+    fetchAllActivityList();
   }
 
   RxList<Activity> activityList = <Activity>[].obs;
@@ -46,11 +47,11 @@ class ActivityListController extends GetxController {
     });
   }
 
-  void fetchSelfActivityList() {
-    Log().d("fetchSelfActivityList");
+  void fetchAllActivityList() {
+    Log().d("fetchAllActivityList");
     HttpRequest.request(
       Method.get,
-      "/activity/list",
+      "/activity/list/all",
       success: (data) {
         Log().d("activityList data: ${activityList.toString()}");
 
@@ -58,25 +59,6 @@ class ActivityListController extends GetxController {
             (data as List).map((e) => Activity.fromJson(e)).toList();
         refreshController.finishRefresh();
         refreshController.resetFooter();
-        update(["activity_list"]);
-      },
-      fail: (code, msg) {},
-    );
-  }
-
-  void fetchJoinedActivityList() {
-    Log().d("fetchJoinedActivityList");
-
-    HttpRequest.request(
-      Method.get,
-      "/activity/list/joined",
-      success: (data) {
-        joinedActivityList.value =
-            (data as List).map((e) => Activity.fromJson(e)).toList();
-
-        refreshController.finishRefresh();
-        refreshController.resetFooter();
-
         update(["activity_list"]);
       },
       fail: (code, msg) {},

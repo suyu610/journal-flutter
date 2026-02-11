@@ -33,7 +33,7 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
 
   // 状态
   double _paperHeight = 0.0;
-  final double _cardHeight = 180.0; // 打印机机身高度
+  final double _cardHeight = 140.0; // 打印机机身高度
   final double _cardWidth = 340.0; // 打印机/纸张宽度
 
   @override
@@ -189,36 +189,47 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle),
-                child: const Icon(Icons.print_rounded,
-                    color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("好享记账打印机",
-                      style: TextStyle(
-                          // fontFamily: "SmileySans",
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (context, _) => Text(
-                        _controller.isAnimating ? "Printing..." : "Ready",
-                        style: const TextStyle(
-                            color: Colors.white70, fontSize: 12)),
-                  ),
-                ],
-              ),
-            ],
+          GestureDetector(
+            onTap: () {
+              // controller.share();
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle),
+                      child: const Icon(Icons.print_rounded,
+                          color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("好享记账打印机",
+                            style: TextStyle(
+                                fontFamily: "SmileySans",
+                                color: Colors.white,
+                                fontSize: 15)),
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, _) => Text(
+                              _controller.isAnimating ? "Printing..." : "Ready",
+                              style: const TextStyle(
+                                  color: Colors.white70, fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Icon(Icons.share_outlined, color: Colors.white)
+              ],
+            ),
           ),
         ],
       ),

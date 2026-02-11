@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -77,10 +79,13 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
                 NavBarItem(
                   iconWidget: Hero(
                     tag: 'printer_hero_tag', // 【关键】必须和终点一致的唯一 Tag
-                    child: Icon(
-                      Icons.print_outlined,
-                      color: appColors.primaryText, // 确保有颜色，否则飞行时可能变色
-                      size: 24.sp,
+                    child: ShakeActor(
+                      active: controller.shouldRemindPrint, // 【关键】绑定逻辑条件
+                      child: Icon(
+                        Icons.print_outlined,
+                        color: appColors.primaryText, // 确保有颜色，否则飞行时可能变色
+                        size: 24.sp,
+                      ),
                     ),
                   ),
                   onTap: () => controller.handlePrintAction(context),
@@ -89,10 +94,10 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
             ),
 
             // 第二行：Tab 切换栏
-            Padding(
-              padding: EdgeInsets.only(bottom: 8.h), // 底部稍微留点空隙
-              child: _buildDimensionTabs(context),
-            ),
+            // Padding(
+            //   padding: EdgeInsets.only(bottom: 8.h), // 底部稍微留点空隙
+            //   child: _buildDimensionTabs(context),
+            // ),
           ],
         ),
       ),
@@ -173,5 +178,72 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   // 计算首选高度：NavBar(48) + Tab(36.h) + BottomPadding(8.h)
-  Size get preferredSize => Size.fromHeight(48 + 36.h + 8.h);
+  Size get preferredSize => Size.fromHeight(48 + 8.h); // + 36.h
+}
+
+class ShakeActor extends StatefulWidget {
+  final Widget child;
+  final bool active; // 是否激活摇晃
+  final Duration duration;
+
+  const ShakeActor({
+    Key? key,
+    required this.child,
+    this.active = false,
+    this.duration = const Duration(milliseconds: 2500), // 摇晃周期
+  }) : super(key: key);
+
+  @override
+  _ShakeActorState createState() => _ShakeActorState();
+}
+
+class _ShakeActorState extends State<ShakeActor>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    if (widget.active) _controller.repeat();
+  }
+
+  @override
+  void didUpdateWidget(ShakeActor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !oldWidget.active) {
+      _controller.repeat();
+    } else if (!widget.active && oldWidget.active) {
+      _controller.stop();
+      _controller.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 使用简单的旋转摇晃，模拟铃铛效果
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        if (!widget.active) return child!;
+
+        // 这是一个间歇性的摇晃曲线：摇晃几下 -> 停顿 -> 再摇晃
+        final sineValue = sin(4 * pi * _controller.value);
+        // 0.0 到 0.2 之间摇晃，其余时间静止，避免太烦人
+        final isShakingPhase = _controller.value < 0.2;
+
+        return Transform.rotate(
+          angle: isShakingPhase ? sineValue * 0.1 : 0, // 0.1 弧度约等于 5度
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
 }

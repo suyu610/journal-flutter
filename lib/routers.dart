@@ -5,9 +5,9 @@ import 'package:journal/pages/auto_write_intro/index.dart';
 import 'package:journal/pages/chat/view.dart';
 import 'package:journal/pages/classification_rules/view.dart';
 import 'package:journal/pages/create_activity/view.dart';
-import 'package:journal/pages/expense/view.dart';
 import 'package:journal/pages/expense_category/view.dart';
 import 'package:journal/pages/expense_list/index.dart';
+import 'package:journal/pages/invite/view.dart';
 import 'package:journal/pages/join_activity/view.dart';
 import 'package:journal/pages/lab/bottle/view.dart';
 import 'package:journal/pages/lab/fish_tank/view.dart';
@@ -42,7 +42,7 @@ abstract class Routers {
   static const String AIConfigPageUrl = "/ai_config";
   // 账单列表
   static const String ExpenseListPageUrl = "/expense_list";
-  static const String ExpenseItemPageUrl = "/expense_item";
+  // static const String ExpenseItemPageUrl = "/expense_item";
 
   // 邀请页面
   static const String InvitePageUrl = "/invite";
@@ -88,7 +88,7 @@ abstract class Routers {
         page: () => const CodePage(),
         binding: CodeBinding()),
     GetPage(name: JoinActivityPageUrl, page: () => const JoinActivityPage()),
-    GetPage(name: InvitePageUrl, page: () => const ReminderSettingsPage()),
+    GetPage(name: InvitePageUrl, page: () => const InvitePage()),
     GetPage(name: ExpenseListPageUrl, page: () => const ExpenseListPage()),
     GetPage(
         name: LoginPageUrl,
@@ -99,10 +99,10 @@ abstract class Routers {
       name: ActivityListPageUrl,
       page: () => const ActivityListPage(),
     ),
-    GetPage(
-      name: ExpenseItemPageUrl,
-      page: () => const ExpenseItemPage(),
-    ),
+    // GetPage(
+    //   name: ExpenseItemPageUrl,
+    //   page: () => const ExpenseItemPage(),
+    // ),
     GetPage(name: CreateActivityUrl, page: () => const CreateActivityPage()),
     GetPage(
         name: ReminderSettingsPageUrl,

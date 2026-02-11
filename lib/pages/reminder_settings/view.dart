@@ -12,15 +12,19 @@ class ReminderSettingsPage extends GetView<ReminderSettingsController> {
   Widget build(BuildContext context) {
     // 1. 获取主题颜色扩展
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
-
-    return Scaffold(
-      // 2. 适配背景色
-      backgroundColor: appColors.backgroundColor,
-      appBar: const JournalNavBar(title: "记账提醒"),
-      body: SafeArea(
-        child: _buildView(context, appColors),
-      ),
-    );
+    return GetBuilder<ReminderSettingsController>(
+        init: ReminderSettingsController(),
+        id: "reminder_settings",
+        builder: (_) {
+          return Scaffold(
+            // 2. 适配背景色
+            backgroundColor: appColors.backgroundColor,
+            appBar: const JournalNavBar(title: "记账提醒"),
+            body: SafeArea(
+              child: _buildView(context, appColors),
+            ),
+          );
+        });
   }
 
   Widget _buildView(BuildContext context, AppThemeColors appColors) {

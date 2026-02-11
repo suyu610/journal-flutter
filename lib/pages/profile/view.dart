@@ -356,8 +356,8 @@ class ProfilePage extends GetView<ProfileController> {
             ),
           ),
           Cell(
-            title: "更多功能",
-            icon: _buildIcon(Icons.zoom_out_map, iconColor),
+            title: "设置",
+            icon: _buildIcon(Icons.settings_outlined, iconColor),
             onTap: () => Get.toNamed(Routers.MoreFunctionPageUrl),
           ),
         ],
