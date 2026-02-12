@@ -59,6 +59,10 @@ PODS:
   - tencentcloud_cos_sdk_plugin (1.2.6):
     - Flutter
     - QCloudCOSXML (= 6.5.1)
+  - TPNS-iOS (1.4.0.7)
+  - tpns_flutter_plugin (1.3.8):
+    - Flutter
+    - TPNS-iOS (= 1.4.0.7)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -88,6 +92,7 @@ DEPENDENCIES:
   - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - tencentcloud_cos_sdk_plugin (from `.symlinks/plugins/tencentcloud_cos_sdk_plugin/ios`)
+  - tpns_flutter_plugin (from `.symlinks/plugins/tpns_flutter_plugin/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
@@ -100,6 +105,7 @@ SPEC REPOS:
     - QCloudCore
     - QCloudCOSXML
     - QCloudTrack
+    - TPNS-iOS
 
 EXTERNAL SOURCES:
   audio_session:
@@ -140,6 +146,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   tencentcloud_cos_sdk_plugin:
     :path: ".symlinks/plugins/tencentcloud_cos_sdk_plugin/ios"
+  tpns_flutter_plugin:
+    :path: ".symlinks/plugins/tpns_flutter_plugin/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   video_player_avfoundation:
@@ -173,6 +181,8 @@ SPEC CHECKSUMS:
   speech_to_text: 3b313d98516d3d0406cea424782ec25470c59d19
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   tencentcloud_cos_sdk_plugin: b7a4260f562e220cdb3933b881e092199a3e43f8
+  TPNS-iOS: 216381625307624cbb740dba261a9e045db083c0
+  tpns_flutter_plugin: eb03034992303fb1abdb96d8cd93da940f165c3f
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d

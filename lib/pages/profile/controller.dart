@@ -18,6 +18,7 @@ import 'package:journal/util/cos.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/media_util.dart';
 import 'package:journal/util/sp_util.dart';
+import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 
 class ProfileController extends GetxController {
   var nicknameTextEditController = TextEditingController();
@@ -131,6 +132,8 @@ class ProfileController extends GetxController {
       onConfirm: () {
         SpUtil.removeToken();
         Get.offAllNamed('/login');
+        final XgFlutterPlugin tpush = XgFlutterPlugin();
+        tpush.cleanAccounts();
       },
     );
   }
@@ -139,6 +142,8 @@ class ProfileController extends GetxController {
     JournalDialog.show(context, title: "确认注销账号？", onConfirm: () {
       SpUtil.removeToken();
       Get.offAllNamed('/login');
+      final XgFlutterPlugin tpush = XgFlutterPlugin();
+      tpush.cleanAccounts();
     });
   }
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -13,15 +15,81 @@ import 'package:journal/pages/expense/view.dart';
 import 'package:journal/pages/profile/view.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
-import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 
 class LayoutController extends GetxController {
   late PageController pageController;
+  final XgFlutterPlugin tpush = XgFlutterPlugin();
 
   RxMap systemConfig = {}.obs;
-// 1. 定义全量 Tab 池 (注意顺序)
+
+  // 推送相关
+  Future<void> initPlatformState(String userId) async {
+    /// 开启DEBUG
+    tpush.setEnableDebug(true);
+    tpush.setAccount(userId, AccountType.UNKNOWN);
+
+    /// 添加回调事件
+    tpush.addEventHandler(
+      /// TPNS注册失败会走此回调
+      onRegisteredDeviceToken: (String msg) async {
+        print("[push] onRegisteredDeviceToken: $msg");
+      },
+
+      /// TPNS注册成功会走此回调
+      onRegisteredDone: (String msg) async {
+        HttpRequest.request(Method.post, "/user/device?deviceId=$msg");
+      },
+      unRegistered: (String msg) async {
+        print("[push] unRegistered: $msg");
+      },
+      onReceiveNotificationResponse: (Map<String, dynamic> msg) async {
+        print("[push] onReceiveNotificationResponse $msg");
+      },
+      onReceiveMessage: (Map<String, dynamic> msg) async {},
+      xgPushNetworkConnected: (String msg) async {
+        print("[push] xgPushNetworkConnected: $msg");
+      },
+      xgPushDidSetBadge: (String msg) async {
+        print("[push] xgPushDidSetBadge: $msg");
+
+        // _showAlert(msg);
+      },
+
+      /// V1.2.8开始返回类型由String->Map，新增code及type标识！
+      xgPushDidBindWithIdentifier: (Map<String, dynamic> result) async {
+        print("[push] xgPushDidBindWithIdentifier: $result");
+
+        // _showAlert(result["msg"]);
+      },
+
+      /// V1.2.8开始返回类型由String->Map，新增code及type标识！
+      xgPushDidUnbindWithIdentifier: (Map<String, dynamic> result) async {},
+
+      /// V1.2.8开始返回类型由String->Map，新增code及type标识！
+      xgPushDidUpdatedBindedIdentifier: (Map<String, dynamic> result) async {},
+
+      /// V1.2.8开始返回类型由String->Map，新增code及type标识！
+      xgPushDidClearAllIdentifiers: (Map<String, dynamic> result) async {},
+      xgPushClickAction: (Map<String, dynamic> msg) async {
+        print("[push] xgPushClickAction: $msg");
+        print(msg["custom"]);
+      },
+    );
+
+    tpush.configureClusterDomainName("tpns.sh.tencent.com");
+
+    if (Platform.isIOS) {
+      tpush.startXg("1680021651", "IFZ9SASOVVI9");
+    } else {
+      // todo: 还未适配安卓
+      // tpush.startXg("1500004343", "ANCVHDQ0DO3E");
+    }
+  }
+
+  // 1. 定义全量 Tab 池 (注意顺序)
   // 这里把所有可能的页面都列出来
   late List<AppTabItem> allTabsPool;
 
@@ -46,11 +114,6 @@ class LayoutController extends GetxController {
       if (user.value.currentActivityId == "") {
         Get.toNamed(Routers.CreateActivityUrl);
       } else {
-        // Get.toNamed(Routers.ExpenseItemPageUrl, arguments: {
-        //   "mode": "create",
-        //   "activityId": user.value.currentActivityId
-        // });
-
         showCupertinoModalBottomSheet(
           expand: true, // 是否全屏展开
           context: context,
@@ -201,11 +264,7 @@ class LayoutController extends GetxController {
         user.value = User.fromJson(data as Map<String, dynamic>);
         // 获取完用户信息后，一定要手动刷新一次 Tab，因为 VIP 状态可能变了
         _refreshActiveTabs();
-
-        // TencentCloudChatPush().getRegistrationID().then((v) {
-        //   String deviceId = v.data;
-        //   HttpRequest.request(Method.post, "/user/device?deviceId=$deviceId");
-        // });
+        initPlatformState(user.value.userId);
       },
       fail: (code, msg) => Log().d(msg),
     );

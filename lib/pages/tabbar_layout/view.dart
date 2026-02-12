@@ -1,15 +1,21 @@
 // view.dart
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/app_theme_colors.dart';
 
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/pages/tabbar_layout/custom_bottom_bar.dart';
+import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/services/guide_manager.dart';
 import 'package:journal/services/widget_service.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 
 class LayoutPage extends StatefulWidget {
   const LayoutPage({super.key});
@@ -21,6 +27,7 @@ class LayoutPage extends StatefulWidget {
 class _LayoutPageState extends State<LayoutPage>
     with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final GlobalKey _addBtnKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();

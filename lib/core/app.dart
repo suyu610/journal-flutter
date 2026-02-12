@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,6 +15,7 @@ import 'package:journal/routers.dart';
 import 'package:journal/services/notification_service.dart';
 import 'package:journal/util/keyboard_util.dart';
 import 'package:journal/util/sp_util.dart';
+import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 
 /// 环境类型
 enum Env { qa, beta, mp }

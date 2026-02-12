@@ -82,7 +82,11 @@ dependencies:
   reorderable_grid_view: ^2.2.0
   sankey_flutter: ^0.0.3
   modal_bottom_sheet: ^3.0.0
-  
+  tpns_flutter_plugin:
+    git:
+      url: https://github.com/TencentCloud/TPNS-Flutter-Plugin
+      ref: V1.3.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
