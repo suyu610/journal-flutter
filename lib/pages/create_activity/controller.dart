@@ -157,7 +157,7 @@ class CreateActivityController extends GetxController {
   }
 
   void exitActivity(context) {
-    PremiumGlassDialog.show(context, title: "确认退出账本吗？", onConfirm: () {
+    JournalDialog.show(context, title: "确认退出账本吗？", onConfirm: () {
       HttpRequest.request(
         Method.post,
         "/activity/exit/${activity.value.activityId}",

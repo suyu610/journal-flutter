@@ -18,19 +18,21 @@ class TrendChartCard extends GetView<ChartsController> {
       id: "charts",
       builder: (_) {
         final dailyData = controller.charts;
+        // 1. 获取上周数据
+        final lastWeekData = controller.lastWeekCharts;
+
         if (dailyData.isEmpty) return const SizedBox.shrink();
 
-        final maxVal = _calculateMaxYAxis(dailyData);
+        // 2. 计算最大值时，同时考虑两组数据
+        final maxVal = _calculateMaxYAxis(dailyData, lastWeekData);
         if (maxVal <= 0) return const SizedBox.shrink();
 
-        // 获取开关状态
         final bool showLabels = controller.trendShowLabels.value;
 
         return ChartCardContainer(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 标题与开关
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -52,11 +54,12 @@ class TrendChartCard extends GetView<ChartsController> {
                 ],
               ),
               const SizedBox(height: 24),
-              // 图表主体
               AspectRatio(
                 aspectRatio: 1.70,
                 child: LineChart(
-                  _mainData(dailyData, maxVal, appColors, showLabels),
+                  // 3. 传入两组数据
+                  _mainData(
+                      dailyData, lastWeekData, maxVal, appColors, showLabels),
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 ),
@@ -68,17 +71,23 @@ class TrendChartCard extends GetView<ChartsController> {
     );
   }
 
-  // 构建图表核心数据配置
-  LineChartData _mainData(List<dynamic> data, double maxVal,
-      AppThemeColors appColors, bool showLabels) {
+  LineChartData _mainData(
+      List<dynamic> currentData,
+      List<dynamic> lastWeekData, // 新增参数
+      double maxVal,
+      AppThemeColors appColors,
+      bool showLabels) {
     final budgetColor = (appColors.dangerColor).withOpacity(0.5);
     final mainColor = appColors.chartPalette.isNotEmpty
         ? appColors.chartPalette[0]
         : appColors.primaryText;
 
-    // 1. 定义消费曲线的数据 (为了后面引用，先提取出来)
-    final consumptionLineBarData = LineChartBarData(
-      spots: data.asMap().entries.map((e) {
+    // 上周数据的颜色（灰色，低调显示）
+    final lastWeekColor = appColors.secondaryText.withOpacity(0.4);
+
+    // --- A. 构建本周数据线 (Current Week) ---
+    final currentLineBarData = LineChartBarData(
+      spots: currentData.asMap().entries.map((e) {
         return FlSpot(e.key.toDouble(), e.value.doubleValue);
       }).toList(),
       isCurved: true,
@@ -86,20 +95,17 @@ class TrendChartCard extends GetView<ChartsController> {
       color: mainColor,
       barWidth: 3,
       isStrokeCapRound: true,
-
-      // === 关键修改：空心点配置 ===
       dotData: FlDotData(
-        show: true, // 始终显示点
+        show: true,
         getDotPainter: (spot, percent, barData, index) {
           return FlDotCirclePainter(
-            radius: showLabels ? 2 : 0, // 点的大小
-            color: appColors.cardBackground, // 核心：内部颜色=背景色=空心效果
-            strokeWidth: showLabels ? 2.5 : 0, // 边框粗细
-            strokeColor: mainColor, // 边框颜色
+            radius: showLabels ? 2 : 0,
+            color: appColors.cardBackground,
+            strokeWidth: showLabels ? 2.5 : 0,
+            strokeColor: mainColor,
           );
         },
       ),
-
       belowBarData: BarAreaData(
         show: true,
         gradient: LinearGradient(
@@ -113,15 +119,64 @@ class TrendChartCard extends GetView<ChartsController> {
       ),
     );
 
-    // 2. 生成强制显示的 Tooltip 指示器 (当开关打开时)
+    // --- B. 构建上周数据线 (Last Week) ---
+    LineChartBarData? lastWeekLineBarData;
+    if (lastWeekData.isNotEmpty) {
+      lastWeekLineBarData = LineChartBarData(
+        spots: lastWeekData.asMap().entries.map((e) {
+          return FlSpot(e.key.toDouble(), e.value.doubleValue);
+        }).toList(),
+        isCurved: true,
+        curveSmoothness: 0.3,
+        color: lastWeekColor, // 灰色
+        barWidth: 2, // 稍微细一点
+        isStrokeCapRound: true,
+        dashArray: [5, 5], // 虚线效果
+        dotData: const FlDotData(show: false), // 不显示点，避免喧宾夺主
+      );
+    }
+
+    // --- C. 构建 LineBars 列表 (注意顺序：底层 -> 顶层) ---
+    final List<LineChartBarData> lineBars = [];
+
+    // Index 0: 预算线
+    lineBars.add(
+      LineChartBarData(
+        spots: List.generate(currentData.length, (index) {
+          return FlSpot(index.toDouble(), controller.dailyBudgetValue);
+        }),
+        isCurved: false,
+        color: budgetColor,
+        barWidth: 2,
+        isStrokeCapRound: true,
+        dashArray: [5, 5],
+        dotData: const FlDotData(show: false),
+      ),
+    );
+
+    // Index 1: 上周 (如果存在)
+    if (lastWeekLineBarData != null) {
+      lineBars.add(lastWeekLineBarData);
+    }
+
+    // Index 2 (or 1): 本周 (最顶层)
+    lineBars.add(currentLineBarData);
+
+    // 动态获取本周数据在列表中的索引，用于 Tooltip 匹配
+    final currentWeekIndex = lineBars.indexOf(currentLineBarData);
+    final lastWeekIndex = lastWeekLineBarData != null
+        ? lineBars.indexOf(lastWeekLineBarData)
+        : -1;
+
+    // 生成常驻标签 (仅针对本周数据)
     List<ShowingTooltipIndicators> showingTooltipIndicators = [];
     if (showLabels) {
-      showingTooltipIndicators = data.asMap().entries.map((entry) {
+      showingTooltipIndicators = currentData.asMap().entries.map((entry) {
         return ShowingTooltipIndicators([
           LineBarSpot(
-            consumptionLineBarData,
-            1,
-            consumptionLineBarData.spots[entry.key],
+            currentLineBarData,
+            currentWeekIndex, // 必须匹配 lineBarsData 中的索引
+            currentLineBarData.spots[entry.key],
           ),
         ]);
       }).toList();
@@ -152,11 +207,11 @@ class TrendChartCard extends GetView<ChartsController> {
             interval: 1,
             getTitlesWidget: (value, meta) {
               final index = value.toInt();
-              if (index >= 0 && index < data.length) {
+              if (index >= 0 && index < currentData.length) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    data[index].name,
+                    currentData[index].name,
                     style: TextStyle(
                       color: appColors.secondaryText,
                       fontWeight: FontWeight.w500,
@@ -172,14 +227,12 @@ class TrendChartCard extends GetView<ChartsController> {
       ),
       borderData: FlBorderData(show: false),
       minX: 0,
-      maxX: (data.length - 1).toDouble(),
+      maxX: (currentData.length - 1).toDouble(),
       minY: 0,
       maxY: maxVal,
       showingTooltipIndicators: showingTooltipIndicators,
       lineTouchData: LineTouchData(
-        // 如果开启了显示标签，禁用触摸交互，避免冲突（或者你可以保留，看需求）
         handleBuiltInTouches: !showLabels,
-
         getTouchedSpotIndicator:
             (LineChartBarData barData, List<int> spotIndexes) {
           return spotIndexes.map((spotIndex) {
@@ -189,36 +242,55 @@ class TrendChartCard extends GetView<ChartsController> {
                 strokeWidth: 2,
                 dashArray: [5, 5],
               ),
-              const FlDotData(show: false), // 触摸时不额外画大圆点了，因为我们有点了
+              const FlDotData(show: false),
             );
           }).toList();
         },
-
         touchTooltipData: LineTouchTooltipData(
-          // 技巧：如果开关打开，背景透明；如果开关关闭(手按)，背景深色
           getTooltipColor: (_) => showLabels
               ? Colors.transparent
               : appColors.primaryText.withOpacity(0.9),
-
           tooltipPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          // 调整 margin 让文字离点近一点
           tooltipMargin: showLabels ? 2 : 16,
-
           getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+            // 对 Tooltip 排序，让本周的数据显示在前面（或者按 Y 轴大小）
+            // 这里我们保持默认顺序 (按 lineBarsData 顺序)
+
             return touchedBarSpots.map((barSpot) {
-              final flSpot = barSpot;
+              // 1. 忽略预算线
               if (barSpot.barIndex == 0) return null;
 
-              final textColor =
-                  showLabels ? appColors.primaryText : appColors.cardBackground;
+              // 2. 判断是本周还是上周
+              final isCurrentWeek = barSpot.barIndex == currentWeekIndex;
+              final isLastWeek = barSpot.barIndex == lastWeekIndex;
+
+              // 样式配置
+              Color textColor;
+              String prefix = "";
+
+              if (showLabels) {
+                // 如果标签常驻模式，只显示数字，无需前缀，颜色跟随主题
+                textColor = appColors.primaryText;
+              } else {
+                // 触摸模式：白色文字 (背景是深色)
+                // 为了区分，可以给上周的数据稍微暗一点的颜色，或者都用 cardBackground
+                textColor = appColors.cardBackground;
+                if (isLastWeek) {
+                  prefix = "上周: ";
+                  textColor = appColors.cardBackground.withOpacity(0.7);
+                }
+                // 本周不加前缀，或者加 "本周:" 也可以，看喜好。
+                // 这里保持简洁，不加本周前缀，只加该死的上周前缀区分
+              }
 
               return LineTooltipItem(
-                '¥${flSpot.y.toStringAsFixed(1)}', // 这里的 1 可以改为 0 去掉小数位
+                '$prefix¥${barSpot.y.toStringAsFixed(1)}',
                 TextStyle(
                   color: textColor,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'SourceCodePro', // 保持数字字体风格
+                  fontWeight:
+                      isCurrentWeek ? FontWeight.bold : FontWeight.normal,
+                  fontFamily: 'SourceCodePro',
                   fontSize: 12.sp,
                 ),
               );
@@ -226,34 +298,31 @@ class TrendChartCard extends GetView<ChartsController> {
           },
         ),
       ),
-      lineBarsData: [
-        // A. 预算线 (index 0)
-        LineChartBarData(
-          spots: List.generate(data.length, (index) {
-            return FlSpot(index.toDouble(), controller.dailyBudgetValue);
-          }),
-          isCurved: false,
-          color: budgetColor,
-          barWidth: 2,
-          isStrokeCapRound: true,
-          dashArray: [5, 5],
-          dotData: const FlDotData(show: false),
-        ),
-
-        // B. 消费线 (index 1) - 使用上面定义好的变量
-        consumptionLineBarData,
-      ],
+      // 核心：使用组装好的 lineBars
+      lineBarsData: lineBars,
     );
   }
 
-  // 辅助方法保持不变...
-  double _calculateMaxYAxis(List<dynamic> data) {
-    if (data.isEmpty) return 0;
-    double maxDataVal =
-        data.map((e) => e.doubleValue).reduce((a, b) => a > b ? a : b);
+  double _calculateMaxYAxis(
+      List<dynamic> currentData, List<dynamic> lastWeekData) {
+    if (currentData.isEmpty) return 0;
+
+    // 辅助函数：找最大值
+    double getMax(List<dynamic> list) {
+      if (list.isEmpty) return 0.0;
+      return list.map((e) => e.doubleValue).reduce((a, b) => a > b ? a : b);
+    }
+
+    double maxCurrent = getMax(currentData);
+    double maxLast = getMax(lastWeekData);
+
+    // 取两组数据中最大的那个
+    double maxDataVal = maxCurrent > maxLast ? maxCurrent : maxLast;
+
     double maxVal = maxDataVal > controller.dailyBudgetValue
         ? maxDataVal
         : controller.dailyBudgetValue;
+
     if (maxVal == 0) return 100;
     return maxVal * 1.2;
   }

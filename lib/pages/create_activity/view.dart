@@ -147,7 +147,7 @@ class CreateActivityPage extends GetView<CreateActivityController> {
             text: "删除账本",
             type: JournalButtonType.outline,
             onTap: () {
-              PremiumGlassDialog.show(context,
+              JournalDialog.show(context,
                   title: "确认删除此账本？",
                   content:
                       "请输入账本名【${controller.activity.value.activityName}】，以继续删除",

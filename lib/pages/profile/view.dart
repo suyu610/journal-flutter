@@ -427,7 +427,7 @@ class ProfilePage extends GetView<ProfileController> {
   // 辅助方法
   void _showEditNameDialog(BuildContext context, String currentName) {
     controller.nicknameTextEditController.text = currentName;
-    PremiumGlassDialog.show(context,
+    JournalDialog.show(context,
         title: "修改昵称",
         textInputAction: TextInputAction.done,
         confirmText: "确认", onConfirmWithInput: (v) {

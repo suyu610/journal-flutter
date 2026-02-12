@@ -77,7 +77,7 @@ class MediaHelper {
   }
 
   static void _showPermissionDialog(BuildContext context) {
-    PremiumGlassDialog.show(
+    JournalDialog.show(
       context,
       title: "权限提示",
       content: "希望读取你的相册，用于上传图片",

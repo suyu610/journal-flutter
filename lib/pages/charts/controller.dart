@@ -51,6 +51,8 @@ class ChartsController extends GetxController {
   RxString judgeString = "".obs;
   double dailyBudgetValue = 0.0;
   RxList<ChartDataModel> charts = RxList<ChartDataModel>.empty(growable: true);
+  RxList<ChartDataModel> lastWeekCharts =
+      RxList<ChartDataModel>.empty(growable: true);
 
   RxList<ChartDataModel> groupByTypeCharts =
       RxList<ChartDataModel>.empty(growable: true);
@@ -108,7 +110,6 @@ class ChartsController extends GetxController {
         );
       }
       calendarData.value = newMap; // 更新数据
-      print("calendarData: $calendarData");
       update(["calendar_chart", "charts"]);
     } catch (e) {
       Log().d("加载日历数据失败: $e");
@@ -215,6 +216,7 @@ class ChartsController extends GetxController {
         _getAsync("/charts/weekly/$currentId"), // Index 1
         _getAsync("/charts/weekly/type/$currentId"), // Index 2
         _getAsync("/activity/search/$currentId"), // Index 3
+        _getAsync("/charts/weekly/lastWeek/$currentId"), // Index 4
       ]);
 
       // 处理 AI Judge
@@ -222,6 +224,11 @@ class ChartsController extends GetxController {
       // 处理 Weekly Charts
       if (results[0] != null) {
         charts.value = (results[0] as List)
+            .map((e) => ChartDataModel.fromJson(e))
+            .toList();
+      }
+      if (results[3] != null) {
+        lastWeekCharts.value = (results[3] as List)
             .map((e) => ChartDataModel.fromJson(e))
             .toList();
       }

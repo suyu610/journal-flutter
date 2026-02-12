@@ -124,7 +124,7 @@ class ProfileController extends GetxController {
   }
 
   void logout(context) {
-    PremiumGlassDialog.show(
+    JournalDialog.show(
       context,
       title: "确认退出登录？",
       content: "确定要退出当前账号吗？退出后无法收到新消息通知。",
@@ -136,7 +136,7 @@ class ProfileController extends GetxController {
   }
 
   void deleteAccount(BuildContext context) {
-    PremiumGlassDialog.show(context, title: "确认注销账号？", onConfirm: () {
+    JournalDialog.show(context, title: "确认注销账号？", onConfirm: () {
       SpUtil.removeToken();
       Get.offAllNamed('/login');
     });

@@ -170,7 +170,7 @@ Widget buildExpenseMessage(types.Message message, controller, context) {
               bgColor: const Color(0xFFFF5252).withOpacity(0.1), // 半透红底
               onTap: () {
                 ToastUtil.lightImpact();
-                PremiumGlassDialog.show(Get.context!,
+                JournalDialog.show(Get.context!,
                     title: "删除提示", content: "确认删除这条账单吗？", onConfirm: () {
                   controller.deleteExpense(item['expenseId']);
                 }, onCancel: () {

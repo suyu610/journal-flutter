@@ -180,7 +180,7 @@ class ExpensePageController extends GetxController {
   }
 
   void showDeleteDialog(BuildContext context) {
-    PremiumGlassDialog.show(context, title: "确认删除", content: "删除后无法恢复，确定要继续吗？",
+    JournalDialog.show(context, title: "确认删除", content: "删除后无法恢复，确定要继续吗？",
         onConfirm: () {
       Navigator.pop(context); // 关弹窗
       deleteExpenseItem(); // 执行删除

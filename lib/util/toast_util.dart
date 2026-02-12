@@ -92,7 +92,7 @@ class ToastUtil {
 
   static void showUpgradeDialog(
       String version, currentVersion, void Function() upgradeFromAppStore) {
-    PremiumGlassDialog.show(
+    JournalDialog.show(
       Get.context!,
       title: "检测到新版本\n$version",
       content: "修复若干bug，建议更新",

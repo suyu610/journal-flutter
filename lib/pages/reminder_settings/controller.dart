@@ -48,7 +48,7 @@ class ReminderSettingsController extends GetxController {
   }
 
   void removeTime(String time, BuildContext context) {
-    PremiumGlassDialog.show(
+    JournalDialog.show(
       context,
       title: "确认删除",
       content: "确定要删除 $time 的提醒吗？",

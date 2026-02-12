@@ -445,7 +445,7 @@ class ChatController extends GetxController {
 
   // 播放音频
   void tts(String text, BuildContext context) {
-    PremiumGlassDialog.show(context, title: "播放语音？", onConfirm: () {
+    JournalDialog.show(context, title: "播放语音？", onConfirm: () {
       Get.back();
       JournalToast.showLoading(context);
       HttpRequest.request(Method.get,

@@ -155,7 +155,7 @@ class ExpenseTypePickerController extends GetxController {
   }
 
   void onAddTapCategory(bool isExpense, BuildContext context) {
-    PremiumGlassDialog.show(context,
+    JournalDialog.show(context,
         title: "新建类别",
         content: "请输入类别名称",
         textInputAction: TextInputAction.done,

@@ -282,7 +282,7 @@ class ExpenseCategoryPage extends GetView<ExpenseTypePickerController> {
   // 显示删除确认框
   void _showDeleteDialog(BuildContext context, bool isExpense,
       Map<String, dynamic> item, ExpenseTypePickerController controller) {
-    PremiumGlassDialog.show(context,
+    JournalDialog.show(context,
         title: "删除分类", content: "确定要删除“${item['labelName']}”吗？", onConfirm: () {
       controller.deleteCategory(
           isExpense, item['id'], item['labelName'], context);

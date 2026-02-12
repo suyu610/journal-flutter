@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/app_tab_item.dart';
 import 'package:journal/models/user.dart';
@@ -12,6 +13,7 @@ import 'package:journal/pages/expense/view.dart';
 import 'package:journal/pages/profile/view.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
@@ -199,6 +201,11 @@ class LayoutController extends GetxController {
         user.value = User.fromJson(data as Map<String, dynamic>);
         // 获取完用户信息后，一定要手动刷新一次 Tab，因为 VIP 状态可能变了
         _refreshActiveTabs();
+
+        // TencentCloudChatPush().getRegistrationID().then((v) {
+        //   String deviceId = v.data;
+        //   HttpRequest.request(Method.post, "/user/device?deviceId=$deviceId");
+        // });
       },
       fail: (code, msg) => Log().d(msg),
     );

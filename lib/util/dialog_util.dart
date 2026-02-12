@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 
-class PremiumGlassDialog extends StatefulWidget {
+class JournalDialog extends StatefulWidget {
   final String? title;
   final String? content;
   final String cancelText;
@@ -18,7 +18,7 @@ class PremiumGlassDialog extends StatefulWidget {
   final String? inputHintText;
   final TextInputAction? textInputAction;
 
-  const PremiumGlassDialog({
+  const JournalDialog({
     Key? key,
     this.title,
     this.content,
@@ -53,7 +53,7 @@ class PremiumGlassDialog extends StatefulWidget {
       barrierColor: Colors.black.withOpacity(0.6), // 深色遮罩稍微加深一点，更聚焦
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, anim1, anim2) {
-        return PremiumGlassDialog(
+        return JournalDialog(
           title: title,
           content: content,
           cancelText: cancelText,
@@ -84,10 +84,10 @@ class PremiumGlassDialog extends StatefulWidget {
   }
 
   @override
-  State<PremiumGlassDialog> createState() => _PremiumGlassDialogState();
+  State<JournalDialog> createState() => _JournalDialogState();
 }
 
-class _PremiumGlassDialogState extends State<PremiumGlassDialog> {
+class _JournalDialogState extends State<JournalDialog> {
   late TextEditingController _textController;
 
   @override
