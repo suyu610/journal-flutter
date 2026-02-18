@@ -227,7 +227,7 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
                     ),
                   ],
                 ),
-                Icon(Icons.share_outlined, color: Colors.white)
+                const Icon(Icons.share_outlined, color: Colors.white)
               ],
             ),
           ),

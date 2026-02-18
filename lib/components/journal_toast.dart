@@ -36,7 +36,7 @@ class JournalToast {
       context,
       _ToastWidget(
         text: text,
-        icon: Icons.check_circle_rounded,
+        icon: Icons.check,
         iconColor: Colors.white,
         type: _ToastType.success,
       ),
@@ -77,7 +77,7 @@ class JournalToast {
         text: text,
         type: _ToastType.loading,
       ),
-      duration: const Duration(hours: 1), // 极长时间，直到手动关闭
+      duration: const Duration(seconds: 20), // 极长时间，直到手动关闭
       preventTap: preventTap,
     );
   }
@@ -119,7 +119,7 @@ class JournalToast {
     _isVisible = true;
 
     // 只有非 Loading 状态才自动倒计时关闭
-    if (duration < const Duration(hours: 1)) {
+    if (duration < const Duration(seconds: 20)) {
       _dismissTimer = Timer(duration, () {
         dismiss();
       });

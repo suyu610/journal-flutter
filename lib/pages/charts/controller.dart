@@ -262,17 +262,15 @@ class ChartsController extends GetxController {
   // 【核心逻辑】判断是否需要提醒
   bool get shouldRemindPrint {
     return false;
-    final now = DateTime.now();
 
+    // ignore: dead_code
+    final now = DateTime.now();
     // 1. 时间是否超过 21 点
     bool isLate = now.hour >= 21;
-
     // 2. 且用户没有点击过
     bool notClicked = !hasClickedPrintToday;
-
     // 3. 且用户今日有记账 (如果没有记账，打印也没数据，就不提醒了)
     bool hasData = hasRecordToday;
-
     return isLate && notClicked && hasData;
   }
 

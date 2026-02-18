@@ -1,0 +1,39 @@
+{
+    // 1. 从左侧文件资源管理器中彻底隐藏 (眼不见为净)
+    "files.exclude": {
+        "**/.git": true,
+        "**/android/**": true,
+        "**/linux/**": true,
+        "**/macos/**": true,
+        "**/test/**": true,
+        "**/web/**": true,
+        "**/.DS_Store": true,
+        "**/ios/Pods": true, // 隐藏 CocoaPods 库
+        "**/ios/.symlinks": true, // 隐藏 Flutter 的软链接
+        "**/build": true, // 隐藏构建产物
+        "**/.dart_tool": true // 隐藏 Dart 工具文件
+    },
+    // 2. 从全局搜索 (Cmd+Shift+F) 和快速打开 (Cmd+P) 中排除
+    "search.exclude": {
+        "**/ios/Pods": true,
+        "**/ios/.symlinks": true,
+        "**/build": true,
+        "**/.dart_tool": true,
+        "**/*.flx": true,
+        "**/*.xib": true,
+        "**/*.storyboard": true
+    },
+
+    // 3. 性能优化（防止电脑发烫）
+    "files.watcherExclude": {
+        "**/ios/**": true,
+        "**/android/**": true,
+        "**/build/**": true,
+        "**/.dart_tool/**": true
+    },
+    // 【核心解决方案】关闭 C/C++ 插件的错误波浪线和报错检查
+    "C_Cpp.errorSquiggles": "disabled",
+    
+    // 把 C/C++ 的智能感知引擎设为 Tag Parser (只做简单的符号跳转，不做复杂语法检查)
+    "C_Cpp.intelliSenseEngine": "Tag Parser"
+}

@@ -26,6 +26,24 @@ class CurrentActivityController extends GetxController {
     update(["current_activity"]);
   }
 
+  RxList<Activity> activityList = <Activity>[].obs;
+
+  void fetchAllActivityList() {
+    Log().d("fetchAllActivityList");
+    HttpRequest.request(
+      Method.get,
+      "/activity/list/all",
+      success: (data) {
+        Log().d("activityList data: ${activityList.toString()}");
+        activityList.value =
+            (data as List).map((e) => Activity.fromJson(e)).toList();
+
+        update(["activity_list"]);
+      },
+      fail: (code, msg) {},
+    );
+  }
+
   // 修改：增加 targetPage 参数，默认为 1
   void getExpenseList({int targetPage = 1}) {
     // 1. 上锁
@@ -107,7 +125,8 @@ class CurrentActivityController extends GetxController {
   initData() {
     currentActivity.value = Activity.empty();
     expenseDateGroupList.value = [];
-
+    //
+    fetchAllActivityList();
     pageNum.value = 1;
     hasNextPage.value = true;
     isLoading.value = false; // 重置锁
@@ -191,6 +210,14 @@ class CurrentActivityController extends GetxController {
   RxBool isExpenseListShowMode = true.obs;
   void switchExpenseListShowMode() {
     isExpenseListShowMode.value = !isExpenseListShowMode.value;
+  }
+
+  void switchActivity(Activity activity) async {
+    // 调用接口
+    activity.activated = true;
+    await HttpRequest.request(Method.patch, "/activity", params: activity);
+    // 刷新当前账本
+    initData();
   }
 
   // @override

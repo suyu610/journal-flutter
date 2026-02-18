@@ -9,12 +9,18 @@ class JournalSwitch extends StatelessWidget {
   final double? width;
   final double? height;
 
+  // 修改：将原来的 icon 拆分为开启和关闭两种状态的图标
+  final IconData? activeIcon;
+  final IconData? inactiveIcon;
+
   const JournalSwitch({
     super.key,
     required this.value,
     required this.onChanged,
     this.width,
     this.height,
+    this.activeIcon,
+    this.inactiveIcon, // 新增到构造函数
   });
 
   @override
@@ -28,12 +34,12 @@ class JournalSwitch extends StatelessWidget {
     final circleSize = h - 4.h; // 圆球比高度小一点，留出边距
 
     // 2. 颜色定义
-    // 开启状态：使用主文本色 (黑/白)，显得非常酷
     final activeColor = appColors.primaryText;
-    // 关闭状态：使用次要文本色的淡化版，类似 iOS 的灰色背景
     final inactiveColor = appColors.secondaryText.withOpacity(0.2);
-    // 圆球颜色：始终是卡片背景色 (反之亦然，形成对比)
     final thumbColor = appColors.cardBackground;
+
+    // 3. 根据当前状态判断要显示的图标
+    final currentIcon = value ? activeIcon : inactiveIcon;
 
     return GestureDetector(
       onTap: () {
@@ -50,7 +56,6 @@ class JournalSwitch extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(h / 2),
           color: value ? activeColor : inactiveColor,
-          // 只有在关闭状态下才显示一点点细边框，增加层次
           border: value
               ? null
               : Border.all(
@@ -65,10 +70,10 @@ class JournalSwitch extends StatelessWidget {
               child: Container(
                 width: circleSize,
                 height: circleSize,
+                alignment: Alignment.center, // 确保内部的图标绝对居中
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: thumbColor,
-                  // 给小圆球加一点点投影，立体感倍增
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -77,6 +82,31 @@ class JournalSwitch extends StatelessWidget {
                     ),
                   ],
                 ),
+                // 修改：使用 currentIcon，并加入切换动画效果
+                child: currentIcon != null
+                    ? AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        // 新增：自定义过渡动画（缩放 + 渐变），图标替换时更丝滑
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(
+                            scale: animation,
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Icon(
+                          currentIcon,
+                          // 依赖 ValueKey<bool> 触发切换：当 value 改变时，旧图标缩小消失，新图标放大出现
+                          key: ValueKey<bool>(value),
+                          size: circleSize * 0.55,
+                          color: value
+                              ? activeColor
+                              : appColors.secondaryText.withOpacity(0.6),
+                        ),
+                      )
+                    : null,
               ),
             ),
           ],

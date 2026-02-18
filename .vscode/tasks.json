@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "switch-ip-local",
+            "type": "shell",
+            "command": "dart",
+            "args": [
+                "changeIp.dart",
+                "-local"
+            ],
+            "presentation": {
+                "reveal": "always" 
+            }
+        },
+        {
+            "label": "switch-ip-prod",
+            "type": "shell",
+            "command": "dart",
+            "args": [
+                "changeIp.dart",
+                "-prod"
+            ],
+            "presentation": {
+                "reveal": "always"
+            }
+        }
+    ]
+}

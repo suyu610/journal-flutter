@@ -9,6 +9,7 @@ import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:remixicon/remixicon.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'index.dart';
@@ -254,7 +255,8 @@ class ProfilePage extends GetView<ProfileController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildGridItem(
-            icon: Icons.supervisor_account_outlined,
+            icon: RemixIcons.gamepad_line,
+            // img: "assets/live2d/Hiyori.png",
             label: "AI角色",
             appColors: appColors,
             onTap: () => Get.toNamed(Routers.AIConfigPageV2Url),
@@ -266,10 +268,16 @@ class ProfilePage extends GetView<ProfileController> {
             onTap: () => Get.toNamed(Routers.ReminderSettingsPageUrl),
           ),
           _buildGridItem(
-            icon: Icons.category_outlined,
-            label: "分类规则",
+            label: "物品库",
+            icon: RemixIcons.shopping_bag_line,
             appColors: appColors,
-            onTap: () => Get.toNamed(Routers.ClassificationRulesPageUrl),
+            onTap: () => Get.toNamed(Routers.ItemLibraryPageUrl),
+          ),
+          _buildGridItem(
+            label: "模板库",
+            icon: RemixIcons.folder_2_line,
+            appColors: appColors,
+            onTap: () => Get.toNamed(Routers.TemplateListPageUrl),
           ),
           _buildGridItem(
             icon: Icons.science_outlined,
@@ -285,6 +293,7 @@ class ProfilePage extends GetView<ProfileController> {
   // --- 宫格单项 ---
   Widget _buildGridItem(
       {required IconData icon,
+      String? img,
       required String label,
       required AppThemeColors appColors,
       required VoidCallback onTap}) {
@@ -304,7 +313,15 @@ class ProfilePage extends GetView<ProfileController> {
               color: itemColor.withOpacity(0.05),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(icon, color: itemColor, size: 26),
+            child: img != null
+                ? ClipOval(
+                    child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.asset(
+                      img,
+                    ),
+                  ))
+                : Icon(icon, color: itemColor, size: 26),
           ),
           const SizedBox(height: 10),
           Text(

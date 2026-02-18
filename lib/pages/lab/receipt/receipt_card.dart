@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:journal/models/expense.dart';
@@ -42,16 +41,15 @@ class ReceiptCard extends StatelessWidget {
     });
 
     bool isOverBudget = budget > 0 && totalExpense > budget;
-    double budgetDiff = budget > 0 ? (budget - totalExpense) : 0;
 
     // --- 样式常量 ---
-    final Color paperColor = const Color(0xFFFDFBF7); // 米白纸张色
-    final Color inkColor = const Color(0xFF2D2D2D); // 接近黑色的深灰，比纯黑柔和
+    const Color paperColor = Color(0xFFFDFBF7); // 米白纸张色
+    const Color inkColor = Color(0xFF2D2D2D); // 接近黑色的深灰，比纯黑柔和
     bool hasBudget = budget > 0;
 
     double budgetLeft = hasBudget ? (budget - totalExpense) : 0;
 
-    final TextStyle monoStyle = TextStyle(
+    const TextStyle monoStyle = TextStyle(
       fontFamily: 'Courier', // 关键：等宽字体
       fontSize: 14,
       color: inkColor,
@@ -381,7 +379,7 @@ class ReceiptClipper extends CustomClipper<Path> {
     Path path = Path();
     path.lineTo(0, size.height - 10); // 留出10px画锯齿
 
-    final double toothWidth = 8.0; // 锯齿宽度
+    const double toothWidth = 8.0; // 锯齿宽度
     final int toothCount = (size.width / toothWidth).ceil();
     final double actualToothWidth = size.width / toothCount; // 动态调整确保填满
 

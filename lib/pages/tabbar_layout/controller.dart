@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/app_tab_item.dart';
 import 'package:journal/models/user.dart';
@@ -12,6 +11,8 @@ import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/chat/view.dart';
 import 'package:journal/pages/current_activity/view.dart';
 import 'package:journal/pages/expense/view.dart';
+import 'package:journal/pages/mission_dashboard/pages/item_template/view.dart';
+import 'package:journal/pages/mission_dashboard/view.dart';
 import 'package:journal/pages/profile/view.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
@@ -157,19 +158,26 @@ class LayoutController extends GetxController {
     allTabsPool = [
       AppTabItem(
           id: 'home',
-          label: '当前活动',
+          label: '当前账本',
           icon: Icons.home_outlined,
           page: const CurrentActivityPage()),
-      AppTabItem(
-          id: 'folder',
-          label: '活动列表',
-          icon: Icons.folder_outlined,
-          page: const ActivityListPage()),
       // AppTabItem(
       //     id: 'folder',
-      //     label: '小树苗',
-      //     icon: Icons.forest_outlined,
-      //     page: ForestPage()),
+      //     label: '账本列表',
+      //     icon: Icons.folder_outlined,
+      //     page: const ActivityListPage()),
+      AppTabItem(
+          id: 'misson',
+          label: '面板',
+          icon: Icons.bookmark_outline_rounded,
+          page: MissionPage(),
+          isEnabled: true),
+      // AppTabItem(
+      //     id: 'template_page',
+      //     label: '模板库',
+      //     icon: Icons.card_travel,
+      //     page: const TemplateListPage(),
+      //     isEnabled: true),
       AppTabItem(
           id: 'chat', label: '聊天', icon: Icons.add, page: const ChatPage()),
       AppTabItem(
@@ -186,8 +194,7 @@ class LayoutController extends GetxController {
     ];
 
     // 2.【新增】从本地读取“被禁用”的 Tab ID 列表
-    List<String> disabledTabIds =
-        SpUtil().getDisabledTabs(); // 需要在 SpUtil 补这个方法
+    List<String> disabledTabIds = SpUtil().getDisabledTabs();
 
     // 3.【新增】应用禁用状态
     for (var tab in allTabsPool) {
@@ -213,8 +220,7 @@ class LayoutController extends GetxController {
     _refreshActiveTabs();
   }
 
-// 给设置页调用的方法：更新排序和开关
-  // 给设置页调用的方法
+  // 给设置页调用的方法：更新排序和开关
   void updateTabsOrder(List<AppTabItem> newOrder) {
     allTabsPool = newOrder; // 更新内存中的顺序和状态(newOrder里已经包含了isEnabled的变化)
 

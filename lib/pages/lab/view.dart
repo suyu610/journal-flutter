@@ -33,14 +33,7 @@ class LabPage extends GetView<LabController> {
     return JournalNavBar(
       backgroundColor: Colors.transparent,
       height: 48,
-      useDefaultBack: false,
-      leftBarItems: [
-        NavBarItem(
-          icon: Icons.arrow_back_ios_new,
-          iconSize: 20,
-          onTap: () => Get.back(),
-        )
-      ],
+      useDefaultBack: true,
       titleWidget: Text(
         "实验室",
         style: TextStyle(
@@ -98,6 +91,12 @@ class LabPage extends GetView<LabController> {
               child: CellGroup(
                 children: [
                   Cell(
+                    icon: _buildIcon(Icons.category_outlined, appColors),
+                    title: "自定义分类规则",
+                    onTap: () =>
+                        Get.toNamed(Routers.ClassificationRulesPageUrl),
+                  ),
+                  Cell(
                     title: "智能合并",
                     // 给重要功能一些特殊的 Icon 颜色，打破单调
                     icon: _buildIcon(Icons.auto_awesome, appColors,
@@ -105,16 +104,18 @@ class LabPage extends GetView<LabController> {
                     onTap: () => Get.to(const SmartMergePage()),
                   ),
                   Cell(
-                    title: "自动记账",
-                    icon: _buildIcon(Icons.fact_check_outlined, appColors,
-                        customColor: Colors.blueAccent),
-                    onTap: () => Get.toNamed(Routers.AutoWriteIntroPageUrl),
+                    title: "底部导航排序",
+                    icon: _buildIcon(
+                      Icons.layers_outlined,
+                      appColors,
+                    ),
+                    onTap: () => Get.toNamed(Routers.TabBarSettingPageUrl),
                   ),
                 ],
               ),
             ),
           ),
-// --- 第三组：系统与调试 ---
+          // --- 第三组：系统与调试 ---
           _buildSectionHeader("系统工具", appColors),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -123,19 +124,9 @@ class LabPage extends GetView<LabController> {
               child: CellGroup(
                 children: [
                   Cell(
-                    title: "底部导航排序",
-                    icon: _buildIcon(Icons.layers_outlined, appColors),
-                    onTap: () => Get.toNamed(Routers.TabBarSettingPageUrl),
-                  ),
-                  Cell(
                     title: "本地服务概览",
                     icon: _buildIcon(Icons.lan_outlined, appColors),
                     onTap: () => Get.toNamed(Routers.LocalServicePageUrl),
-                  ),
-                  Cell(
-                    title: "小票打印机",
-                    icon: _buildIcon(Icons.print_outlined, appColors),
-                    onTap: () => Get.toNamed(Routers.MedicalCardUrl),
                   ),
                   Cell(
                     title: "重置引导动画",

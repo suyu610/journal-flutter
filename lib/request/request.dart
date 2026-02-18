@@ -58,6 +58,7 @@ class HttpRequest {
       Complete? complete,
       CancelToken? cancelToken,
       ProgressCallback? onSendProgress,
+      ResponseType? responseType,
       bool isStream = false}) async {
     try {
       var connectivityResult = await (Connectivity().checkConnectivity());
@@ -72,24 +73,23 @@ class HttpRequest {
 
       Response response = await dio.request(
         path,
-        // queryParameters: method == Method.get && params != null ? params : null,
         data: params,
         cancelToken: cancelToken,
         onSendProgress: onSendProgress,
         options: Options(
           method: _methodValues[method],
           headers: await _headerToken(header, url: path),
-          responseType: isStream ? ResponseType.stream : ResponseType.json,
+          responseType: responseType ??
+              (isStream ? ResponseType.stream : ResponseType.json),
         ),
       );
       // 流式
       if (isStream) {
         success?.call(response.data.stream);
         return Future.value(response.data.stream);
-        // processStreamResponse(response.data.stream);
       } else {
         var result = Result.fromJson(response.data);
-        // Log().d("$path result -> ${response.data}");
+
         if (result.code == -1) {
           Log().d("token失效");
           SpUtil.removeToken();
@@ -122,16 +122,11 @@ Future<void> processStreamResponse(Stream stream) async {
   // 用于每个阶段的对话结果
   final StringBuffer buffer = StringBuffer();
 
-  // 处理流式响应
   await for (var data in stream) {
-    // 将字节数据解码为字符串
     final bytes = data as List<int>;
     final decodedData = utf8.decode(bytes);
-    // 移除 JSON 数据前的额外字符
-    // 这里因为qwen模型的响应数据每次都以data:开头，后面跟着一个json字符串，所以需要先移除data:
     List<String> jsonData = decodedData.split('data: ');
 
-    // 移除空字符串
     jsonData = jsonData.where((element) => element.isNotEmpty).toList();
 
     // 遍历每个阶段

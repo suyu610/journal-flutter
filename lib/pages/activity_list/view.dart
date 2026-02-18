@@ -118,7 +118,7 @@ class ActivityListPage extends GetView<ActivityListController> {
                   color: Colors.transparent,
                   height: 600.h,
                   padding: const EdgeInsets.only(bottom: 15.0),
-                  child: buildEmptyItem(
+                  child: JournalEmptyItem(
                       title: "未找到账本",
                       operateText: "点击添加",
                       action: () {

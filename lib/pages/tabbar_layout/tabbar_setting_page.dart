@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // 用于震动反馈
 import 'package:get/get.dart';
+import 'package:journal/components/journal_nav_bar.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/models/app_tab_item.dart';
@@ -48,23 +49,12 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
 
     return Scaffold(
       backgroundColor: appColors.backgroundColor,
-      appBar: AppBar(
-        title: const Text("自定义菜单"),
-        backgroundColor: Colors.transparent, // 沉浸式
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-            color: appColors.primaryText, // 适配标题色
-            fontSize: 17,
-            fontWeight: FontWeight.w500),
-        leading: IconButton(
-          icon: Icon(Icons.close, color: appColors.primaryText), // 适配图标色
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => _onSave(appColors),
-            child: Text("保存",
+      appBar: JournalNavBar(
+        title: "自定义菜单",
+        rightBarItems: [
+          NavBarItem(
+            onTap: () => _onSave(appColors),
+            iconWidget: Text("保存",
                 style: TextStyle(
                     color: appColors.primaryText, // 适配按钮色
                     fontWeight: FontWeight.bold,
@@ -88,7 +78,6 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
             child: ReorderableListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               itemCount: _tempTabs.length,
-              // 1. 优化拖拽时的视觉效果 (ProxyDecorator)
               proxyDecorator: (child, index, animation) {
                 return AnimatedBuilder(
                   animation: animation,

@@ -104,6 +104,7 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  // ignore: unused_element
   Widget _buildDimensionTabs(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 

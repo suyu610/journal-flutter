@@ -18,6 +18,10 @@ import 'package:journal/pages/login/binding.dart';
 import 'package:journal/pages/login/index.dart';
 import 'package:journal/pages/login/sms_code/binding.dart';
 import 'package:journal/pages/login/sms_code/view.dart';
+import 'package:journal/pages/mission_dashboard/pages/item_library/view.dart';
+import 'package:journal/pages/mission_dashboard/pages/item_template/view.dart';
+import 'package:journal/pages/mission_dashboard/pages/trip_checklist/view.dart';
+import 'package:journal/pages/mission_dashboard/view.dart';
 import 'package:journal/pages/more/view.dart';
 import 'package:journal/pages/splash/view.dart';
 import 'package:journal/pages/tabbar_layout/binding.dart';
@@ -90,6 +94,7 @@ abstract class Routers {
     GetPage(name: JoinActivityPageUrl, page: () => const JoinActivityPage()),
     GetPage(name: InvitePageUrl, page: () => const InvitePage()),
     GetPage(name: ExpenseListPageUrl, page: () => const ExpenseListPage()),
+    GetPage(name: MissionDashboardPageUrl, page: () => MissionPage()),
     GetPage(
         name: LoginPageUrl,
         page: () => const LoginPage(),
@@ -99,10 +104,14 @@ abstract class Routers {
       name: ActivityListPageUrl,
       page: () => const ActivityListPage(),
     ),
-    // GetPage(
-    //   name: ExpenseItemPageUrl,
-    //   page: () => const ExpenseItemPage(),
-    // ),
+    GetPage(
+      name: TemplateListPageUrl,
+      page: () => const TemplateListPage(),
+    ),
+    GetPage(
+      name: ItemLibraryPageUrl,
+      page: () => const ItemLibraryPage(),
+    ),
     GetPage(name: CreateActivityUrl, page: () => const CreateActivityPage()),
     GetPage(
         name: ReminderSettingsPageUrl,
@@ -125,11 +134,7 @@ abstract class Routers {
         name: ClassificationRulesPageUrl,
         page: () => const ClassificationRulesPage()),
     GetPage(name: GrowingTreeUrl, page: () => const ForestPage()),
-    // GetPage(
-    //     name: SankeyChartPageUrl,
-    //     page: () => const SankeyChartView(
-    //           expenses: [],
-    //         )),
+    GetPage(name: TripChecklistPageUrl, page: () => const TripChecklistPage()),
   ];
 
   static const String LabPageUrl = "/lab";
@@ -142,5 +147,11 @@ abstract class Routers {
 
   static const String MedicalCardUrl = "/medical_card";
   static const String MoreFunctionPageUrl = "/more_function";
+
+  static const String MissionDashboardPageUrl = "/mission_dashboard";
   // static const String SankeyChartPageUrl = "/sankey_chart";
+
+  static const String ItemLibraryPageUrl = "/item_library";
+  static const String TemplateListPageUrl = "/template_list";
+  static const String TripChecklistPageUrl = "/trip_checklist";
 }

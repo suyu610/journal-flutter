@@ -42,6 +42,7 @@ class JournalNavBar extends StatefulWidget implements PreferredSizeWidget {
   const JournalNavBar({
     Key? key,
     this.title = '',
+    this.subTitle,
     this.titleWidget,
     this.titleColor,
     this.titleSize = 16,
@@ -61,6 +62,7 @@ class JournalNavBar extends StatefulWidget implements PreferredSizeWidget {
 
   /// 标题文字
   final String title;
+  final String? subTitle;
 
   /// 自定义标题组件 (优先级高于 title)
   final Widget? titleWidget;
@@ -159,7 +161,35 @@ class _MyNavBarState extends State<JournalNavBar> {
   /// 构建标题
   Widget _buildTitle() {
     if (widget.titleWidget != null) return widget.titleWidget!;
-
+    if (widget.subTitle != null) {
+      return Column(
+        children: [
+          Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: widget.titleSize,
+              color: widget.titleColor ??
+                  Theme.of(context).textTheme.titleLarge?.color,
+              fontWeight: widget.titleFontWeight,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Opacity(
+            opacity: 0.3,
+            child: Text(
+              widget.subTitle!,
+              style: TextStyle(
+                fontSize: 12,
+                color: widget.titleColor?.withOpacity(0.3),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
     return Text(
       widget.title,
       style: TextStyle(

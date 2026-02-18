@@ -3,13 +3,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 // 1. 引入主题配置
 import 'package:journal/core/app_theme_colors.dart';
 
-Widget buildEmptyItem({
-  required String title,
-  required String operateText,
-  required void Function() action,
-}) {
+class JournalEmptyItem extends StatelessWidget {
+  final String title;
+  final String operateText;
+  final void Function() action;
+
+  const JournalEmptyItem({
+    super.key,
+    required this.title,
+    required this.operateText,
+    required this.action,
+  });
+
   // 使用 Builder 获取 context，确保能读取到 Theme
-  return Builder(builder: (context) {
+  @override
+  Widget build(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Center(
@@ -73,5 +81,5 @@ Widget buildEmptyItem({
         ),
       ),
     );
-  });
+  }
 }

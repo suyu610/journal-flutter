@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+// 假设你有一个自定义的按钮组件和主题配置
 import 'package:journal/components/journal_button.dart';
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/components/journal_nav_bar.dart';
 import 'package:journal/components/journal_toast.dart';
 
+// 假设你的 Controller 和模型定义在这里
 import 'index.dart';
 
 class InvitePage extends GetView<InviteController> {
@@ -14,33 +16,37 @@ class InvitePage extends GetView<InviteController> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. 获取主题扩展颜色 (关键步骤)
+    // 获取你的主题色配置。如果你的配置方式不同，请自行调整。
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    // 这里定义一些页面专属的样式常量，方便微调
+    const double kCardRadius = 24.0;
+    const double kMemberCardRadius = 20.0;
 
     return GetBuilder<InviteController>(
       init: InviteController(),
       id: "invite",
       builder: (_) {
         return Scaffold(
-          // 背景色跟随主题
           backgroundColor: appColors.backgroundColor,
           appBar: JournalNavBar(
+            backgroundColor: Colors.transparent, // 沉浸式
             titleWidget: Text(
               "邀请成员",
               style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontFamily: "SmileySans",
                   fontWeight: FontWeight.w500,
-                  color: appColors.primaryText), // 适配标题色
+                  color: appColors.primaryText),
             ),
-          ), // 假设你的 NavBar 支持传入 title
+          ),
           body: SafeArea(
             child: Column(
               children: [
                 SizedBox(height: 16.h),
 
-                // 1. 账本信息卡片
-                _buildLedgerInfoCard(context, appColors),
+                // 1. 高级凭证式卡片 (核心修改)
+                _buildPremiumTicketCard(context, appColors, kCardRadius),
 
                 SizedBox(height: 32.h),
 
@@ -48,24 +54,36 @@ class InvitePage extends GetView<InviteController> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        "成员列表 (${controller.activity.value.userList.length})",
+                        "已加入成员",
                         style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
-                          color: appColors.primaryText, // 适配文字颜色
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: appColors.primaryText,
                         ),
                       ),
+                      SizedBox(width: 8.w),
+                      Obx(() => Text(
+                            "${controller.activity.value.userList.length} 人",
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: appColors.secondaryText,
+                            ),
+                          )),
                     ],
                   ),
                 ),
                 SizedBox(height: 12.h),
 
-                // 3. 成员列表
-                Expanded(child: _buildMemberList(context, appColors)),
+                // 3. 内聚式成员列表
+                Expanded(
+                    child: _buildGroupedMemberList(
+                        context, appColors, kMemberCardRadius)),
 
-                // 4. 底部按钮
+                // 4. 底部大按钮
                 _buildBottomButton(context, appColors),
               ],
             ),
@@ -75,92 +93,192 @@ class InvitePage extends GetView<InviteController> {
     );
   }
 
-  // 1. 顶部账本卡片 (完全适配深色模式)
-  Widget _buildLedgerInfoCard(BuildContext context, AppThemeColors appColors) {
+  // ==========================================
+  // 核心升级：凭证式邀请卡片 (Premium Ticket Design)
+  // ==========================================
+  Widget _buildPremiumTicketCard(
+      BuildContext context, AppThemeColors appColors, double radius) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(24.w),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: appColors.cardBackground, // 关键：使用适配的卡片背景色
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            // 阴影颜色也稍微适配一下，深色模式下阴影可以更深或者不可见
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: appColors.cardBackground,
+        borderRadius: BorderRadius.circular(radius.r),
+        // 增加更柔和、更有深度的阴影
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: appColors.primaryText.withOpacity(0.06),
+        //     blurRadius: 24,
+        //     offset: const Offset(0, 12),
+        //   ),
+        // ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10.w),
-                decoration: BoxDecoration(
-                  // 图标背景使用主文字颜色的 10% 透明度，自动适配黑白
-                  color: appColors.primaryText.withOpacity(0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_rounded,
-                  color: appColors.primaryText, // 图标颜色跟随文字
-                  size: 24.sp,
-                ),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Text(
-                  controller.activity.value.activityName,
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontFamily: "SmileySans",
-                    color: appColors.primaryText, // 适配标题颜色
+          // --- 上半部分：账本信息 ---
+          Padding(
+            padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 24.h),
+            child: Row(
+              children: [
+                // 更有质感的 Icon 容器
+                Container(
+                  width: 52.w,
+                  height: 52.w,
+                  decoration: BoxDecoration(
+                    // 使用主题色渐变作为背景，增加高级感
+                    gradient: LinearGradient(
+                      colors: [
+                        appColors.mainButtonBg.withOpacity(0.15),
+                        appColors.mainButtonBg.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18.r),
+                  ),
+                  child: Icon(
+                    // 换一个更有“通行证”感觉的图标
+                    Icons.confirmation_number_outlined,
+                    color: appColors.mainButtonBg,
+                    size: 26.sp,
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            "邀请码",
-            style: TextStyle(
-              color: appColors.secondaryText, // 适配次要文字颜色
-              fontSize: 12.sp,
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "邀请加入",
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: appColors.secondaryText,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Obx(() => Text(
+                            controller.activity.value.activityName,
+                            style: TextStyle(
+                              fontSize: 22.sp, // 字体加大，更突出
+                              fontFamily: "SmileySans",
+                              color: appColors.primaryText,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 8.h),
 
-          // 邀请码展示区
+          // --- 分割线：虚线效果 (Ticket 隐喻) ---
+          Row(
+            children: [
+              _buildTicketNotch(appColors.backgroundColor!, isLeft: true),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final dashWidth = 5.0.w;
+                    final dashSpace = 5.0.w;
+                    final count =
+                        (constraints.constrainWidth() / (dashWidth + dashSpace))
+                            .floor();
+                    return Flex(
+                      direction: Axis.horizontal,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
+                      children: List.generate(
+                        count,
+                        (index) => SizedBox(
+                          width: dashWidth,
+                          height: 1.5,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: appColors.secondaryText.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              _buildTicketNotch(appColors.backgroundColor!, isLeft: false),
+            ],
+          ),
+
+          // --- 下半部分：邀请码令牌区 (核心重构) ---
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () {
               controller.copyInviteCode(context);
-              HapticFeedback.lightImpact(); // 加个震动反馈更爽
+              HapticFeedback.mediumImpact();
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 32.h),
               decoration: BoxDecoration(
-                color: appColors.primaryText.withOpacity(0.04),
-                borderRadius: BorderRadius.circular(12.r),
-                border:
-                    Border.all(color: appColors.primaryText.withOpacity(0.05)),
+                // 给下半部分一个极淡的背景色区分
+                // color: appColors.primaryText.withOpacity(0.015),
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(radius.r)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
                   Text(
-                    controller.activity.value.activityId,
+                    "专属邀请码 (点击复制)",
                     style: TextStyle(
-                        color: appColors.primaryText, // 码的颜色
-                        fontSize: 16,
-                        fontFamily: "Monospace",
-                        letterSpacing: 3, // 字间距大一点更好看
-                        fontWeight: FontWeight.w600),
+                      fontSize: 12.sp,
+                      color: appColors.secondaryText.withOpacity(0.8),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  Icon(Icons.copy_rounded,
-                      color: appColors.secondaryText, size: 18.sp),
+                  SizedBox(height: 14.h),
+
+                  // 核心：图文合一的“令牌”容器
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                    decoration: BoxDecoration(
+                      // 使用深色背景强调，让它成为视觉中心
+                      color: appColors.mainButtonBg.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(14.r),
+                      // 极细的主题色边框增加精致感
+                      border: Border.all(
+                        color: appColors.mainButtonBg.withOpacity(0.1),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min, // 宽度包裹内容
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.copy_all_rounded,
+                            color: appColors.mainButtonBg, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        // 使用 Flexible 防止溢出
+                        Flexible(
+                          child: Obx(() => Text(
+                                controller.activity.value.activityId
+                                    .toUpperCase(),
+                                style: TextStyle(
+                                  color: appColors.primaryText,
+                                  fontSize: 20.sp,
+                                  fontFamily: "SourceCodePro",
+                                  letterSpacing: 2.5, // 字间距收缩，更凝聚
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis, // 溢出显示省略号
+                              )),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -170,106 +288,157 @@ class InvitePage extends GetView<InviteController> {
     );
   }
 
-  // 2. 成员列表
-  Widget _buildMemberList(BuildContext context, AppThemeColors appColors) {
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      itemCount: controller.activity.value.userList.length,
-      itemBuilder: (context, index) {
-        final user = controller.activity.value.userList[index];
-        return Container(
-          margin: EdgeInsets.only(bottom: 12.h),
-          decoration: BoxDecoration(
-            color: appColors.cardBackground, // 适配列表项背景
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16.r),
-              onTap: () {
-                JournalToast.show(context, "开发中...");
-              },
-              child: Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Row(
-                  children: [
-                    // 头像
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        // 边框颜色适配：用极淡的背景色
-                        border: Border.all(
-                            color: appColors.primaryText.withOpacity(0.1),
-                            width: 1),
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          user.avatarUrl,
-                          fit: BoxFit.cover,
+  // 门票两侧的半圆缺口
+  Widget _buildTicketNotch(Color color, {required bool isLeft}) {
+    return Container(
+      width: 12.w,
+      height: 24.h,
+      decoration: BoxDecoration(
+        color: color, // 颜色必须和外层 Scaffold 背景色一致
+        borderRadius: isLeft
+            ? BorderRadius.horizontal(right: Radius.circular(12.r))
+            : BorderRadius.horizontal(left: Radius.circular(12.r)),
+      ),
+    );
+  }
+
+  // ==========================================
+  // 核心升级 2：内聚式成员列表 (iOS Style)
+  // ==========================================
+  Widget _buildGroupedMemberList(
+      BuildContext context, AppThemeColors appColors, double radius) {
+    return Obx(() {
+      if (controller.activity.value.userList.isEmpty) return const SizedBox();
+
+      return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20.w),
+        decoration: BoxDecoration(
+          color: appColors.cardBackground,
+          borderRadius: BorderRadius.circular(radius.r),
+          // 极细边框替代重阴影，更清爽
+          border: Border.all(color: appColors.primaryText.withOpacity(0.04)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius.r),
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: controller.activity.value.userList.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              thickness: 0.5,
+              indent: 76.w, // 头像宽度 + padding，对齐文字
+              endIndent: 0, // 延伸到最右侧
+              color: appColors.primaryText.withOpacity(0.06),
+            ),
+            itemBuilder: (context, index) {
+              final user = controller.activity.value.userList[index];
+              final isCreator = index == 0; // 假设第一个是创建者
+
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => JournalToast.show(context, "开发中..."),
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                    child: Row(
+                      children: [
+                        // 头像
+                        Container(
                           width: 44.r,
                           height: 44.r,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                            width: 44.r,
-                            height: 44.r,
-                            color: appColors.primaryText.withOpacity(0.1),
-                            child: Icon(Icons.person,
-                                color: appColors.secondaryText),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: appColors.primaryText.withOpacity(0.05),
+                            border: Border.all(
+                                color: appColors.primaryText.withOpacity(0.08),
+                                width: 1),
+                          ),
+                          child: ClipOval(
+                            child: Image.network(
+                              user.avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.person_rounded,
+                                color: appColors.secondaryText.withOpacity(0.5),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    // 信息
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.nickname,
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                              color: appColors.primaryText, // 适配文字
-                            ),
+                        SizedBox(width: 16.w),
+                        // 信息
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    user.nickname,
+                                    style: TextStyle(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: appColors.primaryText,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  if (isCreator)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 6.w, vertical: 3.h),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            appColors.mainButtonBg, // 使用主题色高亮
+                                        borderRadius:
+                                            BorderRadius.circular(6.r),
+                                      ),
+                                      child: Text(
+                                        "创建者",
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          color: Colors.white, // 反色显示
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                "1970-01-01 加入",
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: appColors.secondaryText,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            "加入于 2024-03-21", // 示例数据
-                            style: TextStyle(
-                              fontSize: 12.sp,
-                              color: appColors.secondaryText, // 适配次要文字
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
   }
 
   Widget _buildBottomButton(BuildContext context, AppThemeColors appColors) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 30.h),
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
       child: JournalButton(
-        text: "复制完整邀请链接",
-        icon: Icons.share_rounded,
-        type: JournalButtonType.outline,
-        onTap: () => controller.copyInviteCode(context),
+        text: "分享完整邀请链接",
+        icon: Icons.ios_share_rounded,
+        // 建议使用实心按钮 (primary) 作为页面的核心行动点
+        type: JournalButtonType.filled,
+        onTap: () {
+          controller.copyInviteCode(context);
+          HapticFeedback.lightImpact();
+        },
       ),
     );
   }

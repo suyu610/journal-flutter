@@ -2,10 +2,37 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>CtripWireless</string>         
+		<string>trip</string>
+		<string>comgooglemaps</string>
+		<string>baidumap</string>
+		<string>iosamap</string>
+		<string>waze</string>
+		<string>yandexmaps</string>
+		<string>yandexnavi</string>
+		<string>citymapper</string>
+		<string>mapswithme</string>
+		<string>osmandmaps</string>
+		<string>dgis</string>
+		<string>qqmap</string>
+		<string>here-location</string>
+		<string>tomtomgo</string>
+		<string>copilot</string>
+		<string>com.sygic.aura</string>
+		<string>nmap</string>
+		<string>kakaomap</string>
+		<string>tmap</string>
+		<string>szn-mapy</string>
+		<string>mappls</string>
+		<string>moovit</string>
+		<string>neshan</string>
+	</array>
 	<key>NSMotionUsageDescription</key>
-<string>We need access to sensors to control gravity.</string>
-	  <key>io.flutter.embedded_views_preview</key>
-	  <true/>
+	<string>We need access to sensors to control gravity.</string>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 
 	<key>NSLocationWhenInUseUsageDescription</key>
     <string>We need your location to show nearby services on the map.</string>

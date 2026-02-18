@@ -54,7 +54,6 @@ class ActivityListController extends GetxController {
       "/activity/list/all",
       success: (data) {
         Log().d("activityList data: ${activityList.toString()}");
-
         activityList.value =
             (data as List).map((e) => Activity.fromJson(e)).toList();
         refreshController.finishRefresh();

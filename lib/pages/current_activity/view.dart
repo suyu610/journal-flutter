@@ -16,6 +16,7 @@ import 'package:journal/models/expense_date_group.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
 import 'package:journal/util/toast_util.dart';
+import 'package:remixicon/remixicon.dart';
 
 import 'index.dart';
 
@@ -61,34 +62,12 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   }
 
   _buildEmptyCard() {
-    return buildEmptyItem(
+    return JournalEmptyItem(
         title: "暂无默认账本",
         operateText: "添加",
         action: () {
           Get.toNamed(Routers.CreateActivityUrl);
         });
-  }
-
-  // NavBar
-  PreferredSizeWidget _navibar(BuildContext context) {
-    // 获取主题色用于标题
-    final appColors = Theme.of(context).extension<AppThemeColors>()!;
-
-    return JournalNavBar(
-        height: 48,
-        useDefaultBack: false,
-        backgroundColor: Colors.transparent, // 沉浸式
-        titleWidget: Obx(() => Text(
-              controller.shouldShowAddButton.value &&
-                      controller.currentActivity.value.activityName.isNotEmpty
-                  ? controller.currentActivity.value.activityName
-                  : "当前活动",
-              style: TextStyle(
-                  fontSize: 18.sp,
-                  fontFamily: "SmileySans",
-                  color: appColors.primaryText // 适配深色
-                  ),
-            )));
   }
 
   // 当前账本卡片
@@ -422,6 +401,223 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
         Icons.arrow_upward_rounded,
         color: appColors.mainButtonIcon, // 图标颜色
         size: 20,
+      ),
+    );
+  }
+
+  // NavBar
+  PreferredSizeWidget _navibar(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    return JournalNavBar(
+        height: 48,
+        useDefaultBack: false,
+        backgroundColor: Colors.transparent, // 沉浸式
+        // 用 GestureDetector 包裹，增加点击事件
+        titleWidget: GestureDetector(
+          onTap: () {
+            // 点击触发底部弹窗，切换账本
+            _showActivitySwitchBottomSheet(context);
+          },
+          behavior: HitTestBehavior.opaque, // 确保点击空白区域也能响应
+          child: Row(
+            mainAxisSize: MainAxisSize.min, // 让 Row 紧凑，居中显示
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Obx(() => Text(
+                    controller.shouldShowAddButton.value &&
+                            controller
+                                .currentActivity.value.activityName.isNotEmpty
+                        ? controller.currentActivity.value.activityName
+                        : "当前账本",
+                    style: TextStyle(
+                        fontSize: 18.sp,
+                        fontFamily: "SmileySans",
+                        color: appColors.primaryText // 适配深色
+                        ),
+                  )),
+              SizedBox(width: 4.w), // 文字和箭头的间距
+              // 添加一个下拉小箭头，这是 UX 上的视觉暗示
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: appColors.primaryText,
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ));
+  }
+
+// 切换账本的底部弹窗
+  void _showActivitySwitchBottomSheet(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: appColors.backgroundColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight:
+                MediaQuery.of(context).size.height * 0.75, // 稍微调高一点点给新按钮留空间
+          ),
+          padding: const EdgeInsets.only(top: 16, bottom: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. 顶部小把手
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: appColors.secondaryText.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(height: 16.h),
+
+              // 2. 弹窗标题栏 (加入“全部”按钮)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 居中标题
+                    Text(
+                      "切换账本",
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: appColors.primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16.h),
+
+              // 3. 最近账本列表 (这里不需要包 Obx 如果你已经在外部处理好或者不需要响应式)
+              Expanded(
+                child: ListView.builder(
+                  itemCount: controller.activityList.length,
+                  itemBuilder: (context, index) {
+                    var activity = controller.activityList[index];
+                    bool isCurrent = activity.activityId ==
+                        controller.currentActivity.value.activityId;
+
+                    return ListTile(
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 24),
+                      leading: Icon(
+                        Icons.my_library_books_outlined,
+                        color: isCurrent
+                            ? appColors.mainButtonBg
+                            : appColors.secondaryText,
+                      ),
+                      title: Text(
+                        activity.activityName,
+                        style: TextStyle(
+                            color: isCurrent
+                                ? appColors.mainButtonBg
+                                : appColors.primaryText,
+                            fontWeight:
+                                isCurrent ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 15.sp),
+                      ),
+                      trailing: isCurrent
+                          ? Icon(Icons.check_circle_rounded,
+                              color: appColors.mainButtonBg)
+                          : null,
+                      onTap: () {
+                        controller.switchActivity(activity);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              // 4. 底部增量操作区 (新建 & 加入)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      // 左侧：新建账本
+                      Expanded(
+                        child: _buildBottomActionButton(
+                          context: context,
+                          icon: Icons.add_rounded,
+                          text: "新建",
+                          onTap: () {
+                            Navigator.pop(context);
+                            Get.toNamed(Routers.CreateActivityUrl);
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 16.w), // 中间留白
+                      // 右侧：加入他人账本
+                      Expanded(
+                        child: _buildBottomActionButton(
+                          context: context,
+                          icon: Icons.group_add_outlined, // 多人协作的图标
+                          text: "加入",
+                          onTap: () {
+                            Navigator.pop(context);
+
+                            Get.toNamed(Routers.JoinActivityPageUrl);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 抽取出的底部按钮组件，保持代码整洁
+  Widget _buildBottomActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: appColors.cardBackground,
+          border: Border.all(color: appColors.primaryText.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: appColors.primaryText, size: 20),
+            SizedBox(width: 6.w),
+            Text(text,
+                style: TextStyle(
+                  color: appColors.primaryText,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                )),
+          ],
+        ),
       ),
     );
   }
