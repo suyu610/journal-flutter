@@ -1,50 +1,254 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:io';
+
+import 'package:dio/dio.dart' as dio;
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:journal/components/journal_toast.dart';
-import 'package:flutter/material.dart';
-import 'dart:io';
-import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
-import 'package:journal/models/trip.dart';
-import 'package:journal/models/trip_item.dart';
-import 'package:journal/request/request.dart';
-import 'package:journal/models/trip_card_model.dart';
-import 'package:dio/dio.dart' as dio;
-import 'package:journal/pages/mission_dashboard/widget/trip_edit_dialog.dart';
+import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/app_theme_colors.dart';
+import 'package:journal/models/trip.dart';
+import 'package:journal/models/trip_card_model.dart';
+import 'package:journal/models/trip_item.dart';
+import 'package:journal/pages/mission_dashboard/widget/trip_edit_dialog.dart';
+import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/services/voice_service.dart'; // ⚠️ 确保你已经创建了这个文件
 import 'package:journal/util/dialog_util.dart';
 
 class MissionController extends GetxController {
-  // 响应式列表
-  var tasks = <TripItem>[].obs;
+  // ========================================================================
+  // 1. 核心变量与服务
+  // ========================================================================
 
-  var weatherTemp = "24°".obs; // 稍微改暖一点，配合浅色
-  var flightStatus = "值机中".obs;
-// --- 新增：整理模式开关 ---
-  var isPackingMode = false.obs;
-  // 新增：行程列表
-  var trips = <TripModel>[].obs;
+  // 语音服务
+  final VoiceService voiceService = Get.put(VoiceService());
+  Timer? _debounceTimer; // 语音防抖定时器
 
-  final ImagePicker _picker = ImagePicker();
+  // 响应式数据
+  var tasks = <TripItem>[].obs; // 当前物品列表
+  var trips = <TripModel>[].obs; // 行程卡片列表
+  var isPackingMode = false.obs; // 是否处于整理模式
 
+  var currentTrip = Rxn<Trip>(); // 当前选中的清单大对象
+  var checklistTrips = <Trip>[].obs; // 可切换的清单列表（用于下拉）
+
+  // 页面状态
   EasyRefreshController? refreshController = EasyRefreshController();
   var isLoading = true.obs;
-  var currentTrip = Rxn<Trip>(); // 当前选中的清单行程
-  var checklistTrips = <Trip>[].obs; // 清单行程列表（用于下拉切换）
-// --- 新增：处理行程排序 ---
+
+  // 遗留变量 (可能后续会优化掉)
+  var weatherTemp = "24°".obs;
+  var flightStatus = "值机中".obs;
+  final ImagePicker _picker = ImagePicker();
+
+  // ========================================================================
+  // 2. 初始化与生命周期
+  // ========================================================================
+
+  @override
+  void onInit() {
+    super.onInit();
+    // 初始化语音服务
+    voiceService.init();
+    // 加载数据
+    loadInitialData();
+  }
+
+  @override
+  void onClose() {
+    _debounceTimer?.cancel();
+    refreshController?.dispose();
+    super.onClose();
+  }
+
+  // 统一加载入口
+  void loadInitialData() {
+    tasks.clear();
+    loadItems(); // 加载物品
+    loadTrips(); // 加载行程卡片
+    update(["mission"]);
+  }
+
+  // ========================================================================
+  // 3. 语音交互逻辑 (新增)
+  // ========================================================================
+
+  /// 处理语音识别到的原始文本
+  void processVoiceCommand(String text) {
+    if (text.isEmpty) return;
+
+    // 防抖处理：避免用户说话停顿导致频繁触发
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+
+    _debounceTimer = Timer(const Duration(milliseconds: 800), () {
+      _executeVoiceCommand(text);
+    });
+  }
+
+  /// 执行语音指令
+  void _executeVoiceCommand(String text) {
+    developer.log("正在分析语音指令: $text");
+
+    // 1. 简单的意图判断
+    // 如果包含“拿出来”、“取消”等词，视为取消装箱；否则默认为装箱
+    bool isNegative =
+        text.contains("取消") || text.contains("拿出") || text.contains("没带");
+    bool targetStatus = !isNegative;
+
+    // 2. 模糊匹配物品
+    List<TripItem> matchedItems = [];
+
+    // 预处理文本：去掉标点符号，只留中文、英文、数字
+    String cleanText =
+        text.replaceAll(RegExp(r'[^\u4e00-\u9fa5a-zA-Z0-9]'), '');
+
+    for (var item in tasks) {
+      // 策略：如果语音文本包含了物品名称，或者物品名称包含了语音里的关键部分
+      if (cleanText.contains(item.itemName)) {
+        matchedItems.add(item);
+      }
+    }
+
+    if (matchedItems.isEmpty) {
+      if (Get.context != null) {
+        // JournalToast.showError(Get.context!, "没听清，或者清单里没有这个物品哦");
+      }
+      return;
+    }
+
+    // 3. 执行操作
+    for (var item in matchedItems) {
+      // 只有状态不一致时才切换
+      if (item.isPacked != targetStatus) {
+        toggleChecklistItem(item);
+        if (Get.context != null) {
+          // JournalToast.show(
+          //     Get.context!, "已${targetStatus ? '装箱' : '拿出'}: ${item.itemName}");
+        }
+      } else {
+        // 如果状态已经一样了，提示一下
+        // JournalToast.show(Get.context!, "${item.itemName} 已经在那里啦");
+      }
+    }
+
+    // 清空显示的文字结果
+    voiceService.textResult.value = "";
+    voiceService.reset();
+    update(["mission"]);
+  }
+
+  // ========================================================================
+  // 4. 物品清单逻辑 (Packing Logic)
+  // ========================================================================
+
+  // 获取当前清单详情
+  Future<void> loadItems() async {
+    try {
+      final data = await HttpRequest.request(
+          Method.get, "/checklist/trip/detail/current");
+      if (data != null) {
+        currentTrip.value = Trip.fromJson(data['data']);
+        tasks.assignAll((currentTrip.value?.itemList) ?? []);
+      }
+    } catch (e) {
+      print("获取当前清单失败: $e");
+    }
+  }
+
+  // 切换物品装箱状态 (支持乐观更新)
+  Future<void> toggleChecklistItem(TripItem item) async {
+    HapticFeedback.lightImpact();
+
+    // 乐观更新 UI：先变状态，再请求接口
+    final originalState = item.isPacked;
+    item.isPacked = !originalState;
+    tasks.refresh(); // 刷新箱子区域 (SuitcaseView 监听了 tasks)
+    currentTrip.refresh(); // 刷新未装箱区域 (UnpackGridView 监听了 currentTrip)
+    update(["mission"]);
+
+    try {
+      await HttpRequest.request(
+        Method.post,
+        "/checklist/trip/toggle?tripItemId=${item.id}&isPacked=${item.isPacked}",
+      );
+    } catch (e) {
+      // 失败回滚
+      item.isPacked = originalState;
+      tasks.refresh(); // 刷新箱子区域 (SuitcaseView 监听了 tasks)
+      currentTrip.refresh(); // 刷新未装箱区域 (UnpackGridView 监听了 currentTrip)
+      update(["mission"]);
+      if (Get.context != null) {
+        JournalToast.showError(Get.context!, "状态同步失败，请重试");
+      }
+    }
+  }
+
+  // 切换清单行程 (预留功能)
+  Future<void> switchTripDetail(int tripId) async {
+    isLoading.value = true;
+    update(["mission"]);
+    try {
+      final data = await HttpRequest.request(
+          Method.get, "/checklist/trip/detail/$tripId");
+      if (data != null) {
+        currentTrip.value = Trip.fromJson(data);
+      }
+    } catch (e) {
+      print("切换清单失败: $e");
+    } finally {
+      isLoading.value = false;
+      update(["mission"]);
+    }
+  }
+
+  void reorderTasks(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = tasks.removeAt(oldIndex);
+    tasks.insert(newIndex, item);
+  }
+
+  void toggleAllTasks() {
+    for (var element in tasks) {
+      element.isPacked = false;
+    }
+    update(["mission"]);
+  }
+
+  // ========================================================================
+  // 5. 行程卡片逻辑 (Trip Card Logic)
+  // ========================================================================
+
+  void loadTrips() async {
+    try {
+      var response = await HttpRequest.request(Method.get, "/travel/list");
+      trips.clear();
+      response['data']?.forEach((element) {
+        trips.add(TripModel.fromJson(element));
+      });
+      update(["mission"]);
+    } catch (e) {
+      print("加载行程失败: $e");
+    }
+  }
+
+  // 拖拽排序行程
   void reorderTrips(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
     final TripModel item = trips.removeAt(oldIndex);
     trips.insert(newIndex, item);
-
     HttpRequest.request(Method.post, "/travel/reorder", params: trips);
   }
 
-  // --- 新增：删除行程 ---
+  // 删除行程
   void deleteTrip(TripModel trip, BuildContext context) {
     JournalDialog.show(
       context,
@@ -59,6 +263,7 @@ class MissionController extends GetxController {
     );
   }
 
+  // 显示编辑/新增确认框
   void showConfirmDialog(TripModel trip, BuildContext context,
       {TripModel? existingTrip}) {
     Get.bottomSheet(
@@ -66,14 +271,17 @@ class MissionController extends GetxController {
         initialTrip: trip,
         onConfirm: (newTrip) {
           if (existingTrip != null) {
+            // 更新
             int index = trips.indexOf(existingTrip);
             newTrip.id = existingTrip.id;
             if (index != -1) {
               trips[index] = newTrip;
+              developer.log("更新行程: $newTrip");
               HttpRequest.request(Method.put, "/travel/edit", params: newTrip);
               JournalToast.showSuccess(context, "行程已更新");
             }
           } else {
+            // 新增
             trips.add(newTrip);
             HttpRequest.request(Method.post, "/travel/save", params: newTrip);
             JournalToast.showSuccess(context, "行程已添加");
@@ -86,6 +294,11 @@ class MissionController extends GetxController {
     );
   }
 
+  // ========================================================================
+  // 6. 弹窗与上传逻辑 (UI Helpers)
+  // ========================================================================
+
+  // 显示添加行程的底部弹窗
   void showUploadDialog(BuildContext context) {
     var appColors = Theme.of(context).extension<AppThemeColors>()!;
 
@@ -99,7 +312,6 @@ class MissionController extends GetxController {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 标题
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -118,8 +330,6 @@ class MissionController extends GetxController {
               ],
             ),
             const SizedBox(height: 24),
-
-            // 选项
             _buildUploadOption(
               context,
               icon: Icons.photo_library_outlined,
@@ -160,31 +370,7 @@ class MissionController extends GetxController {
     );
   }
 
-  void _showManualAddDialog(BuildContext context) {
-    final emptyTrip = TripModel.fromJson({
-      'type': 'Train', // 默认类型
-      'status': 'Pending',
-      'transport': {'number': '', 'duration': ''},
-      'departure': {
-        'city': '',
-        'station_airport': '',
-        'time': '00:00',
-        'date': DateTime.now().toString().substring(0, 10), // 默认今天
-        'gate_platform': ''
-      },
-      'arrival': {
-        'city': '',
-        'station_airport': '',
-        'time': '00:00',
-        'day_diff': 0
-      },
-      'finance': {'seat_class': '', 'seat_detail': ''},
-      'meta': {'remark': ''}
-    });
-
-    showConfirmDialog(emptyTrip, context);
-  }
-
+  // 构建选项 Cell
   Widget _buildUploadOption(BuildContext context,
       {required IconData icon,
       required String label,
@@ -243,13 +429,39 @@ class MissionController extends GetxController {
     );
   }
 
+  // 手动添加弹窗
+  void _showManualAddDialog(BuildContext context) {
+    final emptyTrip = TripModel.fromJson({
+      'type': 'Train',
+      'status': 'Pending',
+      'transport': {'number': '', 'duration': ''},
+      'departure': {
+        'city': '',
+        'station_airport': '',
+        'time': '00:00',
+        'date': DateTime.now().toString().substring(0, 10),
+        'gate_platform': ''
+      },
+      'arrival': {
+        'city': '',
+        'station_airport': '',
+        'time': '00:00',
+        'day_diff': 0
+      },
+      'finance': {'seat_class': '', 'seat_detail': ''},
+      'meta': {'remark': ''}
+    });
+
+    showConfirmDialog(emptyTrip, context);
+  }
+
+  // 选图并上传 OCR
   Future<void> _pickImage(ImageSource source, BuildContext context) async {
     try {
-      // 增加图片压缩参数，避免上传过大文件
       final XFile? image = await _picker.pickImage(
         source: source,
-        imageQuality: 70, // 压缩质量 70%
-        maxWidth: 1920, // 限制最大宽度
+        imageQuality: 70,
+        maxWidth: 1920,
       );
       if (image != null) {
         if (context.mounted) {
@@ -257,17 +469,13 @@ class MissionController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('错误', '选择图片失败: $e');
+      if (context.mounted) JournalToast.showError(context, '选择图片失败: $e');
     }
   }
 
+  // 上传图片进行 AI 解析
   Future<void> _uploadAndParseImage(
       File imageFile, BuildContext context) async {
-    // 打印文件大小
-    int fileSize = await imageFile.length();
-    print(
-        "Upload file size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB");
-
     Get.dialog(
       const Center(child: CircularProgressIndicator()),
       barrierDismissible: false,
@@ -285,164 +493,35 @@ class MissionController extends GetxController {
         "/ai/parse",
         params: formData,
         success: (data) {
-          Get.back();
+          Get.back(); // 关闭 loading
           if (data != null) {
             try {
               Map<String, dynamic> mapData;
               if (data is String) {
-                try {
-                  mapData = jsonDecode(data);
-                } catch (e) {
-                  throw Exception("无法解析返回数据: $data");
-                }
-              } else if (data is Map<String, dynamic>) {
-                mapData = data;
+                mapData = jsonDecode(data);
               } else {
-                // 其他类型，尝试强转或者报错
-                try {
-                  mapData = Map<String, dynamic>.from(data as Map);
-                } catch (e) {
-                  throw Exception("Unexpected data type: ${data.runtimeType}");
-                }
+                mapData = Map<String, dynamic>.from(data as Map);
               }
-
               TripModel trip = TripModel.fromJson(mapData);
-              // 弹出确认框
               showConfirmDialog(trip, context);
             } catch (e) {
               print("解析错误: $e");
-              Get.snackbar('错误', '解析数据失败: $e');
+              JournalToast.showError(context, '解析数据失败');
             }
           }
         },
         fail: (code, msg) {
-          Get.back(); // 关闭 loading
-          Get.snackbar('错误', '上传失败: $msg');
+          Get.back();
+          JournalToast.showError(context, '上传失败: $msg');
         },
       );
     } catch (e) {
-      Get.back(); // 关闭 loading
-      Get.snackbar('错误', '上传失败: $e');
+      Get.back();
+      JournalToast.showError(context, '网络错误: $e');
     }
   }
 
-  // 计算进度
-  double get progress {
-    if (tasks.isEmpty) return 0.0;
-    int completed = tasks.where((t) => t.isPacked).length;
-    return completed / tasks.length;
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    loadInitialData();
-  }
-
-  void loadInitialData() {
-    tasks.clear();
-
-    loadItems();
-    loadTrips();
-    update(["mission"]);
-  }
-
-  void loadTrips() async {
-    var date = await HttpRequest.request(Method.get, "/travel/list");
-    trips.clear();
-
-    date['data']?.forEach((element) {
-      trips.add(TripModel.fromJson(element));
-    });
-    update(["mission"]);
-    // trips.assignAll();
-  }
-
-  // 列表重新排序
-  void reorderTasks(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-    final item = tasks.removeAt(oldIndex);
-    tasks.insert(newIndex, item);
-  }
-
-  void toggleAllTasks() {
-    tasks.forEach((element) {
-      element.isPacked = false;
-    });
-  }
-
-  // --- 接入新 API：获取实例列表 ---
-  Future<void> fetchChecklistTrips() async {
-    try {
-      final data =
-          await HttpRequest.request(Method.get, "/checklist/trip/list");
-      if (data != null && data is List) {
-        checklistTrips.assignAll(data.map((e) => Trip.fromJson(e)).toList());
-      }
-    } catch (e) {
-      print("获取行程列表失败: $e");
-    }
-  }
-
-  // --- 接入新 API：获取当前实例 ---
-  Future<void> loadItems() async {
-    try {
-      final data = await HttpRequest.request(
-          Method.get, "/checklist/trip/detail/current");
-      if (data != null) {
-        print("data:$data");
-        currentTrip.value = Trip.fromJson(data['data']);
-        print("currentTrip:${currentTrip.value?.itemList}");
-        tasks.assignAll((currentTrip.value?.itemList) ?? []);
-      }
-    } catch (e) {
-      print("获取当前清单失败: $e");
-    }
-  }
-
-  // --- 接入新 API：切换具体行程 ---
-  Future<void> switchTripDetail(int tripId) async {
-    isLoading.value = true;
-    update(["mission"]);
-    try {
-      final data = await HttpRequest.request(
-          Method.get, "/checklist/trip/detail/$tripId");
-      if (data != null) {
-        currentTrip.value = Trip.fromJson(data);
-      }
-    } catch (e) {
-      print("切换清单失败: $e");
-    } finally {
-      isLoading.value = false;
-      update(["mission"]);
-    }
-  }
-
-  // --- 接入新 API：切换装箱状态 (乐观更新) ---
-  Future<void> toggleChecklistItem(TripItem item) async {
-    HapticFeedback.lightImpact();
-
-    // 乐观更新 UI
-    final originalState = item.isPacked;
-    item.isPacked = !originalState;
-    update(["mission"]);
-
-    try {
-      await HttpRequest.request(
-        Method.post,
-        "/checklist/trip/toggle?tripItemId=${item.id}&isPacked=${item.isPacked}",
-      );
-      // 如果您的 request 封装拦截了错误，这里可以判断 code
-    } catch (e) {
-      // 失败回滚
-      item.isPacked = originalState;
-      update(["mission"]);
-      Get.snackbar('错误', '状态同步失败，请重试');
-    }
-  }
-
+  // 跳转
   nav2ToTripList(BuildContext context) {
     Get.toNamed(Routers.TripChecklistPageUrl);
   }

@@ -1,7 +1,7 @@
 name: journal
 description: "A new Flutter project."
 publish_to: "none"
-version: 2.2.0+11
+version: 2.2.0+12
 fluwx:
   app_id: "wx30e85737940da4af"
   debug_logging: true 
@@ -88,7 +88,7 @@ dependencies:
       ref: V1.3.8
   map_launcher: ^4.4.2
   carousel_slider: ^5.1.2
-
+  avatar_glow: ^3.0.1 #用于做一个酷炫的“正在听”的水波纹效果
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -6,12 +6,11 @@ import 'package:get/get.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/models/app_tab_item.dart';
 import 'package:journal/models/user.dart';
-import 'package:journal/pages/activity_list/view.dart';
+
 import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/chat/view.dart';
 import 'package:journal/pages/current_activity/view.dart';
 import 'package:journal/pages/expense/view.dart';
-import 'package:journal/pages/mission_dashboard/pages/item_template/view.dart';
 import 'package:journal/pages/mission_dashboard/view.dart';
 import 'package:journal/pages/profile/view.dart';
 import 'package:journal/request/request.dart';

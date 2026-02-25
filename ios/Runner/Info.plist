@@ -4,8 +4,18 @@
 <dict>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>CtripWireless</string>         
-		<string>trip</string>
+		<string>ctrip</string>
+		<string>CtripWireless</string>
+		
+		<string>mt12306</string>
+
+		<string>alipay</string>
+		<string>alipays</string>
+		<string>weixinURLParamsAPI</string>
+		<string>weixinULAPI</string>
+		<string>wechat</string>
+		<string>weixin</string>
+
 		<string>comgooglemaps</string>
 		<string>baidumap</string>
 		<string>iosamap</string>
@@ -28,6 +38,8 @@
 		<string>mappls</string>
 		<string>moovit</string>
 		<string>neshan</string>
+		
+		<string>trip</string>
 	</array>
 	<key>NSMotionUsageDescription</key>
 	<string>We need access to sensors to control gravity.</string>
@@ -83,34 +95,7 @@
 	<string>NO</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.productivity</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>alipay</string>
-		<string>alipays</string>
-		<string>weixinURLParamsAPI</string>
-		<string>weixinULAPI</string>
-		<string>wechat</string>
-		<string>weixin</string>
-		<string>comgooglemaps</string>
-		<string>baidumap</string>
-		<string>iosamap</string>
-		<string>waze</string>
-		<string>yandexmaps</string>
-		<string>yandexnavi</string>
-		<string>citymapper</string>
-		<string>mapswithme</string>
-		<string>osmandmaps</string>
-		<string>dgis</string>
-		<string>qqmap</string>
-		<string>here-location</string>
-		<string>tomtomgo</string>
-		<string>copilot</string>
-		<string>com.sygic.aura</string>
-		<string>nmap</string>
-		<string>kakaomap</string>
-		<string>tmap</string>
-		<string>szn-mapy</string>
-	</array>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

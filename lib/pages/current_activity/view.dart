@@ -16,7 +16,6 @@ import 'package:journal/models/expense_date_group.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
 import 'package:journal/util/toast_util.dart';
-import 'package:remixicon/remixicon.dart';
 
 import 'index.dart';
 

@@ -177,7 +177,7 @@ class InvitePage extends GetView<InviteController> {
           // --- 分割线：虚线效果 (Ticket 隐喻) ---
           Row(
             children: [
-              _buildTicketNotch(appColors.backgroundColor!, isLeft: true),
+              _buildTicketNotch(appColors.backgroundColor, isLeft: true),
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
@@ -207,7 +207,7 @@ class InvitePage extends GetView<InviteController> {
                   },
                 ),
               ),
-              _buildTicketNotch(appColors.backgroundColor!, isLeft: false),
+              _buildTicketNotch(appColors.backgroundColor, isLeft: false),
             ],
           ),
 
