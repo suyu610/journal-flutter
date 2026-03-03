@@ -18,6 +18,69 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    return GetBuilder<ExpensePageController>(
+      init: ExpensePageController(),
+      id: "expense_item",
+      builder: (_) {
+        return Scaffold(
+          backgroundColor: appColors.backgroundColor,
+          appBar: _buildAppBar(context, appColors),
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Column(
+              children: [
+                // 1. 滚动的内容区域 (使用 Expanded 占据上方所有剩余空间)
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    child: Column(
+                      children: [
+                        _buildTypeAndAmountCard(context, appColors),
+                        SizedBox(height: 16.h),
+                        _buildDetailsCard(context, appColors),
+                        // 稍微留一点底部空白，让内容滑到底时不会觉得太贴着按钮
+                        SizedBox(height: 20.h),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // 2. 底部固定的保存按钮区域
+                Container(
+                  width: double.infinity,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  decoration: BoxDecoration(
+                    color: appColors.backgroundColor, // 确保背景不透明，遮挡底部滚动的卡片
+                    boxShadow: [
+                      // 增加一个极其轻微的向上阴影，提升界面的现代感和层级划分
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        offset: const Offset(0, -4),
+                        blurRadius: 10,
+                      )
+                    ],
+                  ),
+                  child: SafeArea(
+                    // SafeArea 防止按钮被 iOS 底部 Home Bar 遮挡
+                    top: false,
+                    child: _buildSaveButton(context, appColors),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // @override
+  Widget _build(BuildContext context) {
     // 2. 获取当前主题颜色
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
 
@@ -366,6 +429,50 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          GestureDetector(
+            onTap: () => controller.showActivityPicker(context, appColors),
+            child: Row(
+              children: [
+                Icon(Icons.book_outlined,
+                    size: 18, color: appColors.secondaryText),
+                SizedBox(width: 10.w),
+                Text("所属账本",
+                    style: TextStyle(
+                        fontSize: 13.sp, color: appColors.primaryText)),
+                const Spacer(),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: appColors.primaryText.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      // 假设 controller 中维护了当前选中的账本名称 activityName
+                      Text(
+                        controller.activityName.value.isEmpty
+                            ? "选择账本"
+                            : controller.activityName.value,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: appColors.primaryText),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          size: 12, color: appColors.secondaryText),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            child: Divider(
+                height: 1, color: appColors.primaryText.withOpacity(0.05)),
+          ),
           // 1. 日期选择
           GestureDetector(
             onTap: () => controller.showDatePicker(context),
@@ -376,7 +483,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
                 SizedBox(width: 10.w),
                 Text("日期",
                     style: TextStyle(
-                        fontSize: 15.sp, color: appColors.primaryText)),
+                        fontSize: 13.sp, color: appColors.primaryText)),
                 const Spacer(),
                 Container(
                   padding:
@@ -396,9 +503,8 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
               ],
             ),
           ),
-
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
+            padding: EdgeInsets.symmetric(vertical: 12.h),
             child: Divider(
                 height: 1, color: appColors.primaryText.withOpacity(0.05)),
           ),
@@ -411,7 +517,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
               SizedBox(width: 10.w),
               Text("原价",
                   style:
-                      TextStyle(fontSize: 15.sp, color: appColors.primaryText)),
+                      TextStyle(fontSize: 13.sp, color: appColors.primaryText)),
               SizedBox(width: 8.w),
               Text("(可选)",
                   style: TextStyle(
@@ -448,7 +554,7 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
           ),
 
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
+            padding: EdgeInsets.symmetric(vertical: 12.h),
             child: Divider(
                 height: 1, color: appColors.primaryText.withOpacity(0.05)),
           ),

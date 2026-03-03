@@ -7,6 +7,7 @@ import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
+import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/util/cos.dart';
@@ -18,40 +19,133 @@ class ExpensePageController extends GetxController {
   var expensePriceTextEditController = TextEditingController();
   var expenseLabelTextEditController = TextEditingController();
   var expenseOriginalPriceTextEditController = TextEditingController();
-
+  RxList<Activity> activityList = <Activity>[].obs;
+  static List<Activity>? _cachedActivityList;
   ExpensePageController();
   Rx<Expense> expense = Expense.empty().obs;
+  RxString activityName = "默认账本".obs;
+
+  void showActivityPicker(BuildContext context, dynamic appColors) {
+    // 拦截操作：如果数据还没回来，提示用户（解决问题 1）
+    if (activityList.isEmpty) {
+      JournalToast.showError(context, "账本数据加载中，请稍候",
+          duration: const Duration(seconds: 1));
+      return;
+    }
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.only(
+            top: 16, bottom: MediaQuery.of(context).padding.bottom + 16),
+        decoration: BoxDecoration(
+          color: appColors.backgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("选择所属账本",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: appColors.primaryText)),
+            const SizedBox(height: 16),
+            ...activityList.map((e) => _buildActivityListItem(
+                e.activityName, e.activityId, appColors)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityListItem(String name, String id, dynamic appColors) {
+    return ListTile(
+      title: Text(name, style: TextStyle(color: appColors.primaryText)),
+      trailing: expense.value.activityId == id
+          ? Icon(Icons.check_circle, color: appColors.mainButtonBg)
+          : null,
+      onTap: () {
+        expense.value.activityId = id;
+        activityName.value = name;
+        update(['expense_item']);
+        Get.back(); // 关闭弹窗
+      },
+    );
+  }
 
   _initData() {
+    // 1. 优先解析传入的参数，确立基础的 expense 对象
     if (Get.arguments != null) {
-      // 判断type
       if (Get.arguments.runtimeType != Expense) {
         expense.value = Expense.empty();
-        expense.value.activityId = Get.arguments["activityId"];
-        // 日期 yyyy-mm-dd hh:mm:ss
+        expense.value.activityId = Get.arguments["activityId"] ?? "";
         expense.value.expenseTime = DateTime.now().toString().substring(0, 19);
       } else {
         expense.value = Get.arguments;
         expensePriceTextEditController.text = expense.value.price.toString();
         expenseLabelTextEditController.text = expense.value.label.toString();
+        // 兼容 originalPrice 为 null 的情况
         expenseOriginalPriceTextEditController.text =
-            expense.value.originalPrice.toString();
+            expense.value.originalPrice?.toString() ?? "";
       }
     } else {
       expense.value = Expense.empty();
     }
 
     expensePriceFocusNode.requestFocus();
-
+    // 先更新一次，让输入框等基础 UI 渲染出来
     update(["expense_item"]);
+
+    // 2. 加载账本数据并处理反显
+    _loadActivitiesAndMatchName();
   }
 
-  void onTap() {}
+  // 新增：专门处理账本列表获取和反显的方法
+  void _loadActivitiesAndMatchName() {
+    // 方案：优先使用缓存，实现秒开（解决问题 2）
+    if (_cachedActivityList != null && _cachedActivityList!.isNotEmpty) {
+      activityList.value = _cachedActivityList!;
+      _matchCurrentActivityName();
+    }
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  // }
+    // 无论有没有缓存，都在后台静默请求一次最新列表（防止其他页面新增了账本）
+    HttpRequest.request(Method.get, "/activity/list/all", success: (data) {
+      var list = (data as List).map((e) => Activity.fromJson(e)).toList();
+      activityList.value = list;
+      _cachedActivityList = list; // 更新静态缓存
+
+      // 匹配当前选中的账本名称（解决问题 3）
+      _matchCurrentActivityName();
+
+      update(["activity_list"]);
+    }, fail: (code, msg) {
+      Log().d("获取账本列表失败: $msg");
+    });
+  }
+
+  // 新增：根据 current activityId 匹配名称的方法
+  void _matchCurrentActivityName() {
+    String currentId = expense.value.activityId;
+    if (currentId.isEmpty) {
+      activityName.value = "请选择账本";
+      update(["expense_item"]);
+      return;
+    }
+
+    try {
+      // 在列表中寻找对应的账本
+      var matchedActivity = activityList.firstWhere(
+        (element) => element.activityId == currentId,
+      );
+      activityName.value = matchedActivity.activityName;
+    } catch (e) {
+      // 说明没找到（可能被删了，或者数据异常）
+      activityName.value = "未知账本";
+    }
+
+    // 更新 UI 以展示反显的名字
+    update(["expense_item"]);
+  }
 
   @override
   void onReady() {
@@ -114,6 +208,7 @@ class ExpensePageController extends GetxController {
 
   Future<bool> updateExpense(context) async {
     JournalToast.showLoading(context, text: "修改中");
+
     await HttpRequest.request(
       Method.patch,
       "/expense",

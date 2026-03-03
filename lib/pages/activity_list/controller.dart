@@ -48,7 +48,6 @@ class ActivityListController extends GetxController {
   }
 
   void fetchAllActivityList() {
-    Log().d("fetchAllActivityList");
     HttpRequest.request(
       Method.get,
       "/activity/list/all",

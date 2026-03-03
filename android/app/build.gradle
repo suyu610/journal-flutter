@@ -29,13 +29,13 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17   
         coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -47,6 +47,12 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        
+        manifestPlaceholders = [
+            XG_ACCESS_ID: "1234567890",
+            XG_ACCESS_KEY: "ABCDEFGHIJKL",
+            applicationName: "android.app.Application"
+        ]
     }
 
     buildTypes {
@@ -54,6 +60,9 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -63,9 +72,5 @@ flutter {
 }
 
 dependencies {
-    // ... 现有的其他依赖
-
-    // 🔥 添加这一行：这是谷歌提供的脱糖库
-    // 版本号 2.0.4 是目前比较通用的稳定版，也可以根据需要使用更新版本
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

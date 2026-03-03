@@ -1,0 +1,6 @@
+-keep class com.jg.** { *; }
+-dontwarn com.jg.**
+-keep class com.tencent.android.tpush.** { *; }
+-dontwarn com.tencent.android.tpush.**
+-keep class com.tencent.tpns.** { *; }
+-dontwarn com.tencent.tpns.**

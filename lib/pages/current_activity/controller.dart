@@ -213,6 +213,7 @@ class CurrentActivityController extends GetxController {
   }
 
   void switchActivity(Activity activity) async {
+    print(activity);
     // 调用接口
     activity.activated = true;
     await HttpRequest.request(Method.patch, "/activity", params: activity);
