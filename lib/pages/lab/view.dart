@@ -111,6 +111,14 @@ class LabPage extends GetView<LabController> {
                     ),
                     onTap: () => Get.toNamed(Routers.TabBarSettingPageUrl),
                   ),
+                  Cell(
+                    title: "随机照片",
+                    icon: _buildIcon(
+                      Icons.layers_outlined,
+                      appColors,
+                    ),
+                    onTap: () => Get.toNamed(Routers.RandomPhotoPageUrl),
+                  ),
                 ],
               ),
             ),

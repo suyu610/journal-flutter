@@ -17,6 +17,8 @@ PODS:
   - fluwx/no_pay (0.0.1):
     - Flutter
     - OpenWeChatSDKNoPay (~> 2.0.5)
+  - geocoding_ios (1.0.5):
+    - Flutter
   - home_widget (0.0.1):
     - Flutter
   - image_picker_ios (0.0.1):
@@ -33,6 +35,9 @@ PODS:
     - Flutter
   - permission_handler_apple (9.3.0):
     - Flutter
+  - photo_manager (3.9.0):
+    - Flutter
+    - FlutterMacOS
   - QCloudCore (6.5.1):
     - QCloudCore/Default (= 6.5.1)
   - QCloudCore/Default (6.5.1):
@@ -45,6 +50,8 @@ PODS:
   - rive_common (0.0.1):
     - Flutter
   - sensors_plus (0.0.1):
+    - Flutter
+  - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
@@ -81,6 +88,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - fluwx (from `.symlinks/plugins/fluwx/ios`)
+  - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - home_widget (from `.symlinks/plugins/home_widget/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
@@ -88,8 +96,10 @@ DEPENDENCIES:
   - map_launcher (from `.symlinks/plugins/map_launcher/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - photo_manager (from `.symlinks/plugins/photo_manager/darwin`)
   - rive_common (from `.symlinks/plugins/rive_common/ios`)
   - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
   - speech_to_text (from `.symlinks/plugins/speech_to_text/darwin`)
@@ -123,6 +133,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   fluwx:
     :path: ".symlinks/plugins/fluwx/ios"
+  geocoding_ios:
+    :path: ".symlinks/plugins/geocoding_ios/ios"
   home_widget:
     :path: ".symlinks/plugins/home_widget/ios"
   image_picker_ios:
@@ -137,10 +149,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/package_info_plus/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  photo_manager:
+    :path: ".symlinks/plugins/photo_manager/darwin"
   rive_common:
     :path: ".symlinks/plugins/rive_common/ios"
   sensors_plus:
     :path: ".symlinks/plugins/sensors_plus/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sign_in_with_apple:
@@ -169,6 +185,7 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_local_notifications: 395056b3175ba4f08480a7c5de30cd36d69827e4
   fluwx: fc07b03ebb407d68ae135a9f31967de03a5d11b2
+  geocoding_ios: 33776c9ebb98d037b5e025bb0e7537f6dd19646e
   home_widget: 54b4f6b36ed8d64cfee594a476225c35c3e45091
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
@@ -177,11 +194,13 @@ SPEC CHECKSUMS:
   OpenWeChatSDKNoPay: a391d2a7c0d4db1bdc870f885bd4cba99b64f243
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  photo_manager: 25fd77df14f4f0ba5ef99e2c61814dde77e2bceb
   QCloudCore: 6f8c67b96448472d2c6a92b9cfe1bdb5abbb1798
   QCloudCOSXML: 92f50a787b4e8d9a7cb6ea8e626775256b4840a7
   QCloudTrack: 20b79388365b4c8ed150019c82a56f1569f237f8
   rive_common: dd421daaf9ae69f0125aa761dd96abd278399952
   sensors_plus: 6a11ed0c2e1d0bd0b20b4029d3bad27d96e0c65b
+  share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   speech_to_text: 3b313d98516d3d0406cea424782ec25470c59d19

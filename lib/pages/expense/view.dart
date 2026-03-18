@@ -79,41 +79,6 @@ class ExpenseItemPage extends GetView<ExpensePageController> {
     );
   }
 
-  // @override
-  Widget _build(BuildContext context) {
-    // 2. 获取当前主题颜色
-    final appColors = Theme.of(context).extension<AppThemeColors>()!;
-
-    return GetBuilder<ExpensePageController>(
-      init: ExpensePageController(),
-      id: "expense_item",
-      builder: (_) {
-        return Scaffold(
-          // 背景色跟随主题 (亮色:冷灰 / 暗色:深蓝灰)
-          backgroundColor: appColors.backgroundColor,
-          appBar: _buildAppBar(context, appColors),
-          body: GestureDetector(
-            // 点击空白处收起键盘
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 0.h),
-              child: Column(
-                children: [
-                  _buildTypeAndAmountCard(context, appColors),
-                  SizedBox(height: 16.h),
-                  _buildDetailsCard(context, appColors),
-                  SizedBox(height: 32.h),
-                  _buildSaveButton(context, appColors)
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   PreferredSizeWidget _buildAppBar(
       BuildContext context, AppThemeColors appColors) {
     return JournalNavBar(

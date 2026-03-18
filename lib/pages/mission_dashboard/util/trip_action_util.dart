@@ -1,7 +1,6 @@
 // 文件路径: lib/pages/mission_dashboard/util/trip_action_util.dart
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,7 +51,6 @@ class TripActionUtil {
   /// 内部方法：打开地图选择 Sheet
   static void _openMapsSheet(BuildContext context) async {
     try {
-      // TODO: 这里坐标暂时是写死的，后续可以根据 TripModel 里的地点名称去 Geocoding 获取真实坐标
       final coords = Coords(37.759392, -122.5107336);
       const title = "目的地";
       final availableMaps = await MapLauncher.installedMaps;

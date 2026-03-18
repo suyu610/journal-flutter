@@ -1,7 +1,7 @@
 name: journal
 description: "A new Flutter project."
 publish_to: "none"
-version: 2.2.1+13
+version: 2.2.2+14
 fluwx:
   app_id: "wx30e85737940da4af"
   debug_logging: true 
@@ -45,12 +45,15 @@ dependencies:
   uuid: ^4.5.1
   intl: ^0.20.2
   easy_refresh: ^3.4.0
+  photo_manager: ^3.9.0
+  geocoding: ^3.0.0
   lottie: ^3.1.2
   permission_handler: ^11.3.1
   json_annotation: ^4.8.1
   bubble: ^1.2.1
   speech_to_text: ^7.3.0
   photo_view: ^0.15.0
+  extended_image: ^10.0.1 
   image_picker: ^1.1.2
   tencentcloud_cos_sdk_plugin: ^1.2.6
   slider_captcha: ^1.0.0
@@ -60,7 +63,7 @@ dependencies:
   auth_buttons: ^3.0.3
   video_player: ^2.9.2
   flutter_local_notifications: ^18.0.1
-  timezone: ^0.9.4
+  timezone: ^0.9.4 
   home_widget: ^0.9.0
   cached_network_image: ^3.3.1
   shelf: ^1.4.2
@@ -82,6 +85,9 @@ dependencies:
   reorderable_grid_view: ^2.2.0
   sankey_flutter: ^0.0.3
   modal_bottom_sheet: ^3.0.0
+  share_plus: ^12.0.1 # 用于调用系统分享（包含微信）
+  screenshot: ^3.0.0 # 用于将带边框的 Widget 转换为图片
+  qr_flutter: ^4.1.0 # 用于生成二维码
   tpns_flutter_plugin:
     git:
       url: https://github.com/TencentCloud/TPNS-Flutter-Plugin
@@ -89,6 +95,8 @@ dependencies:
   map_launcher: ^4.4.2
   carousel_slider: ^5.1.2
   avatar_glow: ^3.0.1 #用于做一个酷炫的“正在听”的水波纹效果
+  flutter_card_swiper: ^7.2.0
+  wechat_assets_picker: ^10.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

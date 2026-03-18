@@ -517,6 +517,7 @@ class MissionController extends GetxController {
       );
     } catch (e) {
       Get.back();
+      if (!context.mounted) return;
       JournalToast.showError(context, '网络错误: $e');
     }
   }

@@ -11,6 +11,7 @@ import 'package:journal/pages/invite/view.dart';
 import 'package:journal/pages/join_activity/view.dart';
 import 'package:journal/pages/lab/bottle/view.dart';
 import 'package:journal/pages/lab/fish_tank/view.dart';
+import 'package:journal/pages/lab/random_photo/view.dart';
 import 'package:journal/pages/lab/tree/view.dart';
 import 'package:journal/pages/lab/view.dart';
 import 'package:journal/pages/local_server/view.dart';
@@ -94,7 +95,7 @@ abstract class Routers {
     GetPage(name: JoinActivityPageUrl, page: () => const JoinActivityPage()),
     GetPage(name: InvitePageUrl, page: () => const InvitePage()),
     GetPage(name: ExpenseListPageUrl, page: () => const ExpenseListPage()),
-    GetPage(name: MissionDashboardPageUrl, page: () => MissionPage()),
+    GetPage(name: MissionDashboardPageUrl, page: () => const MissionPage()),
     GetPage(
         name: LoginPageUrl,
         page: () => const LoginPage(),
@@ -135,6 +136,7 @@ abstract class Routers {
         page: () => const ClassificationRulesPage()),
     GetPage(name: GrowingTreeUrl, page: () => const ForestPage()),
     GetPage(name: TripChecklistPageUrl, page: () => const TripChecklistPage()),
+    GetPage(name: RandomPhotoPageUrl, page: () => RandomPhotoPage()),
   ];
 
   static const String LabPageUrl = "/lab";
@@ -154,4 +156,6 @@ abstract class Routers {
   static const String ItemLibraryPageUrl = "/item_library";
   static const String TemplateListPageUrl = "/template_list";
   static const String TripChecklistPageUrl = "/trip_checklist";
+
+  static const String RandomPhotoPageUrl = "/random_photo";
 }

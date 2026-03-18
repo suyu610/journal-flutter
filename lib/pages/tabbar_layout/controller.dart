@@ -169,7 +169,7 @@ class LayoutController extends GetxController {
           id: 'misson',
           label: '面板',
           icon: Icons.bookmark_outline_rounded,
-          page: MissionPage(),
+          page: const MissionPage(),
           isEnabled: true),
       // AppTabItem(
       //     id: 'template_page',
