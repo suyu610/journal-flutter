@@ -3,9 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_date_picker.dart';
 import 'package:journal/components/journal_nav_bar.dart';
 import 'package:journal/components/journal_pop_menu.dart';
 import 'package:journal/core/app_theme_colors.dart';
+import 'package:journal/pages/lab/receipt/receipt_print_mode.dart';
+import 'package:journal/pages/lab/receipt/receipt_print_sheet.dart';
 import 'package:journal/util/toast_util.dart';
 import '../controller.dart';
 
@@ -88,7 +91,7 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ),
                   ),
-                  onTap: () => controller.handlePrintAction(context),
+                  onTap: () => _showPrintOptions(context),
                 )
               ],
             ),
@@ -175,6 +178,28 @@ class ChartNavBar extends StatelessWidget implements PreferredSizeWidget {
         }
       },
     );
+  }
+
+  Future<void> _showPrintOptions(BuildContext context) async {
+    final mode = await ReceiptPrintSheet.show(context);
+    if (mode == null || !context.mounted) return;
+
+    if (mode == ReceiptPrintMode.selectedDate) {
+      JournalDatePicker.show(
+        context,
+        title: '选择打印日期',
+        mode: JournalDatePickerMode.date,
+        initialDate: DateTime.now(),
+        onConfirm: (date) => controller.handlePrintAction(
+          context,
+          mode,
+          selectedDate: date,
+        ),
+      );
+      return;
+    }
+
+    await controller.handlePrintAction(context, mode);
   }
 
   @override

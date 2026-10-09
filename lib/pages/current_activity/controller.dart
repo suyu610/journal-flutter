@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:journal/core/log.dart';
@@ -6,21 +8,37 @@ import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
-import 'package:journal/models/paging.dart';
+import 'package:journal/pages/current_activity/expense_category_group.dart';
+import 'package:journal/pages/current_activity/expense_page_source.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/services/widget_service.dart';
 
+enum ExpenseDisplayMode { detailed, summary, category }
+
 class CurrentActivityController extends GetxController {
-  CurrentActivityController();
+  final ExpensePageSource _pageSource;
+  CurrentActivityController({ExpensePageSource? pageSource})
+      : _pageSource = pageSource ?? HttpExpensePageSource();
+
   ScrollController scrollController = ScrollController();
+  final TextEditingController searchController = TextEditingController();
+  Timer? _searchDebounce;
+  StreamSubscription<NeedRefreshData>? _refreshSubscription;
+  int _queryGeneration = 0;
+  String searchKeyword = '';
+  bool searchPending = false;
+  String? listError;
+  String? categoryError;
+  bool categoryLoading = false;
+  int categoryLoadedCount = 0;
+  List<ExpenseCategoryGroup> categoryGroups = [];
+  final Rx<ExpenseDisplayMode> displayMode = ExpenseDisplayMode.detailed.obs;
   Rx<Activity> currentActivity = Activity.empty().obs;
   RxList<ExpenseDateGroup> expenseDateGroupList = <ExpenseDateGroup>[].obs;
-  RxList<ExpenseDateGroup> expenseDateGroupListByType =
-      <ExpenseDateGroup>[].obs;
-
-  RxInt pageNum = 1.obs;
+  RxInt pageNum = 0.obs;
   RxBool hasNextPage = true.obs;
   RxBool isLoading = false.obs;
+  final Map<String, Expense> _loadedExpenses = {};
 
   void updateView() {
     update(["current_activity"]);
@@ -44,142 +62,205 @@ class CurrentActivityController extends GetxController {
     );
   }
 
-  // 修改：增加 targetPage 参数，默认为 1
-  void getExpenseList({int targetPage = 1}) {
-    // 1. 上锁
+  Future<void> getExpenseList({int targetPage = 1}) async {
+    if (isLoading.value || currentActivity.value.activityId.isEmpty) return;
+    final generation = _queryGeneration;
+    final activityId = currentActivity.value.activityId;
+    final keyword = searchKeyword;
     isLoading.value = true;
+    listError = null;
+    update(["current_activity"]);
 
-    print("正在请求第 $targetPage 页数据...");
-
-    HttpRequest.request(Method.get,
-        "/expense/list/${currentActivity.value.activityId}?pageNum=$targetPage",
-        success: (data) {
-      // 2. 请求结束，解锁（成功情况）
-      isLoading.value = false;
-
-      if (data == null) {
-        Log().d("无数据");
-      } else {
-        Paging pageInfo = Paging.fromJson(data as Map<String, dynamic>);
-
-        // 更新分页状态
-        hasNextPage.value = pageInfo.hasNextPage;
-        // 【关键】只有成功获取数据后，才更新当前的 pageNum
-        pageNum.value = targetPage;
-
-        List<Expense> expenseList =
-            (pageInfo.list).map((e) => Expense.fromJson(e)).toList();
-
-        // --- 数据合并逻辑开始 ---
-
-        // 1. 将新数据按日期分组
-        Map<String, List<Expense>> newPageMap = {};
-        for (var element in expenseList) {
-          // 容错处理：防止 substring 报错
-          if (element.expenseTime.length >= 10) {
-            String date = element.expenseTime.substring(0, 10);
-            newPageMap.putIfAbsent(date, () => []).add(element);
-          }
-        }
-
-        // 2. 遍历现有列表，进行 Merge（追加到已有日期）
-        for (var group in expenseDateGroupList) {
-          if (newPageMap.containsKey(group.date)) {
-            group.expenses.addAll(newPageMap[group.date]!);
-            // 既然已经合并了，从 Map 中移除，避免后续重复添加
-            newPageMap.remove(group.date);
-          }
-        }
-
-        // 3. 处理剩下的（现有列表中没有的日期），直接作为新组添加
-        newPageMap.forEach((date, list) {
-          expenseDateGroupList.add(ExpenseDateGroup(date, list));
-        });
-
-        // 4. 【关键】重新排序，保证日期顺序正确（通常是日期倒序）
-        expenseDateGroupList.sort((a, b) => b.date.compareTo(a.date));
-
-        // 5. 重新计算总金额
-        for (var element in expenseDateGroupList) {
-          double totalExpense = 0.0;
-          for (var expense in element.expenses) {
-            if (expense.positive == 0) {
-              // 假设 0 是支出
-              totalExpense += expense.price;
-            }
-          }
-          element.totalExpense = totalExpense;
-        }
-
-        // 更新 UI
+    try {
+      final page = await _pageSource.fetch(activityId, targetPage, keyword);
+      if (generation != _queryGeneration ||
+          activityId != currentActivity.value.activityId) {
+        return;
+      }
+      hasNextPage.value = page.hasNextPage;
+      pageNum.value = targetPage;
+      if (targetPage == 1) {
+        expenseDateGroupList.clear();
+        _loadedExpenses.clear();
+      }
+      _appendDateGroups(page.entries);
+    } catch (error) {
+      if (generation != _queryGeneration) return;
+      Log().d('加载账单失败: $error');
+      listError = '加载失败，点击重试';
+    } finally {
+      if (generation == _queryGeneration) {
+        isLoading.value = false;
         update(["current_activity"]);
       }
-    }, fail: (code, msg) {
-      // 2. 请求结束，解锁（失败情况）
-      isLoading.value = false;
-      Log().d(msg);
-      // 可以在这里加一个 Toast 提示失败
-    });
+    }
   }
 
-  initData() {
-    currentActivity.value = Activity.empty();
-    expenseDateGroupList.value = [];
-    //
-    fetchAllActivityList();
-    pageNum.value = 1;
-    hasNextPage.value = true;
-    isLoading.value = false; // 重置锁
-    HttpRequest.request(
-      Method.get,
-      "/activity/current",
-      success: (data) async {
-        if (data == null) {
-          currentActivity.value = Activity.empty();
-        } else {
-          currentActivity.value =
-              Activity.fromJson(data as Map<String, dynamic>);
-          // 获取expenseList
-          getExpenseList(targetPage: 1);
-          // 3. 同步给小组件
-          await WidgetSyncService.updateWidget(
-            budgetType: currentActivity.value.budgetType ?? "total",
-            todayExpense:
-                (currentActivity.value.todayExpense ?? 0.0).toDouble(),
-            weekExpense: (currentActivity.value.weekExpense ?? 0.0).toDouble(),
-            monthExpense:
-                (currentActivity.value.monthExpense ?? 0.0).toDouble(),
-            totalExpense:
-                (currentActivity.value.totalExpense ?? 0.0).toDouble(),
-            budgetAmount: (currentActivity.value.budget ?? 0.0).toDouble(),
-          );
+  void _appendDateGroups(List<Expense> entries) {
+    final byDate = <String, List<Expense>>{};
+    for (final entry in entries) {
+      if (entry.expenseTime.length < 10) continue;
+      final existing = _loadedExpenses[entry.expenseId];
+      if (existing != null) {
+        _mergeFiles(existing, entry);
+        continue;
+      }
+      _loadedExpenses[entry.expenseId] = entry;
+      final date = entry.expenseTime.substring(0, 10);
+      byDate.putIfAbsent(date, () => []).add(entry);
+    }
+    for (final group in expenseDateGroupList) {
+      final additions = byDate.remove(group.date);
+      if (additions != null) group.expenses.addAll(additions);
+    }
+    byDate.forEach((date, entries) {
+      expenseDateGroupList.add(ExpenseDateGroup(date, entries));
+    });
+    expenseDateGroupList.sort((a, b) => b.date.compareTo(a.date));
+    for (final group in expenseDateGroupList) {
+      group.totalExpense = group.expenses
+          .where((entry) => entry.positive == 0)
+          .fold(0.0, (total, entry) => total + entry.price.toDouble());
+    }
+  }
+
+  Future<void> _loadCategoryGroups() async {
+    final generation = _queryGeneration;
+    final activityId = currentActivity.value.activityId;
+    final keyword = searchKeyword;
+    categoryLoading = true;
+    categoryError = null;
+    categoryLoadedCount = 0;
+    categoryGroups = [];
+    update(["current_activity"]);
+
+    final entries = <Expense>[];
+    final seenEntries = <String, Expense>{};
+    var nextPage = 1;
+    try {
+      while (true) {
+        final page = await _pageSource.fetch(activityId, nextPage, keyword);
+        if (generation != _queryGeneration ||
+            displayMode.value != ExpenseDisplayMode.category ||
+            activityId != currentActivity.value.activityId) {
+          return;
         }
+        for (final entry in page.entries) {
+          final existing = seenEntries[entry.expenseId];
+          if (existing == null) {
+            seenEntries[entry.expenseId] = entry;
+            entries.add(entry);
+          } else {
+            _mergeFiles(existing, entry);
+          }
+        }
+        categoryLoadedCount = entries.length;
         update(["current_activity"]);
-      },
-      fail: (code, msg) {
-        Log().d("获取当前账本失败:$msg");
-      },
-    );
+        if (!page.hasNextPage) break;
+        if (page.entries.isEmpty) {
+          throw const FormatException('账单分页未继续更新');
+        }
+        nextPage++;
+      }
+      categoryGroups = groupExpensesByCategory(entries);
+    } catch (error) {
+      if (generation != _queryGeneration) return;
+      Log().d('加载分类账单失败: $error');
+      categoryError = '加载失败，点击重试';
+    } finally {
+      if (generation == _queryGeneration) {
+        categoryLoading = false;
+        update(["current_activity"]);
+      }
+    }
+  }
+
+  void _mergeFiles(Expense target, Expense duplicate) {
+    final files = duplicate.fileList;
+    if (files == null || files.isEmpty) return;
+    target.fileList ??= [];
+    for (final file in files) {
+      if (!target.fileList!.contains(file)) target.fileList!.add(file);
+    }
+  }
+
+  Future<void> _loadForMode() {
+    if (currentActivity.value.activityId.isEmpty) return Future.value();
+    return displayMode.value == ExpenseDisplayMode.category
+        ? _loadCategoryGroups()
+        : getExpenseList(targetPage: 1);
+  }
+
+  Future<void> initData() async {
+    _searchDebounce?.cancel();
+    searchPending = false;
+    _clearResults();
+    currentActivity.value = Activity.empty();
+    update(["current_activity"]);
+    fetchAllActivityList();
+    final generation = _queryGeneration;
+
+    try {
+      final response = await HttpRequest.request<dynamic>(
+        Method.get,
+        '/activity/current',
+      );
+      if (generation != _queryGeneration) return;
+      if (response is! Map || response['code'] != 0) {
+        throw StateError('获取当前账本失败');
+      }
+      final data = response['data'];
+      currentActivity.value = data is Map<String, dynamic>
+          ? Activity.fromJson(data)
+          : Activity.empty();
+      update(["current_activity"]);
+      if (currentActivity.value.activityId.isEmpty) return;
+
+      await _loadForMode();
+      await WidgetSyncService.updateWidget(
+        budgetType: currentActivity.value.budgetType ?? 'total',
+        todayExpense: (currentActivity.value.todayExpense ?? 0).toDouble(),
+        weekExpense: (currentActivity.value.weekExpense ?? 0).toDouble(),
+        monthExpense: (currentActivity.value.monthExpense ?? 0).toDouble(),
+        totalExpense: (currentActivity.value.totalExpense ?? 0).toDouble(),
+        budgetAmount: (currentActivity.value.budget ?? 0).toDouble(),
+      );
+    } catch (error) {
+      Log().d('获取当前账本失败: $error');
+    }
   }
 
   void onTap() {}
 
   void reset() {
-    pageNum.value = 1;
+    _clearResults();
+    update(["current_activity"]);
+  }
+
+  void _clearResults() {
+    _queryGeneration++;
+    pageNum.value = 0;
     hasNextPage.value = true;
     isLoading.value = false;
     expenseDateGroupList.clear();
-    update(["current_activity"]);
+    _loadedExpenses.clear();
+    listError = null;
+    categoryGroups = [];
+    categoryError = null;
+    categoryLoading = false;
+    categoryLoadedCount = 0;
   }
 
   RxBool shouldShowAddButton = false.obs;
 
-// 【新增】专门处理加载更多的逻辑
   void _loadMore() {
-    if (isLoading.value || !hasNextPage.value) {
+    if (displayMode.value == ExpenseDisplayMode.category ||
+        searchPending ||
+        isLoading.value ||
+        !hasNextPage.value ||
+        listError != null) {
       return;
     }
-    // 请求下一页：当前页码 + 1
     getExpenseList(targetPage: pageNum.value + 1);
   }
 
@@ -198,31 +279,67 @@ class CurrentActivityController extends GetxController {
         _loadMore();
       }
     });
-    eventBus.on<NeedRefreshData>().listen((NeedRefreshData data) {
+    _refreshSubscription = eventBus.on<NeedRefreshData>().listen((data) {
       Log().d("need refresh data: $data");
       if (data.refreshCurrentActivity) {
-        reset();
         initData();
       }
     });
   }
 
-  RxBool isExpenseListShowMode = true.obs;
-  void switchExpenseListShowMode() {
-    isExpenseListShowMode.value = !isExpenseListShowMode.value;
+  void onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    searchKeyword = value.trim();
+    _clearResults();
+    searchPending = true;
+    update(["current_activity"]);
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      searchPending = false;
+      update(["current_activity"]);
+      _loadForMode();
+    });
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    onSearchChanged('');
+  }
+
+  Future<void> setDisplayMode(ExpenseDisplayMode mode) async {
+    if (displayMode.value == mode) return;
+    displayMode.value = mode;
+    _searchDebounce?.cancel();
+    searchPending = false;
+    _clearResults();
+    update(["current_activity"]);
+    await _loadForMode();
+  }
+
+  void retryList() {
+    listError = null;
+    getExpenseList(targetPage: pageNum.value + 1);
+  }
+
+  void retryCategories() {
+    _loadCategoryGroups();
   }
 
   void switchActivity(Activity activity) async {
-    print(activity);
-    // 调用接口
+    searchController.clear();
+    searchKeyword = '';
+    _clearResults();
+    update(["current_activity"]);
     activity.activated = true;
     await HttpRequest.request(Method.patch, "/activity", params: activity);
-    // 刷新当前账本
     initData();
   }
 
-  // @override
-  // void onClose() {
-  //   super.onClose();
-  // }
+  @override
+  void onClose() {
+    _searchDebounce?.cancel();
+    _refreshSubscription?.cancel();
+    searchController.dispose();
+    scrollController.dispose();
+    super.onClose();
+  }
 }

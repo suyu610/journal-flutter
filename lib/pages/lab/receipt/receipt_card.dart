@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:journal/models/expense.dart';
-// 保持你原有的 import
-// import 'package:journal/models/expense.dart';
+import 'package:journal/pages/lab/receipt/receipt_line.dart';
 
 // ----------------------------------------------------------------
 
@@ -12,6 +11,7 @@ class ReceiptCard extends StatelessWidget {
   final String date;
   final String nickname;
   final double width;
+  final bool groupByCategory;
 
   const ReceiptCard({
     Key? key,
@@ -20,10 +20,15 @@ class ReceiptCard extends StatelessWidget {
     required this.budget,
     required this.date,
     required this.width,
+    this.groupByCategory = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final receiptLines = buildReceiptLines(
+      items,
+      groupByCategory: groupByCategory,
+    );
     // 逻辑计算
     double totalExpense = items
         .where((item) => item.positive != 1)
@@ -105,14 +110,14 @@ class ReceiptCard extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // 3. 商品列表
-                ...items.map((item) => Padding(
+                ...receiptLines.map((item) => Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: _buildItemRow(item, monoStyle),
                     )),
 
                 // 最小高度撑开，防止小票太短不好看
-                if (items.length < 3)
-                  SizedBox(height: (3 - items.length) * 24.0),
+                if (receiptLines.length < 3)
+                  SizedBox(height: (3 - receiptLines.length) * 24.0),
 
                 const SizedBox(height: 16),
                 _buildDashedDivider(),
@@ -141,10 +146,16 @@ class ReceiptCard extends StatelessWidget {
                     Text("TOTAL",
                         style: monoStyle.copyWith(
                             fontSize: 18, fontWeight: FontWeight.w900)),
-                    Text(
-                      "¥${totalExpense.toStringAsFixed(2)}",
-                      style: monoStyle.copyWith(
-                          fontSize: 24, fontWeight: FontWeight.w900),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          "¥${totalExpense.toStringAsFixed(2)}",
+                          style: monoStyle.copyWith(
+                              fontSize: 24, fontWeight: FontWeight.w900),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -181,65 +192,77 @@ class ReceiptCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: style.copyWith(color: Colors.grey[600], fontSize: 12)),
-          Text(value, style: style.copyWith(fontSize: 12)),
+          Text(
+            label,
+            style: style.copyWith(color: Colors.grey[600], fontSize: 12),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: style.copyWith(fontSize: 12),
+            ),
+          ),
         ],
       ),
     );
   }
 
   // 构建商品行 (带密集虚线)
-  Widget _buildItemRow(Expense item, TextStyle style) {
+  Widget _buildItemRow(ReceiptLine item, TextStyle style) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 商品名
-        Text(item.label, style: style),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 120),
+          child: Text(
+            item.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
+        ),
         const SizedBox(width: 8),
-        // 自动填充的虚线
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              const dashWidth = 2.0;
-              final dashCount =
-                  (constraints.constrainWidth() / (2 * dashWidth)).floor();
-              return Flex(
-                direction: Axis.horizontal,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(dashCount, (_) {
-                  return const SizedBox(
-                    width: dashWidth,
-                    height: 1,
-                    child: DecoratedBox(
-                        decoration: BoxDecoration(color: Colors.black26)),
-                  );
-                }),
-              );
-            },
+          child: SizedBox(
+            height: 1,
+            child: CustomPaint(painter: _DashedLinePainter()),
           ),
         ),
         const SizedBox(width: 8),
         // 价格区域
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // 原价 (划线)
-            if (item.originalPrice != null && item.originalPrice! > item.price)
-              Text(
-                item.originalPrice!.toStringAsFixed(2),
-                style: style.copyWith(
-                    fontSize: 10,
-                    color: Colors.grey,
-                    decoration: TextDecoration.lineThrough),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 110),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (item.originalPrice != null &&
+                  item.originalPrice! > item.price)
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    item.originalPrice!.toStringAsFixed(2),
+                    style: style.copyWith(
+                        fontSize: 10,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough),
+                  ),
+                ),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  "${item.positive == 1 ? '+' : ''}${item.price.toStringAsFixed(2)}",
+                  style: style.copyWith(
+                      color: item.positive == 1
+                          ? Colors.green[700]
+                          : Colors.black),
+                ),
               ),
-            // 现价
-            Text(
-              "${item.positive == 1 ? '+' : ''}${item.price.toStringAsFixed(2)}",
-              style: style.copyWith(
-                  color: item.positive == 1 ? Colors.green[700] : Colors.black),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -368,6 +391,28 @@ class ReceiptCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DashedLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const dashWidth = 2.0;
+    const gapWidth = 2.0;
+    final paint = Paint()
+      ..color = Colors.black26
+      ..strokeWidth = 1;
+
+    for (double x = 0; x < size.width; x += dashWidth + gapWidth) {
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset((x + dashWidth).clamp(0, size.width), 0),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ----------------------------------------------------------------

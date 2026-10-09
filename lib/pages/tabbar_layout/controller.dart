@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:journal/components/journal_toast.dart';
+import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
+import 'package:journal/models/activity.dart';
 import 'package:journal/models/app_tab_item.dart';
 import 'package:journal/models/user.dart';
 
@@ -11,16 +14,25 @@ import 'package:journal/pages/charts/view.dart';
 import 'package:journal/pages/chat/view.dart';
 import 'package:journal/pages/current_activity/view.dart';
 import 'package:journal/pages/expense/view.dart';
+import 'package:journal/pages/lab/controller.dart';
+import 'package:journal/pages/lab/smart_merge/view.dart';
 import 'package:journal/pages/mission_dashboard/view.dart';
+import 'package:journal/pages/profile/controller.dart';
 import 'package:journal/pages/profile/view.dart';
+import 'package:journal/pages/tabbar_layout/manual_expense_activity.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/routers.dart';
+import 'package:journal/services/guide_manager.dart';
 import 'package:journal/util/sp_util.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 
 class LayoutController extends GetxController {
+  final guideTargets = GuideTargets();
+  VoidCallback? onReplayGuide;
   late PageController pageController;
+
+  void replayGuide() => onReplayGuide?.call();
   final XgFlutterPlugin tpush = XgFlutterPlugin();
 
   RxMap systemConfig = {}.obs;
@@ -105,51 +117,201 @@ class LayoutController extends GetxController {
       .obs;
 
   RxBool hideTabbar = false.obs;
+  bool _openingManualExpense = false;
 
   void longPress(int index, AppTabItem tab, BuildContext context) {
     if (tab.id == 'chat') {
-      // 震动
       HapticFeedback.mediumImpact();
-      // 检查逻辑
-      if (user.value.currentActivityId == "") {
-        Get.toNamed(Routers.CreateActivityUrl);
-      } else {
-        showCupertinoModalBottomSheet(
-          expand: true, // 是否全屏展开
-          context: context,
-          barrierColor: Colors.black38,
-          settings: RouteSettings(
-            arguments: {
-              "mode": "create",
-              "activityId": user.value.currentActivityId
-            },
-          ),
-          builder: (context) => const ExpenseItemPage(),
-        );
-      }
+      openManualExpense(context);
       return;
     } else {
-      jumpToPage(index, tab);
+      jumpToPage(index, tab, context);
     }
   }
 
-  void jumpToPage(int index, AppTabItem tab) {
-    // 如果是第一次点击聊天按钮，则告诉他，长按可以进入自定义账本创建页面
+  void jumpToPage(int index, AppTabItem tab, BuildContext context) {
     if (tab.id == 'chat') {
-      if (user.value.currentActivityId == "") {
-        Get.toNamed(Routers.CreateActivityUrl);
-      } else {
-        // 这里的 ChatDetailPageUrl 应该是一个新路由页面（Scaffold）
-        Get.toNamed(Routers.ChatDetailPageUrl);
-      }
+      openManualExpense(context);
       return;
     }
 
-    // 2. 如果是普通 Tab (首页、列表、个人中心)
-    // 切换 PageView
+    if (tab.routeName != null) {
+      Get.toNamed(tab.routeName!);
+      return;
+    }
+    if (tab.onOpen != null) {
+      tab.onOpen!(context);
+      return;
+    }
+
     pageController.jumpToPage(index);
-    // 更新选中状态
     currentIndex.value = index;
+  }
+
+  Future<void> openManualExpense(BuildContext context) async {
+    if (_openingManualExpense) return;
+    _openingManualExpense = true;
+
+    try {
+      final activityId = await resolveManualExpenseActivity(
+        currentActivityId: user.value.currentActivityId,
+        refreshDefaultActivityId: () async {
+          JournalToast.showLoading(context, text: '正在获取账本...');
+          try {
+            final profile = await _requestData('/user/profile/me');
+            user.value = User.fromJson(profile as Map<String, dynamic>);
+            return user.value.currentActivityId;
+          } finally {
+            JournalToast.dismiss();
+          }
+        },
+        loadActivities: () async {
+          if (!context.mounted) return [];
+          JournalToast.showLoading(context, text: '正在获取账本...');
+          try {
+            return await _fetchActivities();
+          } finally {
+            JournalToast.dismiss();
+          }
+        },
+        createActivity: () async {
+          if (!context.mounted) return false;
+          return await Get.toNamed<bool>(Routers.CreateActivityUrl) == true;
+        },
+        selectActivity: (activities) async {
+          if (!context.mounted) return null;
+          return _selectActivity(context, activities);
+        },
+      );
+
+      if (!context.mounted || activityId == null || activityId.isEmpty) return;
+      await showCupertinoModalBottomSheet(
+        expand: true,
+        context: context,
+        barrierColor: Colors.black38,
+        settings: RouteSettings(
+          arguments: {'mode': 'create', 'activityId': activityId},
+        ),
+        builder: (_) => const ExpenseItemPage(),
+      );
+    } catch (error) {
+      Log().d('打开记账页失败: $error');
+      if (context.mounted) {
+        JournalToast.showError(context, '获取账本失败，请稍后重试');
+      }
+    } finally {
+      _openingManualExpense = false;
+    }
+  }
+
+  Future<dynamic> _requestData(String path) async {
+    final response = await HttpRequest.request<dynamic>(Method.get, path);
+    if (response is! Map || response['code'] != 0) {
+      throw StateError('请求 $path 失败');
+    }
+    return response['data'];
+  }
+
+  Future<List<Activity>> _fetchActivities() async {
+    final data = await _requestData('/activity/list/all');
+    if (data is! List) throw const FormatException('账本列表格式错误');
+    return data
+        .map((item) => Activity.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<Activity?> _selectActivity(
+    BuildContext context,
+    List<Activity> activities,
+  ) {
+    final colors = Theme.of(context).extension<AppThemeColors>()!;
+    return showModalBottomSheet<Activity>(
+      context: context,
+      backgroundColor: colors.backgroundColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.7,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                child: Text(
+                  '选择记账账本',
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: activities.length,
+                  itemBuilder: (context, index) {
+                    final activity = activities[index];
+                    return ListTile(
+                      leading: Icon(
+                        Icons.book_outlined,
+                        color: colors.primaryText,
+                      ),
+                      title: Text(
+                        activity.activityName,
+                        style: TextStyle(color: colors.primaryText),
+                      ),
+                      trailing: Icon(
+                        Icons.chevron_right,
+                        color: colors.secondaryText,
+                      ),
+                      onTap: () => Navigator.of(sheetContext).pop(activity),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openActivityFeature(BuildContext context, String route) async {
+    try {
+      final activities = await _fetchActivities();
+      if (!context.mounted) return;
+      if (activities.isEmpty) {
+        await Get.toNamed(Routers.ActivityListPageUrl);
+        return;
+      }
+      final defaultId = user.value.currentActivityId;
+      Activity? activity;
+      for (final candidate in activities) {
+        if (candidate.activityId == defaultId) {
+          activity = candidate;
+          break;
+        }
+      }
+      activity ??= activities.length == 1
+          ? activities.first
+          : await _selectActivity(context, activities);
+      if (activity != null && context.mounted) {
+        await Get.toNamed(route, arguments: activity);
+      }
+    } catch (error) {
+      Log().d('打开账本功能失败: $error');
+      if (context.mounted) {
+        JournalToast.showError(context, '获取账本失败，请稍后重试');
+      }
+    }
   }
 
   void _initTabsPool() {
@@ -159,7 +321,8 @@ class LayoutController extends GetxController {
           id: 'home',
           label: '当前账本',
           icon: Icons.home_outlined,
-          page: const CurrentActivityPage()),
+          page: CurrentActivityPage(
+              activitySwitcherGuideKey: guideTargets.activitySwitcher)),
       // AppTabItem(
       //     id: 'folder',
       //     label: '账本列表',
@@ -178,7 +341,7 @@ class LayoutController extends GetxController {
       //     page: const TemplateListPage(),
       //     isEnabled: true),
       AppTabItem(
-          id: 'chat', label: '聊天', icon: Icons.add, page: const ChatPage()),
+          id: 'chat', label: '记账', icon: Icons.add, page: const ChatPage()),
       AppTabItem(
           id: 'analytics',
           label: '数据统计',
@@ -190,6 +353,151 @@ class LayoutController extends GetxController {
           label: '个人中心',
           icon: Icons.person_outline,
           page: ProfilePage()),
+      AppTabItem(
+          id: 'activity_list',
+          label: '账本列表',
+          icon: Icons.folder_outlined,
+          routeName: Routers.ActivityListPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'expense_list',
+          label: '账单明细',
+          icon: Icons.receipt_long_outlined,
+          onOpen: (context) =>
+              _openActivityFeature(context, Routers.ExpenseListPageUrl),
+          isEnabled: false),
+      AppTabItem(
+          id: 'create_activity',
+          label: '创建账本',
+          icon: Icons.create_new_folder_outlined,
+          routeName: Routers.CreateActivityUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'join_activity',
+          label: '加入账本',
+          icon: Icons.group_add_outlined,
+          routeName: Routers.JoinActivityPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'invite',
+          label: '邀请成员',
+          icon: Icons.person_add_alt_outlined,
+          onOpen: (context) =>
+              _openActivityFeature(context, Routers.InvitePageUrl),
+          isEnabled: false),
+      AppTabItem(
+          id: 'categories',
+          label: '分类管理',
+          icon: Icons.category_outlined,
+          routeName: Routers.ExpenseCategoryPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'assistant',
+          label: 'AI聊天',
+          icon: Icons.chat_bubble_outline,
+          routeName: Routers.ChatDetailPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'ai_config',
+          label: 'AI角色',
+          icon: Icons.smart_toy_outlined,
+          routeName: Routers.AIConfigPageV2Url,
+          isEnabled: false),
+      AppTabItem(
+          id: 'reminders',
+          label: '提醒设置',
+          icon: Icons.notifications_outlined,
+          routeName: Routers.ReminderSettingsPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'item_library',
+          label: '物品库',
+          icon: Icons.inventory_2_outlined,
+          routeName: Routers.ItemLibraryPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'templates',
+          label: '模板库',
+          icon: Icons.view_list_outlined,
+          routeName: Routers.TemplateListPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'trips',
+          label: '行程清单',
+          icon: Icons.checklist_outlined,
+          routeName: Routers.TripChecklistPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'lab',
+          label: '实验室',
+          icon: Icons.science_outlined,
+          routeName: Routers.LabPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'classification_rules',
+          label: '分类规则',
+          icon: Icons.rule_outlined,
+          routeName: Routers.ClassificationRulesPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'smart_merge',
+          label: '智能合并',
+          icon: Icons.auto_awesome_outlined,
+          onOpen: (_) async => Get.to(const SmartMergePage()),
+          isEnabled: false),
+      AppTabItem(
+          id: 'sankey',
+          label: '桑基图分析',
+          icon: Icons.hub_outlined,
+          onOpen: (_) async => LabController().nav2SankeyChart(),
+          isEnabled: false),
+      AppTabItem(
+          id: 'random_photo',
+          label: '随机照片',
+          icon: Icons.photo_outlined,
+          routeName: Routers.RandomPhotoPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'local_service',
+          label: '本地服务',
+          icon: Icons.lan_outlined,
+          routeName: Routers.LocalServicePageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'fish_tank',
+          label: '电子鱼缸',
+          icon: Icons.water_outlined,
+          routeName: Routers.FishTankFlamePageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'money_jar',
+          label: '存钱罐',
+          icon: Icons.savings_outlined,
+          routeName: Routers.MoneyJarPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'growing_tree',
+          label: '许愿树',
+          icon: Icons.park_outlined,
+          routeName: Routers.GrowingTreeUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'tabbar_settings',
+          label: '导航排序',
+          icon: Icons.tune_outlined,
+          routeName: Routers.TabBarSettingPageUrl,
+          isEnabled: false),
+      AppTabItem(
+          id: 'more',
+          label: '更多功能',
+          icon: Icons.more_horiz,
+          onOpen: (_) async {
+            if (!Get.isRegistered<ProfileController>()) {
+              Get.put(ProfileController());
+            }
+            await Get.toNamed(Routers.MoreFunctionPageUrl);
+          },
+          isEnabled: false),
     ];
 
     // 2.【新增】从本地读取“被禁用”的 Tab ID 列表
@@ -197,7 +505,7 @@ class LayoutController extends GetxController {
 
     // 3.【新增】应用禁用状态
     for (var tab in allTabsPool) {
-      if (disabledTabIds.contains(tab.id)) {
+      if (tab.id != 'profile' && disabledTabIds.contains(tab.id)) {
         tab.isEnabled = false;
       }
     }
@@ -205,13 +513,19 @@ class LayoutController extends GetxController {
     // 4. 读取排序并应用 (原有的逻辑)
     List<String> order = SpUtil().getTabOrder();
     if (order.isNotEmpty) {
+      final originalPositions = {
+        for (var index = 0; index < allTabsPool.length; index++)
+          allTabsPool[index].id: index,
+      };
       allTabsPool.sort((a, b) {
         int indexA = order.indexOf(a.id);
         int indexB = order.indexOf(b.id);
-        // 如果是新加的功能(不在旧缓存里)，放到最后
         if (indexA == -1) indexA = 999;
         if (indexB == -1) indexB = 999;
-        return indexA - indexB;
+        final comparison = indexA.compareTo(indexB);
+        return comparison != 0
+            ? comparison
+            : originalPositions[a.id]!.compareTo(originalPositions[b.id]!);
       });
     }
 
@@ -238,21 +552,30 @@ class LayoutController extends GetxController {
 
   // 核心逻辑：计算当前应该显示哪些 Tab
   void _refreshActiveTabs() {
-    // 逻辑：
+    final selectedId = currentIndex.value < activeTabs.length
+        ? activeTabs[currentIndex.value].id
+        : 'home';
     var newList = allTabsPool.where((tab) {
       if (tab.isVipOnly && !user.value.vip) return false;
       return tab.isEnabled;
     }).toList();
 
     activeTabs.assignAll(newList);
-
-    // 如果当前选中的索引超出了新列表的范围，重置为 0
-    if (currentIndex.value >= activeTabs.length) {
-      currentIndex.value = 0;
-      if (pageController.hasClients) {
-        pageController.jumpToPage(0);
+    var selectedIndex = activeTabs
+        .indexWhere((tab) => tab.id == selectedId && tab.page != null);
+    selectedIndex = selectedIndex != -1
+        ? selectedIndex
+        : activeTabs.indexWhere((tab) => tab.id == 'home' && tab.page != null);
+    selectedIndex = selectedIndex != -1
+        ? selectedIndex
+        : activeTabs.indexWhere((tab) => tab.page != null);
+    if (selectedIndex == -1) return;
+    currentIndex.value = selectedIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isClosed && pageController.hasClients) {
+        pageController.jumpToPage(selectedIndex);
       }
-    }
+    });
   }
 
   @override

@@ -1,38 +1,48 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter/physics.dart';
+import 'package:journal/components/journal_toast.dart';
+import 'package:journal/core/log.dart';
 import 'package:journal/models/expense.dart';
-import 'package:journal/pages/lab/receipt/receipt_card.dart'; // 确保引用了你的组件
+import 'package:journal/pages/lab/receipt/receipt_card.dart';
+import 'package:journal/pages/lab/receipt/receipt_share_service.dart';
 
 class ReceiptData {
   final double budget;
   final String nickname;
   final String date;
   final List<Expense> items;
+  final bool groupByCategory;
 
   ReceiptData({
     required this.nickname,
     required this.budget,
     required this.items,
     required this.date,
+    this.groupByCategory = false,
   });
 }
 
 class MedicalPrinterCard extends StatefulWidget {
   final ReceiptData data;
+  final ReceiptShareService? shareService;
 
-  const MedicalPrinterCard({super.key, required this.data});
+  const MedicalPrinterCard({super.key, required this.data, this.shareService});
 
   @override
   State<MedicalPrinterCard> createState() => _MedicalPrinterCardState();
 }
 
 class _MedicalPrinterCardState extends State<MedicalPrinterCard>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _printAnimation;
+  late AnimationController _foldController;
+  final ScrollController _paperScrollController = ScrollController();
+  double _lastPaperOffset = 0;
+  bool _sharing = false;
 
-  // 状态
-  double _paperHeight = 0.0;
   final double _cardHeight = 140.0; // 打印机机身高度
   final double _cardWidth = 340.0; // 打印机/纸张宽度
 
@@ -48,6 +58,11 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
       parent: _controller,
       curve: Curves.easeInOutCubic,
     );
+    _foldController = AnimationController.unbounded(vsync: this);
+    _paperScrollController.addListener(_onPaperScroll);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) setState(() {});
+    });
 
     // 页面打开 300ms 后自动开始打印
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -57,8 +72,58 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
 
   @override
   void dispose() {
+    _paperScrollController.dispose();
+    _foldController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onPaperScroll() {
+    final offset = _paperScrollController.offset;
+    if (_controller.isCompleted) {
+      final delta = offset - _lastPaperOffset;
+      _foldController.value = (delta / 22).clamp(-1.0, 1.0);
+    }
+    _lastPaperOffset = offset;
+  }
+
+  bool _onPaperScrollEnd(ScrollEndNotification notification) {
+    _foldController.animateWith(SpringSimulation(
+      const SpringDescription(mass: 1, stiffness: 220, damping: 18),
+      _foldController.value,
+      0,
+      0,
+    ));
+    return false;
+  }
+
+  Future<void> _shareReceipt(
+      BuildContext buttonContext, double paperWidth) async {
+    if (_sharing) return;
+    final button = buttonContext.findRenderObject() as RenderBox?;
+    if (button == null) return;
+    final origin = button.localToGlobal(Offset.zero) & button.size;
+    setState(() => _sharing = true);
+
+    try {
+      await (widget.shareService ?? ReceiptShareService()).shareReceipt(
+        ReceiptCard(
+          width: paperWidth,
+          nickname: widget.data.nickname,
+          budget: widget.data.budget,
+          items: widget.data.items,
+          date: widget.data.date,
+          groupByCategory: widget.data.groupByCategory,
+        ),
+        context,
+        origin,
+      );
+    } catch (error) {
+      Log().d('分享小票失败: $error');
+      if (mounted) JournalToast.showError(context, '分享小票失败，请稍后重试');
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
   }
 
   @override
@@ -67,169 +132,201 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
       onTap: () => Navigator.of(context).pop(), // 点击空白处关闭
       child: Scaffold(
         backgroundColor: Colors.transparent, // 透明背景
-        body: Align(
-          alignment: Alignment.topCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 60), // 距离顶部的位置
-            child: GestureDetector(
-              onTap: () {}, // 拦截点击，防止误触关闭
-              child: SizedBox(
-                width: _cardWidth,
-                child: Stack(
-                  alignment: Alignment.topCenter,
-                  clipBehavior: Clip.none, // 允许纸张超出 Stack 边界
-                  children: [
-                    Positioned(
-                      top: _cardHeight - 14, // 初始位置在出纸口附近
-                      child: ClipRect(
-                        child: AnimatedBuilder(
-                          animation: _printAnimation,
-                          builder: (context, child) {
-                            // 计算位移：从 "完全缩进(-height)" 移动到 "完全展示(0)"
-                            double initialY = -_paperHeight;
-                            double currentY = initialY +
-                                (0 - initialY) * _printAnimation.value;
-                            return Transform.translate(
-                              offset: Offset(0, currentY),
-                              child: child,
-                            );
-                          },
-                          child: MeasureSize(
-                            onChange: (size) {
-                              if (_paperHeight != size.height) {
-                                setState(() => _paperHeight = size.height);
-                              }
-                            },
-                            // 这里放置真正的小票内容
-                            child: SizedBox(
-                              width: _cardWidth - 24, // 稍微比打印机窄一点
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final printerWidth =
+                math.min(_cardWidth, constraints.maxWidth - 32);
+            final paperWidth = printerWidth - 24;
+            final printerTop = MediaQuery.paddingOf(context).top + 36;
+            final feedTop = printerTop + _cardHeight - 14;
+
+            return Stack(
+              children: [
+                Positioned(
+                  top: feedTop,
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: paperWidth,
+                      height: constraints.maxHeight - feedTop,
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: NotificationListener<ScrollEndNotification>(
+                          onNotification: _onPaperScrollEnd,
+                          child: SingleChildScrollView(
+                            key: const Key('receipt-paper-scroll'),
+                            controller: _paperScrollController,
+                            physics: _controller.isCompleted
+                                ? const BouncingScrollPhysics()
+                                : const NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.only(
+                              bottom: math.max(24,
+                                  MediaQuery.paddingOf(context).bottom + 16),
+                            ),
+                            child: SizeTransition(
+                              sizeFactor: _printAnimation,
+                              axisAlignment: -1,
                               child: ReceiptCard(
-                                width: _cardWidth - 24,
+                                key: const Key('receipt-paper'),
+                                width: paperWidth,
                                 nickname: widget.data.nickname,
                                 budget: widget.data.budget,
                                 items: widget.data.items,
                                 date: widget.data.date,
+                                groupByCategory: widget.data.groupByCategory,
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-
-                    // ================= 2. 打印机主体层 (在顶层) =================
-                    Positioned(
-                      top: 0,
-                      child: Hero(
-                        tag: 'printer_hero_tag', // 必须与 ChartNavBar 中的 tag 一致
-                        child: Material(
-                          color: Colors.transparent,
-                          type: MaterialType.transparency,
-                          child: Container(
-                            height: _cardHeight,
-                            width: _cardWidth,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2962FF), // 机器蓝色
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      const Color(0xFF0D47A1).withOpacity(0.5),
-                                  blurRadius: 40,
-                                  offset: const Offset(0, 20),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: Stack(
-                                children: [
-                                  // 机器面板内容 (文字、状态灯)
-                                  _buildCardContent(),
-
-                                  // 出纸口阴影效果
-                                  Positioned(
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    height: 24,
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
-                                          colors: [
-                                            Colors.black38,
-                                            Colors.transparent
-                                          ],
-                                        ),
+                  ),
+                ),
+                Positioned(
+                  top: feedTop,
+                  left: (constraints.maxWidth - paperWidth) / 2,
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation:
+                          Listenable.merge([_printAnimation, _foldController]),
+                      builder: (context, _) => Opacity(
+                        opacity: _printAnimation.value,
+                        child: CustomPaint(
+                          key: const Key('receipt-paper-fold'),
+                          size: Size(paperWidth, 38),
+                          painter: _PaperFeedPainter(_foldController.value),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: printerTop,
+                  left: (constraints.maxWidth - printerWidth) / 2,
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Hero(
+                      tag: 'printer_hero_tag',
+                      child: Material(
+                        color: Colors.transparent,
+                        type: MaterialType.transparency,
+                        child: Container(
+                          key: const Key('receipt-printer'),
+                          height: _cardHeight,
+                          width: printerWidth,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2962FF),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0D47A1).withOpacity(0.5),
+                                blurRadius: 40,
+                                offset: const Offset(0, 20),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Stack(
+                              children: [
+                                _buildCardContent(paperWidth),
+                                Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: 24,
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        colors: [
+                                          Colors.black38,
+                                          Colors.transparent,
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   // 机器面板 UI
-  Widget _buildCardContent() {
+  Widget _buildCardContent(double paperWidth) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: () {
-              // controller.share();
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle),
-                      child: const Icon(Icons.print_rounded,
-                          color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("好享记账打印机",
-                            style: TextStyle(
-                                fontFamily: "SmileySans",
-                                color: Colors.white,
-                                fontSize: 15)),
-                        AnimatedBuilder(
-                          animation: _controller,
-                          builder: (context, _) => Text(
-                              _controller.isAnimating ? "Printing..." : "Ready",
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 12)),
-                        ),
-                      ],
-                    ),
-                  ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle),
+                    child: const Icon(Icons.print_rounded,
+                        color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("好享记账打印机",
+                          style: TextStyle(
+                              fontFamily: "SmileySans",
+                              color: Colors.white,
+                              fontSize: 15)),
+                      AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, _) => Text(
+                            _controller.isAnimating ? "Printing..." : "Ready",
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Builder(
+                builder: (buttonContext) => IconButton(
+                  tooltip: '分享小票',
+                  onPressed: _sharing
+                      ? null
+                      : () => _shareReceipt(buttonContext, paperWidth),
+                  icon: _sharing
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.share_outlined, color: Colors.white),
                 ),
-                const Icon(Icons.share_outlined, color: Colors.white)
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -237,36 +334,53 @@ class _MedicalPrinterCardState extends State<MedicalPrinterCard>
   }
 }
 
-// --- 辅助组件：测量高度 ---
-class MeasureSize extends SingleChildRenderObjectWidget {
-  final ValueChanged<Size> onChange;
+class _PaperFeedPainter extends CustomPainter {
+  final double bend;
 
-  const MeasureSize({
-    super.key,
-    required this.onChange,
-    required Widget child,
-  }) : super(child: child);
+  const _PaperFeedPainter(this.bend);
 
   @override
-  RenderObject createRenderObject(BuildContext context) {
-    return _MeasureSizeRenderObject(onChange);
+  void paint(Canvas canvas, Size size) {
+    final twist = bend * 10;
+    final path = Path()
+      ..moveTo(0, 2 + twist)
+      ..cubicTo(
+          size.width * .25, -2, size.width * .75, 8, size.width, 2 - twist)
+      ..lineTo(size.width, 28 - twist * .3)
+      ..cubicTo(size.width * .72, 37 + twist * .35, size.width * .28,
+          23 - twist * .35, 0, 29 + twist * .3)
+      ..close();
+
+    canvas.drawShadow(path, Colors.black.withOpacity(.3), 7, true);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFBDB5AA),
+            Color(0xFFFDFBF7),
+            Color(0xFFE6DED2),
+            Color(0xFFFDFBF7),
+          ],
+          stops: [0, .25, .7, 1],
+        ).createShader(Offset.zero & size),
+    );
+    final crease = Path()
+      ..moveTo(0, 29 + twist * .3)
+      ..cubicTo(size.width * .28, 23 - twist * .35, size.width * .72,
+          37 + twist * .35, size.width, 28 - twist * .3);
+    canvas.drawPath(
+      crease,
+      Paint()
+        ..color = Colors.black.withOpacity(.12 + bend.abs() * .1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
   }
-}
-
-class _MeasureSizeRenderObject extends RenderProxyBox {
-  ValueChanged<Size> onChange;
-  Size? _oldSize;
-
-  _MeasureSizeRenderObject(this.onChange);
 
   @override
-  void performLayout() {
-    super.performLayout();
-    if (size != _oldSize) {
-      _oldSize = size;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        onChange(size);
-      });
-    }
-  }
+  bool shouldRepaint(covariant _PaperFeedPainter oldDelegate) =>
+      oldDelegate.bend != bend;
 }

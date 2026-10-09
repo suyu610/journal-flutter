@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -10,8 +11,11 @@ import 'package:journal/event_bus/event_bus.dart';
 import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
+import 'package:journal/models/paging.dart';
 import 'package:journal/pages/charts/models/daily_stats.dart';
 import 'package:journal/pages/lab/medical_card/view.dart';
+import 'package:journal/pages/lab/receipt/receipt_print_mode.dart';
+import 'package:journal/pages/lab/receipt/receipt_loading_overlay.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -34,6 +38,7 @@ class ChartDataModel {
 enum ChartDimension { week, month, year } // 定义枚举
 
 class ChartsController extends GetxController {
+  CancelToken? _printCancelToken;
   // 1. 定义当前选中的维度，默认为周
   final currentDimension = ChartDimension.week.obs;
 
@@ -68,6 +73,7 @@ class ChartsController extends GetxController {
   Rx<DateTime> focusedDay = DateTime.now().obs; // 当前日历聚焦的月份
   Rx<DateTime?> selectedDay = Rx<DateTime?>(null); // 用户选中的具体某天
   RxMap<String, DailyStats> calendarData = <String, DailyStats>{}.obs; // 日历数据源
+  int _calendarRequestId = 0;
   RxDouble currentMonthExpense = 0.0.obs;
   RxDouble currentMonthIncome = 0.0.obs;
   ScrollController scrollController = ScrollController();
@@ -90,7 +96,10 @@ class ChartsController extends GetxController {
   }
 
   void loadCalendarData(DateTime month) async {
+    final requestId = ++_calendarRequestId;
     focusedDay.value = month;
+    calendarData.clear();
+    update(["calendar_chart"]);
     String monthStr = DateFormat('yyyy-MM').format(month);
     String activityId = _getCurrentActivityId();
 
@@ -99,6 +108,7 @@ class ChartsController extends GetxController {
 
       List<dynamic> data =
           await _getAsync("/charts/calendar/$activityId?month=$monthStr");
+      if (requestId != _calendarRequestId) return;
 
       Map<String, DailyStats> newMap = {};
       for (var item in data) {
@@ -112,14 +122,22 @@ class ChartsController extends GetxController {
       calendarData.value = newMap; // 更新数据
       update(["calendar_chart", "charts"]);
     } catch (e) {
-      Log().d("加载日历数据失败: $e");
+      if (requestId == _calendarRequestId) Log().d("加载日历数据失败: $e");
     }
   }
 
   // 3. 页面交互：切换月份
   void onPageChanged(DateTime focused) {
-    focusedDay.value = focused;
     loadCalendarData(focused); // 懒加载：滑到哪个月，加载哪个月的数据
+  }
+
+  void returnToCurrentMonth() {
+    final now = DateTime.now();
+    if (focusedDay.value.year == now.year &&
+        focusedDay.value.month == now.month) {
+      return;
+    }
+    loadCalendarData(now);
   }
 
   // 4. 页面交互：点击某一天
@@ -156,13 +174,14 @@ class ChartsController extends GetxController {
 
   // 1. 初始化数据入口
   initData({bool forceRefreshActivity = false}) async {
-    loadCalendarData(DateTime(2026, 2, 1));
     // 只有在列表为空，或者强制刷新时，才请求 ActivityList
     isAnalyzing.value = false;
     judgeString.value = "";
     if (allActivityList.isEmpty || forceRefreshActivity) {
       await _loadActivityList();
     }
+
+    loadCalendarData(DateTime.now());
 
     // 加载完 Activity 后（确保有了 currentActivityId），再并行加载图表
     await _loadChartData();
@@ -377,62 +396,190 @@ class ChartsController extends GetxController {
     });
   }
 
-  Future<List<Expense>?> getTodayExpenseItemList(context) async {
-    String nowDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
+  Future<List<Expense>> _getExpenseItemsForDate(
+      DateTime date, String activityId, CancelToken cancelToken) async {
+    final dateText = DateFormat('yyyy-MM-dd').format(date);
+    final response = await HttpRequest.request<dynamic>(
+      Method.get,
+      "/expense/list/$activityId/date?date=$dateText",
+      params: {},
+      cancelToken: cancelToken,
+    );
+    if (cancelToken.isCancelled) throw const _ReceiptLoadCancelled();
+    final payload = _unwrapResponseData(response);
+    if (payload is! List) {
+      throw const FormatException('账单日期接口返回格式错误');
+    }
+    return payload
+        .map((item) => Expense.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
 
-    try {
-      print("_getCurrentActivityId():${_getCurrentActivityId()}");
-      var data = await HttpRequest.request(
+  Future<List<Expense>> _getAllExpenseItems(
+    String activityId,
+    CancelToken cancelToken,
+    ValueChanged<int> onProgress,
+  ) async {
+    final result = <Expense>[];
+    final expenseIds = <String>{};
+    var pageNumber = 1;
+    var hasNextPage = true;
+
+    while (hasNextPage) {
+      if (cancelToken.isCancelled) throw const _ReceiptLoadCancelled();
+      final response = await HttpRequest.request<dynamic>(
         Method.get,
-        "/expense/list/${_getCurrentActivityId()}/date?date=$nowDate",
+        "/expense/list/$activityId?pageNum=$pageNumber",
         params: {},
+        cancelToken: cancelToken,
       );
-      if (data != null && data["data"] != null && data["data"] is List) {
-        List<Expense> result = List<Expense>.from(
-            (data["data"] as List).map((e) => Expense.fromJson(e)));
-
-        print("result type:${result.runtimeType}");
-        return result;
+      if (cancelToken.isCancelled) throw const _ReceiptLoadCancelled();
+      final payload = _unwrapResponseData(response);
+      if (payload is! Map) {
+        throw const FormatException('账本接口返回格式错误');
       }
 
-      return <Expense>[];
-    } catch (e) {
-      print("获取今日账单失败: $e");
-      JournalToast.showError(context, "获取今日账单失败");
-      return null;
+      final page = Paging.fromJson(Map<String, dynamic>.from(payload));
+      final pageItems = page.list
+          .map((item) => Expense.fromJson(item as Map<String, dynamic>))
+          .toList();
+      for (final expense in pageItems) {
+        if (expenseIds.add(expense.expenseId)) {
+          result.add(expense);
+        }
+      }
+
+      onProgress(result.length);
+      hasNextPage = page.hasNextPage;
+      if (hasNextPage && pageItems.isEmpty) {
+        throw const FormatException('账本分页数据未继续更新');
+      }
+      pageNumber++;
+      if (hasNextPage) await Future<void>.delayed(Duration.zero);
+    }
+    return result;
+  }
+
+  dynamic _unwrapResponseData(dynamic response) {
+    if (response is Map && response.containsKey('data')) {
+      return response['data'];
+    }
+    return response;
+  }
+
+  Future<void> handlePrintAction(
+    BuildContext context,
+    ReceiptPrintMode mode, {
+    DateTime? selectedDate,
+  }) async {
+    if (_printCancelToken != null) return;
+    final isWholeLedger = mode == ReceiptPrintMode.ledgerByCategory ||
+        mode == ReceiptPrintMode.ledgerDetailed;
+    final printDate =
+        mode == ReceiptPrintMode.today ? DateTime.now() : selectedDate;
+    if (!isWholeLedger && printDate == null) return;
+    final activityId = _getCurrentActivityId();
+    if (activityId.isEmpty) return;
+    final cancelToken = CancelToken();
+    _printCancelToken = cancelToken;
+    Worker? tabWorker;
+    Worker? activityWorker;
+    final loadedCount = ValueNotifier<int>(0);
+    final progressOverlay = OverlayEntry(
+      builder: (_) => ReceiptLoadingOverlay(
+        wholeLedger: isWholeLedger,
+        loadedCount: loadedCount,
+        onCancel: () => cancelToken.cancel('用户取消打印'),
+      ),
+    );
+    var overlayInserted = false;
+    try {
+      if (Get.isRegistered<LayoutController>()) {
+        final layoutController = Get.find<LayoutController>();
+        tabWorker = ever<int>(layoutController.currentIndex, (index) {
+          if (index >= layoutController.activeTabs.length ||
+              layoutController.activeTabs[index].id != 'analytics') {
+            cancelToken.cancel('已离开统计页');
+          }
+        });
+      }
+      activityWorker = ever<Activity>(currentActivity, (activity) {
+        if (activity.activityId != activityId) {
+          cancelToken.cancel('已切换账本');
+        }
+      });
+      Overlay.of(context, rootOverlay: true).insert(progressOverlay);
+      overlayInserted = true;
+
+      final expenseItems = isWholeLedger
+          ? await _getAllExpenseItems(
+              activityId, cancelToken, (count) => loadedCount.value = count)
+          : await _getExpenseItemsForDate(printDate!, activityId, cancelToken);
+
+      if (cancelToken.isCancelled || activityId != _getCurrentActivityId()) {
+        return;
+      }
+      if (!context.mounted) return;
+      if (ModalRoute.of(context)?.isCurrent != true) {
+        await Future<void>.delayed(const Duration(milliseconds: 350));
+        if (!context.mounted ||
+            cancelToken.isCancelled ||
+            ModalRoute.of(context)?.isCurrent != true) {
+          return;
+        }
+      }
+      if (expenseItems.isEmpty) {
+        JournalToast.showError(
+          context,
+          isWholeLedger
+              ? '当前账本暂无数据'
+              : '${DateFormat('yyyy-MM-dd').format(printDate!)} 暂无账单数据',
+        );
+        return;
+      }
+
+      final nicknames = expenseItems
+          .map((expense) => expense.userNickname?.trim() ?? '')
+          .where((nickname) => nickname.isNotEmpty)
+          .toSet()
+          .toList();
+      final dateLabel = isWholeLedger
+          ? (mode == ReceiptPrintMode.ledgerByCategory
+              ? '整个账本 / 分类'
+              : '整个账本 / 明细')
+          : DateFormat('yyyy-MM-dd').format(printDate!);
+
+      final receiptData = ReceiptData(
+        nickname: nicknames.isEmpty ? '-' : nicknames.join(' | '),
+        budget: isWholeLedger ? 0 : dailyBudgetValue,
+        items: expenseItems,
+        date: dateLabel,
+        groupByCategory: mode == ReceiptPrintMode.ledgerByCategory,
+      );
+
+      hasClickedPrintToday = true;
+      Navigator.of(context).push(_createPrinterRoute(receiptData));
+    } on _ReceiptLoadCancelled {
+      return;
+    } catch (error) {
+      Log().d('获取打印账单失败: $error');
+      if (!cancelToken.isCancelled && context.mounted) {
+        JournalToast.showError(context, '获取打印账单失败，请稍后重试');
+      }
+    } finally {
+      tabWorker?.dispose();
+      activityWorker?.dispose();
+      if (overlayInserted) progressOverlay.remove();
+      progressOverlay.dispose();
+      loadedCount.dispose();
+      _printCancelToken = null;
     }
   }
 
-// 替换原来的 handlePrintAction
-  void handlePrintAction(BuildContext context) async {
-    JournalToast.showLoading(context);
-    hasClickedPrintToday = true;
-    // 1. 获取数据
-    List<Expense> expenseItems = await getTodayExpenseItemList(context) ?? [];
-
-    if (expenseItems.isEmpty) {
-      if (context.mounted) {
-        JournalToast.dismiss();
-        JournalToast.showError(context, "今日暂无账单数据");
-      }
-      return;
-    }
-    JournalToast.dismiss();
-
-    List<String> nicknameList =
-        expenseItems.map((e) => e.userNickname ?? '').toSet().toList();
-
-    final receiptData = ReceiptData(
-      nickname: nicknameList.join(' | '),
-      budget: dailyBudgetValue,
-      items: expenseItems,
-      date: DateTime.now().toString().substring(0, 10),
-    );
-
-    // 3. 使用自定义弹性动画路由跳转
-    if (context.mounted) {
-      Navigator.of(context).push(_createPrinterRoute(receiptData));
-    }
+  @override
+  void onClose() {
+    _printCancelToken?.cancel('页面关闭');
+    super.onClose();
   }
 
   Route _createPrinterRoute(ReceiptData data) {
@@ -454,4 +601,8 @@ class ChartsController extends GetxController {
       },
     );
   }
+}
+
+class _ReceiptLoadCancelled implements Exception {
+  const _ReceiptLoadCancelled();
 }

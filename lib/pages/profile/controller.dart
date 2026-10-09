@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
@@ -10,7 +12,11 @@ import 'package:journal/components/journal_toast.dart';
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/core/log.dart';
 import 'package:journal/core/theme_controller.dart';
+import 'package:journal/event_bus/event_bus.dart';
+import 'package:journal/event_bus/need_refresh_data.dart';
 import 'package:journal/models/user.dart';
+import 'package:journal/services/journal_backup.dart';
+import 'package:journal/services/journal_backup_service.dart';
 import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/request/request.dart';
 
@@ -21,6 +27,8 @@ import 'package:journal/util/sp_util.dart';
 import 'package:tpns_flutter_plugin/tpns_flutter_plugin.dart';
 
 class ProfileController extends GetxController {
+  final JournalBackupService _backupService = JournalBackupService();
+  bool _backupBusy = false;
   var nicknameTextEditController = TextEditingController();
   Fluwx fluwx = Fluwx();
 
@@ -47,6 +55,200 @@ class ProfileController extends GetxController {
   }
 
   void onTap() {}
+
+  Future<void> exportBackup(BuildContext context) async {
+    if (_backupBusy) return;
+    _backupBusy = true;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final busyDialog = _showBusyDialog(context, '正在整理账本...');
+    var busyOpen = true;
+    try {
+      final backup = await _backupService.exportBackup();
+      if (navigator.mounted) navigator.pop();
+      busyOpen = false;
+      await busyDialog;
+      if (!context.mounted) return;
+
+      final filename =
+          'journal-backup-${DateTime.now().toIso8601String().substring(0, 10)}.json';
+      final savedPath = await FilePicker.platform.saveFile(
+        dialogTitle: '导出账本数据',
+        fileName: filename,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: utf8.encode(backup.toJsonString()),
+      );
+      if (savedPath != null && context.mounted) {
+        JournalToast.showSuccess(
+          context,
+          '已导出 ${backup.ledgers.length} 个账本、${backup.entryCount} 笔账单',
+        );
+      }
+    } catch (error) {
+      Log().d('导出账本失败: $error');
+      if (busyOpen && navigator.mounted) navigator.pop();
+      if (context.mounted) {
+        JournalToast.showError(context, '导出失败，请稍后重试');
+      }
+    } finally {
+      _backupBusy = false;
+    }
+  }
+
+  Future<void> importBackup(BuildContext context) async {
+    if (_backupBusy) return;
+    _backupBusy = true;
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+      if (picked == null || !context.mounted) return;
+      final file = picked.files.single;
+      if (file.size > 50 * 1024 * 1024) {
+        throw const FormatException('备份文件不能超过 50 MB');
+      }
+      final bytes = file.bytes ??
+          (file.path != null ? await File(file.path!).readAsBytes() : null);
+      if (bytes == null) {
+        throw const FormatException('无法读取备份文件');
+      }
+      final backup = JournalBackup.fromJsonString(utf8.decode(bytes));
+      if (!context.mounted) return;
+      if (backup.ledgers.isEmpty) {
+        JournalToast.show(context, '备份中没有账本');
+        return;
+      }
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('导入账本数据'),
+          content: Text(
+            '将新建 ${backup.ledgers.length} 个账本，导入 ${backup.entryCount} 笔账单。'
+            '现有账本不会被覆盖；重复导入会产生重复数据。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('开始导入'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !context.mounted) return;
+
+      final progress = ValueNotifier<(int, int)>((0, 0));
+      final navigator = Navigator.of(context, rootNavigator: true);
+      final busyDialog = showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => PopScope(
+          canPop: false,
+          child: AlertDialog(
+            title: const Text('正在导入'),
+            content: ValueListenableBuilder<(int, int)>(
+              valueListenable: progress,
+              builder: (_, value, __) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const LinearProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text('账本 ${value.$1}/${backup.ledgers.length} · '
+                      '账单 ${value.$2}/${backup.entryCount}'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      try {
+        await _backupService.importBackup(
+          backup,
+          onProgress: (ledgers, entries) {
+            progress.value = (ledgers, entries);
+          },
+        );
+        eventBus.fire(const NeedRefreshData(
+          refreshActivityList: true,
+          refreshCurrentActivity: true,
+          refreshChartsList: true,
+        ));
+        if (navigator.mounted) {
+          navigator.pop();
+          await busyDialog;
+          if (context.mounted) JournalToast.showSuccess(context, '导入完成');
+        }
+      } on BackupImportException catch (error) {
+        Log().d('导入账本失败: ${error.cause}');
+        if (error.createdLedgers > 0) {
+          eventBus.fire(const NeedRefreshData(
+            refreshActivityList: true,
+            refreshCurrentActivity: true,
+            refreshChartsList: true,
+          ));
+        }
+        if (navigator.mounted) {
+          navigator.pop();
+          await busyDialog;
+          if (context.mounted) {
+            await showDialog<void>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('导入未完成'),
+                content: Text(
+                  '已写入 ${error.createdLedgers} 个账本、'
+                  '${error.createdEntries} 笔账单。重复导入会创建重复数据。',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text('知道了'),
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+      } finally {
+        progress.dispose();
+      }
+    } on FormatException catch (error) {
+      if (context.mounted) JournalToast.showError(context, error.message);
+    } catch (error) {
+      Log().d('读取备份失败: $error');
+      if (context.mounted) JournalToast.showError(context, '导入失败，请稍后重试');
+    } finally {
+      _backupBusy = false;
+    }
+  }
+
+  Future<void> _showBusyDialog(BuildContext context, String title) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(title),
+          content: const Row(
+            children: [
+              SizedBox(
+                  width: 24, height: 24, child: CircularProgressIndicator()),
+              SizedBox(width: 16),
+              Text('请稍候'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void onReady() {

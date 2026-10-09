@@ -145,6 +145,7 @@ Widget _myApp() {
 
             builder: (context, child) {
               return Scaffold(
+                resizeToAvoidBottomInset: false,
                 body: GestureDetector(
                   onTap: () => KeyboardUtils.hide(),
                   child: child,

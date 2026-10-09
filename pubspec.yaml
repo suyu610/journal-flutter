@@ -86,6 +86,7 @@ dependencies:
   sankey_flutter: ^0.0.3
   modal_bottom_sheet: ^3.0.0
   share_plus: ^12.0.1 # 用于调用系统分享（包含微信）
+  file_picker: ^10.3.8
   screenshot: ^3.0.0 # 用于将带边框的 Widget 转换为图片
   qr_flutter: ^4.1.0 # 用于生成二维码
   tpns_flutter_plugin:
@@ -94,7 +95,7 @@ dependencies:
       ref: V1.3.8
   map_launcher: ^4.4.2
   carousel_slider: ^5.1.2
-  avatar_glow: ^3.0.1 #用于做一个酷炫的“正在听”的水波纹效果
+  avatar_glow: ^3.0.1
   flutter_card_swiper: ^7.2.0
   wechat_assets_picker: ^10.1.1
 dev_dependencies:

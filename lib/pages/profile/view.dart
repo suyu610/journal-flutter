@@ -6,6 +6,8 @@ import 'package:journal/components/cell_group.dart';
 import 'package:journal/components/journal_toast.dart';
 // 1. 引入你的主题颜色定义
 import 'package:journal/core/app_theme_colors.dart';
+import 'package:journal/pages/profile/backup_actions_sheet.dart';
+import 'package:journal/pages/tabbar_layout/controller.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -30,7 +32,7 @@ class ProfilePage extends GetView<ProfileController> {
           // 背景色跟随主题
           backgroundColor: appColors.backgroundColor,
           appBar: null,
-          body: _buildView(context),
+          body: SingleChildScrollView(child: _buildView(context)),
         );
       },
     );
@@ -365,6 +367,16 @@ class ProfilePage extends GetView<ProfileController> {
             }),
           ),
           Cell(
+            title: "备份与恢复",
+            icon: _buildIcon(Icons.backup_outlined, iconColor),
+            onTap: () => _showBackupActions(context),
+          ),
+          Cell(
+            title: "新手引导",
+            icon: _buildIcon(Icons.help_outline_rounded, iconColor),
+            onTap: () => Get.find<LayoutController>().replayGuide(),
+          ),
+          Cell(
             title: "开源地址",
             icon: _buildIcon(Icons.card_giftcard_outlined, iconColor),
             onTap: () => launchUrl(
@@ -380,6 +392,16 @@ class ProfilePage extends GetView<ProfileController> {
         ],
       ),
     );
+  }
+
+  Future<void> _showBackupActions(BuildContext context) async {
+    final action = await BackupActionsSheet.show(context);
+    if (!context.mounted) return;
+    if (action == BackupAction.export) {
+      await controller.exportBackup(context);
+    } else if (action == BackupAction.restore) {
+      await controller.importBackup(context);
+    }
   }
 
   // --- 图标包装 ---

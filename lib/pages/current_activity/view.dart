@@ -13,14 +13,19 @@ import 'package:journal/core/app_theme_colors.dart';
 import 'package:journal/models/activity.dart';
 import 'package:journal/models/expense.dart';
 import 'package:journal/models/expense_date_group.dart';
+import 'package:journal/pages/current_activity/expense_category_group.dart';
 import 'package:journal/routers.dart';
 import 'package:journal/util/date_util.dart';
+import 'package:journal/util/icons.dart';
 import 'package:journal/util/toast_util.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import 'index.dart';
 
 class CurrentActivityPage extends GetView<CurrentActivityController> {
-  const CurrentActivityPage({super.key});
+  final GlobalKey? activitySwitcherGuideKey;
+
+  const CurrentActivityPage({super.key, this.activitySwitcherGuideKey});
 
   @override
   Widget build(BuildContext context) {
@@ -93,13 +98,24 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
 
             _buildActivityDetail(activity, context),
 
-            // 加载更多指示器
-            if (controller.hasNextPage.value)
+            if (controller.displayMode.value != ExpenseDisplayMode.category &&
+                controller.listError != null)
+              TextButton.icon(
+                onPressed: controller.retryList,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: Text(controller.listError!),
+              )
+            else if (controller.displayMode.value !=
+                    ExpenseDisplayMode.category &&
+                controller.isLoading.value)
               const Padding(
                 padding: EdgeInsets.fromLTRB(0, 4, 0, 16),
                 child: CupertinoActivityIndicator(),
               )
-            else
+            else if (controller.displayMode.value !=
+                    ExpenseDisplayMode.category &&
+                controller.expenseDateGroupList.isNotEmpty &&
+                !controller.hasNextPage.value)
               Padding(
                 padding: EdgeInsets.only(top: 8.h, bottom: 24.h),
                 child: Center(
@@ -121,20 +137,16 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
     );
   }
 
-  // 当前账本详情 (切换按钮区域)
+  // 当前账本详情
   Widget _buildActivityDetail(Activity activity, BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
-
-    // 选中状态：深色字
-    TextStyle activeTextStyle = TextStyle(
+    final activeTextStyle = TextStyle(
       color: appColors.primaryText,
       fontSize: 12,
       fontFamily: 'SourceCodePro',
       fontWeight: FontWeight.w700,
     );
-
-    // 未选中状态：浅色字
-    TextStyle inactiveTextStyle = TextStyle(
+    final inactiveTextStyle = TextStyle(
       color: appColors.secondaryText,
       fontSize: 12,
       fontFamily: 'SourceCodePro',
@@ -143,52 +155,201 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(6, 16, 6, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('账单列表', style: inactiveTextStyle),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildModeOption('详细', ExpenseDisplayMode.detailed,
+                      activeTextStyle, inactiveTextStyle),
+                  Text(' / ', style: inactiveTextStyle),
+                  _buildModeOption('概括', ExpenseDisplayMode.summary,
+                      activeTextStyle, inactiveTextStyle),
+                  Text(' / ', style: inactiveTextStyle),
+                  _buildModeOption('按分类', ExpenseDisplayMode.category,
+                      activeTextStyle, inactiveTextStyle),
+                ],
+              ),
+            ],
+          ),
+        ),
         Container(
-            padding: const EdgeInsets.fromLTRB(6, 16, 6, 8), // 增加一点顶部间距
-            width: double.infinity,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("账单列表", style: inactiveTextStyle),
-                GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    controller.switchExpenseListShowMode();
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Obx(() => Text(
-                              "详细",
-                              style: controller.isExpenseListShowMode.value
-                                  ? activeTextStyle
-                                  : inactiveTextStyle,
-                            )),
-                        Text(" / ", style: inactiveTextStyle),
-                        Obx(() => Text(
-                              "概括",
-                              style: !controller.isExpenseListShowMode.value
-                                  ? activeTextStyle
-                                  : inactiveTextStyle,
-                            )),
-                      ],
-                    ),
+          height: 38,
+          margin: const EdgeInsets.fromLTRB(6, 0, 6, 14),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: appColors.outlineBorder, width: 0.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(CupertinoIcons.search,
+                  size: 17, color: appColors.secondaryText),
+              const SizedBox(width: 9),
+              Expanded(
+                child: TextField(
+                  controller: controller.searchController,
+                  onChanged: controller.onSearchChanged,
+                  textInputAction: TextInputAction.search,
+                  style: TextStyle(color: appColors.primaryText, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: '搜索名称或金额',
+                    hintStyle:
+                        TextStyle(color: appColors.secondaryText, fontSize: 13),
+                    isDense: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ),
-              ],
-            )),
-        Obx(() {
-          return Column(
-            children: controller.expenseDateGroupList
-                .map((e) => _buildSingleDateCard(e, context, appColors))
-                .toList(),
-          );
-        }),
+              ),
+              if (controller.searchController.text.isNotEmpty)
+                IconButton(
+                  tooltip: '清除搜索',
+                  onPressed: controller.clearSearch,
+                  icon: Icon(CupertinoIcons.clear_circled_solid,
+                      size: 17, color: appColors.secondaryText),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 32,
+                    height: 32,
+                  ),
+                )
+              else
+                const SizedBox(width: 32),
+            ],
+          ),
+        ),
+        if (controller.searchPending)
+          const CupertinoActivityIndicator()
+        else if (controller.displayMode.value == ExpenseDisplayMode.category)
+          _buildCategoryList(context, appColors)
+        else if (controller.expenseDateGroupList.isEmpty &&
+            !controller.isLoading.value &&
+            controller.listError == null)
+          _buildEmptyResult(appColors)
+        else
+          ...controller.expenseDateGroupList
+              .map((group) => _buildSingleDateCard(group, context, appColors)),
       ],
+    );
+  }
+
+  Widget _buildModeOption(String label, ExpenseDisplayMode mode,
+      TextStyle activeTextStyle, TextStyle inactiveTextStyle) {
+    final selected = controller.displayMode.value == mode;
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => controller.setDisplayMode(mode),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Text(label,
+              style: selected ? activeTextStyle : inactiveTextStyle),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyResult(AppThemeColors colors) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 28),
+      child: Text(
+        controller.searchKeyword.isEmpty ? '暂无账单' : '没有找到匹配的账单',
+        style: TextStyle(color: colors.secondaryText, fontSize: 13),
+      ),
+    );
+  }
+
+  Widget _buildCategoryList(BuildContext context, AppThemeColors colors) {
+    if (controller.categoryLoading) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 26),
+        child: Column(
+          children: [
+            const CupertinoActivityIndicator(),
+            const SizedBox(height: 10),
+            Text('正在整理 ${controller.categoryLoadedCount} 笔账单',
+                style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+          ],
+        ),
+      );
+    }
+    if (controller.categoryError != null) {
+      return TextButton.icon(
+        onPressed: controller.retryCategories,
+        icon: const Icon(Icons.refresh, size: 18),
+        label: Text(controller.categoryError!),
+      );
+    }
+    if (controller.categoryGroups.isEmpty) return _buildEmptyResult(colors);
+    return Column(
+      children: controller.categoryGroups
+          .map((group) => _buildCategoryCard(group, context, colors))
+          .toList(),
+    );
+  }
+
+  Widget _buildCategoryCard(
+      ExpenseCategoryGroup group, BuildContext context, AppThemeColors colors) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      decoration: BoxDecoration(
+        color: colors.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(CategoryIconMap.getIcon(group.name),
+                  size: 20, color: colors.primaryText),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(group.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: colors.primaryText,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600)),
+              ),
+              Text('${group.entries.length} 笔',
+                  style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 12,
+            runSpacing: 4,
+            children: [
+              if (group.expenseTotal > 0 || group.incomeTotal == 0)
+                Text('-¥${group.expenseTotal.toStringAsFixed(2)}',
+                    style: TextStyle(
+                        color: colors.primaryText,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+              if (group.incomeTotal > 0)
+                Text('+¥${group.incomeTotal.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        color: Color(0xFF00A870),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Divider(height: 1, color: colors.outlineBorder),
+          const SizedBox(height: 14),
+          ...group.entries.map((entry) => ActivityExpenseItem(entry, context)),
+        ],
+      ),
     );
   }
 
@@ -269,7 +430,7 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
           // ------------------------------------------------------
           Obx(() {
             // [模式 A]: 详细模式
-            if (controller.isExpenseListShowMode.value) {
+            if (controller.displayMode.value == ExpenseDisplayMode.detailed) {
               return Column(
                 children: [
                   const SizedBox(height: 10),
@@ -407,45 +568,47 @@ class CurrentActivityPage extends GetView<CurrentActivityController> {
   // NavBar
   PreferredSizeWidget _navibar(BuildContext context) {
     final appColors = Theme.of(context).extension<AppThemeColors>()!;
+    final switcher = GestureDetector(
+      onTap: () => _showActivitySwitchBottomSheet(context),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Obx(() => Text(
+                controller.shouldShowAddButton.value &&
+                        controller.currentActivity.value.activityName.isNotEmpty
+                    ? controller.currentActivity.value.activityName
+                    : "当前账本",
+                style: TextStyle(
+                    fontSize: 18.sp,
+                    fontFamily: "SmileySans",
+                    color: appColors.primaryText),
+              )),
+          SizedBox(width: 4.w),
+          Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: appColors.primaryText,
+            size: 20.sp,
+          ),
+        ],
+      ),
+    );
 
     return JournalNavBar(
         height: 48,
         useDefaultBack: false,
         backgroundColor: Colors.transparent, // 沉浸式
-        // 用 GestureDetector 包裹，增加点击事件
-        titleWidget: GestureDetector(
-          onTap: () {
-            // 点击触发底部弹窗，切换账本
-            _showActivitySwitchBottomSheet(context);
-          },
-          behavior: HitTestBehavior.opaque, // 确保点击空白区域也能响应
-          child: Row(
-            mainAxisSize: MainAxisSize.min, // 让 Row 紧凑，居中显示
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Obx(() => Text(
-                    controller.shouldShowAddButton.value &&
-                            controller
-                                .currentActivity.value.activityName.isNotEmpty
-                        ? controller.currentActivity.value.activityName
-                        : "当前账本",
-                    style: TextStyle(
-                        fontSize: 18.sp,
-                        fontFamily: "SmileySans",
-                        color: appColors.primaryText // 适配深色
-                        ),
-                  )),
-              SizedBox(width: 4.w), // 文字和箭头的间距
-              // 添加一个下拉小箭头，这是 UX 上的视觉暗示
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: appColors.primaryText,
-                size: 20.sp,
-              ),
-            ],
-          ),
-        ));
+        titleWidget: activitySwitcherGuideKey == null
+            ? switcher
+            : Showcase(
+                key: activitySwitcherGuideKey!,
+                title: '切换账本',
+                description: '点击这里切换账本，也可以新建或加入账本。',
+                targetPadding: const EdgeInsets.all(6),
+                child: switcher,
+              ));
   }
 
 // 切换账本的底部弹窗

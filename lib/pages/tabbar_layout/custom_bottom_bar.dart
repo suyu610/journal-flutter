@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:journal/models/app_tab_item.dart';
 // 引入你的主题颜色类文件
 import 'package:journal/core/app_theme_colors.dart';
 import 'package:showcaseview/showcaseview.dart';
 
-class CustomBottomBar extends StatelessWidget {
+class CustomBottomBar extends StatefulWidget {
   final List<AppTabItem> tabs;
   final int currentIndex;
   final Function(int index, AppTabItem tab) onTap;
   final Function(int index, AppTabItem tab)? onLongPress;
-  final GlobalKey? specialButtonKey;
+  final Map<String, GlobalKey> guideKeys;
 
   const CustomBottomBar({
     Key? key,
@@ -17,8 +18,50 @@ class CustomBottomBar extends StatelessWidget {
     required this.currentIndex,
     required this.onTap,
     this.onLongPress,
-    this.specialButtonKey,
+    this.guideKeys = const {},
   }) : super(key: key);
+
+  @override
+  State<CustomBottomBar> createState() => _CustomBottomBarState();
+}
+
+class _CustomBottomBarState extends State<CustomBottomBar> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showSelectedTab());
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomBottomBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex ||
+        !listEquals(
+          oldWidget.tabs.map((tab) => tab.id).toList(),
+          widget.tabs.map((tab) => tab.id).toList(),
+        )) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showSelectedTab());
+    }
+  }
+
+  void _showSelectedTab() {
+    if (!mounted || !_scrollController.hasClients || widget.tabs.length <= 5) {
+      return;
+    }
+    final width = MediaQuery.sizeOf(context).width;
+    final offset = widget.currentIndex * 72 - (width - 72) / 2;
+    _scrollController.jumpTo(
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,19 +89,36 @@ class CustomBottomBar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: List.generate(tabs.length, (index) {
-                // 传参 appColors
-                return Expanded(
-                  child: _buildTabItem(context, index, tabs[index], appColors),
-                );
-              }),
-            ),
-          ),
+          Expanded(child: _buildItems(context, appColors)),
           SizedBox(height: paddingBottom),
         ],
+      ),
+    );
+  }
+
+  Widget _buildItems(BuildContext context, AppThemeColors appColors) {
+    if (widget.tabs.length <= 5) {
+      return Row(
+        children: List.generate(
+          widget.tabs.length,
+          (index) => Expanded(
+            child: _buildTabItem(context, index, widget.tabs[index], appColors),
+          ),
+        ),
+      );
+    }
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(
+          widget.tabs.length,
+          (index) => SizedBox(
+            width: 72,
+            height: 60,
+            child: _buildTabItem(context, index, widget.tabs[index], appColors),
+          ),
+        ),
       ),
     );
   }
@@ -66,17 +126,25 @@ class CustomBottomBar extends StatelessWidget {
   Widget _buildTabItem(BuildContext context, int index, AppTabItem tab,
       AppThemeColors appColors) {
     bool isSpecialTab = tab.id == 'chat';
-    bool isSelected = !isSpecialTab && currentIndex == index;
+    bool isSelected = !isSpecialTab && widget.currentIndex == index;
 
     Widget iconWidget = isSpecialTab
         ? _buildSpecialIcon(tab.icon, appColors)
         : _buildNormalItem(tab, isSelected, appColors);
 
-    if (isSpecialTab && specialButtonKey != null) {
+    final guideKey = widget.guideKeys[tab.id];
+    if (guideKey != null) {
+      final guideText = switch (tab.id) {
+        'chat' => ('快速记账', '点这里添加账单；没有默认账本时会先让你选择或创建账本。'),
+        'misson' => ('记账面板', '在这里查看账本面板和常用信息。'),
+        'analytics' => ('数据统计', '按日期和分类查看收支变化。'),
+        'profile' => ('我的', '备份与恢复、提醒和其他设置都在这里。'),
+        _ => (tab.label, ''),
+      };
       iconWidget = Showcase(
-        key: specialButtonKey!,
-        title: '👋 试试长按',
-        description: '长按中间按钮\n即可快速开启手动记账',
+        key: guideKey,
+        title: guideText.$1,
+        description: guideText.$2,
         targetPadding: const EdgeInsets.all(6),
         targetBorderRadius: BorderRadius.circular(24),
 
@@ -101,13 +169,16 @@ class CustomBottomBar extends StatelessWidget {
       );
     }
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onLongPress: () => onLongPress?.call(index, tab),
-      onTap: () => onTap(index, tab),
-      child: Container(
-        alignment: Alignment.center,
-        child: iconWidget,
+    return Tooltip(
+      message: tab.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onLongPress: () => widget.onLongPress?.call(index, tab),
+        onTap: () => widget.onTap(index, tab),
+        child: Container(
+          alignment: Alignment.center,
+          child: iconWidget,
+        ),
       ),
     );
   }

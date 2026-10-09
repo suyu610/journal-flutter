@@ -85,20 +85,25 @@ class CalendarChartCard extends GetView<ChartsController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              // 这里的日期格式化可以根据喜好调整
-              Obx(() => Text(
-                    DateFormat('yyyy年MM月').format(controller.focusedDay.value),
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                      color: appColors.primaryText,
-                    ),
-                  )),
-            ],
+          Text(
+            DateFormat('yyyy年MM月').format(controller.focusedDay.value),
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.bold,
+              color: appColors.primaryText,
+            ),
           ),
-          // 这里可以放一个“回到今天”的小按钮，或者留白
+          if (controller.focusedDay.value.year != DateTime.now().year ||
+              controller.focusedDay.value.month != DateTime.now().month)
+            TextButton.icon(
+              onPressed: controller.returnToCurrentMonth,
+              icon: const Icon(Icons.today_outlined, size: 16),
+              label: const Text('回到本月'),
+              style: TextButton.styleFrom(
+                foregroundColor: appColors.brandColor,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
         ],
       ),
     );

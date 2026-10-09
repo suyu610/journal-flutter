@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:journal/components/journal_toast.dart';
 import 'package:journal/constants/bill_column.dart';
+import 'package:journal/pages/expense_category/category_order.dart';
 import 'package:journal/request/request.dart';
 import 'package:journal/util/dialog_util.dart';
 import 'package:journal/util/sp_util.dart';
@@ -12,6 +13,7 @@ class ExpenseTypePickerController extends GetxController {
   static const String keyExpenseSort = "key_expense_sort_order";
   static const String keyIncomeSort = "key_income_sort_order";
   final RxBool isEditMode = false.obs;
+  int _fetchGeneration = 0;
   ExpenseTypePickerController();
 
   @override
@@ -27,41 +29,55 @@ class ExpenseTypePickerController extends GetxController {
     update(["expense_type_picker"]);
   }
 
-  void _fetchData() {
-    HttpRequest.request(Method.get, "/expense/custom/type/list").then((value) {
-      List<dynamic> data = value['data'] as List<dynamic>;
+  Future<void> _fetchData(
+      {String? promotedName, bool? promotedIsExpense}) async {
+    final generation = ++_fetchGeneration;
+    final response = await HttpRequest.request<dynamic>(
+      Method.get,
+      "/expense/custom/type/list",
+    );
+    if (generation != _fetchGeneration ||
+        response is! Map ||
+        response['code'] != 0 ||
+        response['data'] is! List) {
+      return;
+    }
 
-      // 临时列表，用于存放新获取的数据
-      List<Map<String, dynamic>> newExpenses = [];
-      List<Map<String, dynamic>> newIncomes = [];
-
-      if (data.isNotEmpty) {
-        data.forEach((element) {
-          // 2. 解析 ID (关键：用于删除)
-          Map<String, dynamic> item = {
-            "labelName": element["typeName"],
-            "id": element["id"], // 只有自定义的有 ID
-            "isCustom": true, // 标记为自定义
-          };
-
-          if (element["type"] == "expense") {
-            newExpenses.add(item);
-          } else {
-            newIncomes.add(item);
-          }
-        });
+    final newExpenses = <Map<String, dynamic>>[];
+    final newIncomes = <Map<String, dynamic>>[];
+    for (final element in response['data'] as List) {
+      final item = <String, dynamic>{
+        'labelName': element['typeName'],
+        'id': element['id'],
+        'isCustom': true,
+      };
+      if (element['type'] == 'expense') {
+        newExpenses.add(item);
+      } else {
+        newIncomes.add(item);
       }
+    }
 
-      // 3. 合并数据：本地默认 + 接口数据
-      // 注意：这里需要去重，或者清空 expenseList 后重新添加本地+网络
-      // 简单起见，假设 billColumnList 不包含网络数据
-      expenseList.addAll(newExpenses);
-      incomeList.addAll(newIncomes);
+    expenseList.assignAll(orderCategoryItems(
+      billColumnList.map((item) => Map<String, dynamic>.from(item)).toList(),
+      newExpenses,
+      SpUtil.getStringList(keyExpenseSort),
+    ));
+    incomeList.assignAll(orderCategoryItems(
+      incomeColumnList.map((item) => Map<String, dynamic>.from(item)).toList(),
+      newIncomes,
+      SpUtil.getStringList(keyIncomeSort),
+    ));
 
-      // 4. 恢复排序 (根据 SP)
-      _restoreSortOrder(true);
-      _restoreSortOrder(false);
-    });
+    if (promotedName != null && promotedIsExpense != null) {
+      final target = promotedIsExpense ? expenseList : incomeList;
+      final index = target.indexWhere(
+          (item) => item['id'] != null && item['labelName'] == promotedName);
+      if (index != -1) {
+        target.insert(0, target.removeAt(index));
+        _saveSortOrder(promotedIsExpense);
+      }
+    }
   }
 
   // --- 核心功能 1: 删除 ---
@@ -108,50 +124,16 @@ class ExpenseTypePickerController extends GetxController {
     SpUtil.putStringList(isExpense ? keyExpenseSort : keyIncomeSort, names);
   }
 
-  // 从 SP 恢复排序
-  void _restoreSortOrder(bool isExpense) {
-    List<String>? savedOrder =
-        SpUtil.getStringList(isExpense ? keyExpenseSort : keyIncomeSort);
-
-    if (savedOrder == null || savedOrder.isEmpty) return;
-
-    RxList<Map<String, dynamic>> targetList =
-        isExpense ? expenseList : incomeList;
-
-    // 排序逻辑：
-    // 1. 在 savedOrder 里的，按 savedOrder 顺序排
-    // 2. 不在 savedOrder 里的 (比如新增的)，放到最后
-
-    targetList.sort((a, b) {
-      int indexA = savedOrder.indexOf(a['labelName']);
-      int indexB = savedOrder.indexOf(b['labelName']);
-
-      // 如果两个都在列表里，按索引比
-      if (indexA != -1 && indexB != -1) {
-        return indexA.compareTo(indexB);
-      }
-      // 如果 a 在列表里，b 不在，a 排前面
-      if (indexA != -1) return -1;
-      // 如果 b 在列表里，a 不在，b 排前面
-      if (indexB != -1) return 1;
-
-      // 都不在列表里，保持原样 (或者按创建时间)
-      return 0;
-    });
-
-    targetList.refresh(); // 强制刷新 UI
-  }
-
-// 添加分类 (原有逻辑微调)
-  void addCategory(bool isExpense, String name) {
-    HttpRequest.request(Method.post, "/expense/custom/type", params: {
-      "typeName": name,
-      "type": isExpense ? "expense" : "income",
-    }).then((res) {
-      // 假设接口返回了新创建的对象 data: {id: "xxx", typeName: "xxx"}
-      // 如果没返回 ID，还得重新拉一遍列表，否则刚创建的没法删除
-      _fetchData();
-    });
+  Future<void> addCategory(bool isExpense, String name) async {
+    final response = await HttpRequest.request<dynamic>(
+        Method.post, "/expense/custom/type",
+        params: {
+          "typeName": name,
+          "type": isExpense ? "expense" : "income",
+        });
+    if (response is Map && response['code'] == 0) {
+      await _fetchData(promotedName: name, promotedIsExpense: isExpense);
+    }
   }
 
   void onAddTapCategory(bool isExpense, BuildContext context) {

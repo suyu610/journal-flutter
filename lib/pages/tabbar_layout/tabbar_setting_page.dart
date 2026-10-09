@@ -23,8 +23,7 @@ class _TabBarSettingPageState extends State<TabBarSettingPage> {
   void initState() {
     super.initState();
     layoutCtrl = Get.find<LayoutController>();
-    // 深拷贝列表，以免修改影响原数据
-    _tempTabs = List.from(layoutCtrl.allTabsPool);
+    _tempTabs = layoutCtrl.allTabsPool.map((tab) => tab.copy()).toList();
   }
 
   void _onSave(AppThemeColors appColors) {
